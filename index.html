@@ -1,1 +1,87 @@
-<!doctype html><meta http-equiv="refresh" content="0; url=./histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html"><title>Histomaps</title><p><a href="./histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html">Open Histomaps</a></p>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#eee5d6">
+  <title>Histomaps.org — loading public preview</title>
+  <style>
+    html,body{height:100%;margin:0;background:#eee5d6;color:#2b241d;font-family:Georgia,"Times New Roman",serif}
+    body{display:grid;place-items:center}
+    main{width:min(560px,calc(100% - 40px));text-align:center}
+    h1{margin:0 0 12px;font-weight:500;letter-spacing:-.03em;font-size:clamp(38px,8vw,64px)}
+    p{margin:0;color:#66594d;font:600 12px/1.5 "Helvetica Neue",Arial,sans-serif;letter-spacing:.04em;text-transform:uppercase}
+    .bar{height:2px;width:160px;margin:22px auto 0;background:rgba(70,55,42,.15);overflow:hidden}
+    .bar:after{content:"";display:block;height:100%;width:48%;background:#776153;animation:load 1.15s ease-in-out infinite alternate}
+    @keyframes load{from{transform:translateX(-70%)}to{transform:translateX(180%)}}
+    #error{display:none;margin-top:18px;color:#7b2f28;text-transform:none;letter-spacing:0;font-size:13px}
+  </style>
+</head>
+<body>
+<main>
+  <h1>HISTOMAPS.ORG</h1>
+  <p>Preparing the public preview</p>
+  <div class="bar" aria-hidden="true"></div>
+  <p id="error">The Histomap could not be assembled. Please reload the page.</p>
+</main>
+<script>
+(() => {
+  const basePath = 'histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html';
+  const patchPaths = [1,2,3,4].map(n => `deploy/v0.35.3.patch.part0${n}`);
+
+  function applyUnifiedPatch(source, patch) {
+    const sourceHadFinalNewline = source.endsWith('\n');
+    let lines = source.replace(/\r\n/g,'\n').split('\n');
+    if (sourceHadFinalNewline && lines[lines.length - 1] === '') lines.pop();
+    const p = patch.replace(/\r\n/g,'\n').split('\n');
+    let offset = 0;
+
+    for (let i = 0; i < p.length; i++) {
+      const m = p[i].match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/);
+      if (!m) continue;
+      const oldStart = Number(m[1]);
+      const oldCount = m[2] === undefined ? 1 : Number(m[2]);
+      const replacement = [];
+      const expected = [];
+      i++;
+      for (; i < p.length && !p[i].startsWith('@@ '); i++) {
+        const row = p[i];
+        if (row.startsWith('--- ') || row.startsWith('+++ ') || row === '\\ No newline at end of file') continue;
+        const tag = row[0];
+        const body = row.slice(1);
+        if (tag === ' ') { expected.push(body); replacement.push(body); }
+        else if (tag === '-') expected.push(body);
+        else if (tag === '+') replacement.push(body);
+      }
+      i--;
+      const at = oldStart - 1 + offset;
+      const actual = lines.slice(at, at + oldCount);
+      if (actual.length !== expected.length || actual.some((v,j) => v !== expected[j])) {
+        throw new Error(`Patch context mismatch near source line ${oldStart}`);
+      }
+      lines.splice(at, oldCount, ...replacement);
+      offset += replacement.length - oldCount;
+    }
+    return lines.join('\n') + (sourceHadFinalNewline ? '\n' : '');
+  }
+
+  async function boot() {
+    const responses = await Promise.all([basePath, ...patchPaths].map(path => fetch(path, {cache:'no-cache'})));
+    responses.forEach((response, i) => {
+      if (!response.ok) throw new Error(`Could not load ${i === 0 ? basePath : patchPaths[i-1]}`);
+    });
+    const texts = await Promise.all(responses.map(response => response.text()));
+    const html = applyUnifiedPatch(texts[0], texts.slice(1).join(''));
+    document.open();
+    document.write(html);
+    document.close();
+  }
+
+  boot().catch(error => {
+    console.error('Histomaps bootstrap failed:', error);
+    document.getElementById('error').style.display = 'block';
+  });
+})();
+</script>
+</body>
+</html>
