@@ -1,0 +1,264 @@
++    font-size: 7px;
++    white-space: normal;
++  }
++  .welcome-card {
++    border-radius: 15px;
++    padding: 27px 23px 25px;
++  }
++  .welcome-card h2 { font-size: 39px; }
++  .welcome-card p { font-size: 13px; }
++  .welcome-actions { align-items: flex-start; flex-direction: column; }
++  .sparks-bio-grid { grid-template-columns: 1fr; }
++  .sparks-bio-visual {
++    display: grid;
++    grid-template-columns: 108px minmax(0, 1fr);
++    column-gap: 17px;
++    align-items: end;
++    padding: 25px 24px 20px;
++    border-right: 0;
++    border-bottom: 1px solid rgba(74,55,35,.16);
++  }
++  .sparks-bio-portrait-frame { margin: 0; width: 108px; }
++  .sparks-bio-photo-note { align-self: start; max-width: none; margin: 3px 0 0; }
++  .sparks-bio-dates { grid-column: 2; margin: -25px 0 0; max-width: none; }
++  .sparks-bio-content { padding: 29px 24px 28px; }
++  .sparks-bio-content h2 { font-size: 38px; }
++}
++
++@media (prefers-reduced-motion: reduce) {
++  .welcome-overlay, .sparks-bio-overlay, .public-info-overlay { transition: none; }
++}
+ </style>
+ 
+ </head>
+ <body>
+-  <main class="map-stage">
++  <main class="map-stage" data-histomap-build="HM35-20260823-HEADER-LOGO-01" data-histomap-provenance="JHS:HISTOMAPS:2026:0353:LOGO01">
+     <svg id="histomap" role="img" aria-labelledby="chartTitle chartDesc">
+       <title id="chartTitle">Interactive civilizational ribbon map</title>
+       <desc id="chartDesc">
+@@ -5834,6 +6301,111 @@
+     </svg>
+     <div id="tooltip" class="tooltip" hidden></div>
+ 
++    <div id="welcomeOverlay" class="welcome-overlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle" aria-describedby="welcomeDescription">
++      <section class="welcome-card">
++        <p class="welcome-eyebrow">Histomaps.org</p>
++        <h2 id="welcomeTitle">Welcome to the Histomap</h2>
++        <div id="welcomeDescription">
++          <p>History is usually read one story at a time. The Histomap lets you see many of those stories at once: civilizations flowing through time, with people and events placed inside the larger sweep of history.</p>
++          <p>Scroll through the centuries, zoom into crowded periods, and select ribbons, lifelines and events to explore their context. The map is designed to reward both a quick glance and deep wandering.</p>
++          <p class="welcome-reading-note">The width of a civilization stream follows John B. Sparks’s original visual language of relative historical power and influence. It is an interpretive historical view, not a precise quantitative measure.</p>
++          <p class="welcome-future"><strong>Where this might go:</strong> Histomaps.org can grow into richer historical maps, new ways to explore lives and events, and eventually experimental Histomaps of the possible futures that extend from the present.</p>
++        </div>
++        <div class="welcome-actions">
++          <button id="welcomeEnter" class="welcome-enter" type="button">Explore the Histomap</button>
++          <span class="welcome-hint">This introduction appears on your first visit.</span>
++        </div>
++      </section>
++    </div>
++
++    <div id="aboutOverlay" class="public-info-overlay" role="dialog" aria-modal="true" aria-labelledby="aboutTitle" aria-describedby="aboutDescription" hidden>
++      <article class="public-info-card">
++        <button class="public-info-close" type="button" data-close-public-overlay="aboutOverlay" aria-label="Close About and Method">×</button>
++        <p class="public-info-eyebrow">About this implementation</p>
++        <h2 id="aboutTitle">A visual argument about history</h2>
++        <div id="aboutDescription">
++          <p><em>The Histomap</em> began with John B. Sparks’s 1931 chart, which compressed thousands of years of history into a single field of colored streams. Histomaps.org is an independent interactive implementation by <a href="https://kliawota.design" target="_blank" rel="noopener noreferrer">J. Hunter Sizemore</a>, built from that visual idea and extended with interactive streams, events, lifelines and historical context.</p>
++          <h3>How to read the map</h3>
++          <p>Stream width follows Sparks’s basic language of relative historical power and influence. It should be read as an interpretive visual judgment, not as a measured quantity of population, territory, wealth or moral importance.</p>
++          <h3>What is original here</h3>
++          <p>The interactive interface, software implementation, map behavior, event and lifeline systems, data organization, editorial structure, original writing and substantial historical curation in this edition are part of the Histomaps.org implementation. The 1931 source is credited throughout to John B. Sparks.</p>
++          <h3>Sources, corrections and uncertainty</h3>
++          <p>This public preview combines reconstruction of the Sparks source with later historical research and explicit corrections. Dates, boundaries, labels and historical interpretations can be uncertain or contested. The project aims to make those distinctions clearer as the map develops rather than disguise judgment as precision.</p>
++          <p class="public-info-note"><strong>Public preview:</strong> the map is being prepared for wider release and will continue to change in response to historical review, usability testing and reader feedback.</p>
++          <p class="public-info-meta">Histomaps.org · Public preview v0.35.2 · Build HM35-20260823-HEADER-LOGO-01</p>
++        </div>
++      </article>
++    </div>
++
++    <div id="termsOverlay" class="public-info-overlay" role="dialog" aria-modal="true" aria-labelledby="termsTitle" aria-describedby="termsDescription" hidden>
++      <article class="public-info-card">
++        <button class="public-info-close" type="button" data-close-public-overlay="termsOverlay" aria-label="Close Terms of Use">×</button>
++        <p class="public-info-eyebrow">Histomaps.org</p>
++        <h2 id="termsTitle">Terms of use</h2>
++        <div id="termsDescription">
++          <p>© 2026 J. Hunter Sizemore. All rights reserved in the original Histomaps.org implementation and original material, subject to any rights that may exist in credited third-party source material.</p>
++          <h3>You are welcome to</h3>
++          <ul>
++            <li>view and explore the site for personal, educational, scholarly and journalistic purposes;</li>
++            <li>share links to Histomaps.org; and</li>
++            <li>use limited screenshots or excerpts for commentary, teaching or criticism when Histomaps.org is clearly credited.</li>
++          </ul>
++          <h3>Please do not, without permission</h3>
++          <ul>
++            <li>copy, republish, mirror or redistribute the application or substantial portions of its code;</li>
++            <li>bulk scrape, extract or reconstruct the structured historical dataset or editorial arrangement;</li>
++            <li>remove or obscure attribution, provenance or copyright notices; or</li>
++            <li>substantially reproduce the distinctive Histomaps.org interface, data arrangement or interactive implementation as another product or service.</li>
++          </ul>
++          <h3>Automated access</h3>
++          <p>Automated systems should respect the site’s robots.txt directives and technical access controls. Search and user-directed discovery may be allowed separately from automated collection for model training.</p>
++          <h3>Historical content</h3>
++          <p>The map is an interpretive historical work in active development. It is provided for exploration and education, without a guarantee that every date, classification or interpretation is complete or error-free.</p>
++          <p class="public-info-note">For licensing, reuse or collaboration, contact the project through <a href="https://kliawota.design" target="_blank" rel="noopener noreferrer">kliawota.design</a>.</p>
++          <p class="public-info-meta">Last updated 23 August 2026 · Histomaps.org public preview v0.35.3</p>
++        </div>
++      </article>
++    </div>
++
++    <div id="sparksBioOverlay" class="sparks-bio-overlay" role="dialog" aria-modal="true" aria-labelledby="sparksBioTitle" aria-describedby="sparksBioDescription" hidden>
++      <article class="sparks-bio-card">
++        <button id="sparksBioClose" class="sparks-bio-close" type="button" aria-label="Close John B. Sparks biography">×</button>
++        <div class="sparks-bio-grid">
++          <aside class="sparks-bio-visual">
++            <figure class="sparks-bio-portrait-frame">
++              <img class="sparks-bio-portrait" src="https://readmultiplex.com/wp-content/uploads/2022/10/img_0772-200x300.jpg" alt="Archival portrait identified as John B. Sparks">
++            </figure>
++            <p class="sparks-bio-photo-note">Archival portrait identified as Sparks by <a href="https://readmultiplex.com/2022/10/16/the-histomap-a-4000-year-graphical-timeline-of-history/" target="_blank" rel="noopener noreferrer">ReadMultiplex</a>. The original photographic provenance has not yet been independently established.</p>
++            <p class="sparks-bio-dates">1886–1949 · England → United States</p>
++          </aside>
++          <div class="sparks-bio-content" id="sparksBioDescription">
++            <p class="sparks-bio-eyebrow">The creator of the Histomap</p>
++            <h2 id="sparksBioTitle">John Bertram Sparks</h2>
++            <p class="sparks-bio-deck">Engineer · business executive · historical chartmaker</p>
++
++            <h3>Biography</h3>
++            <p>John Bertram Sparks was born in St Ives, Huntingdon, England, in 1886. He studied electrical engineering at Finsbury Technical College from 1902 to 1904 and worked on early power and electrification projects in Baghdad, Norway, Sweden and London. He later emigrated to the United States and pursued a business career; by the end of his life he was a director of Nestlé’s Milk Products Inc. in New York.</p>
++            <p>History and visual explanation were a serious avocation. In 1931 Sparks created <em>The Histomap: Four Thousand Years of World History</em>, published by Histomap, Inc. in Chicago and printed and distributed by Rand McNally. Its five-foot vertical field turned states, nations and empires into colored streams whose changing widths represented Sparks’s judgment of their relative power. He later developed companion Histomaps of evolution and religion. Sparks died on 22 December 1949; his daughter Anne Sparks Glanz continued updating and publishing the charts.</p>
++
++            <div class="sparks-bio-caveat">
++              <h3>Perspective to keep in mind</h3>
++              <p>Sparks’s charts are visual arguments, not neutral measurements. His <em>Histomap of Religion</em> explicitly says that, where numerical criteria were unavailable, “relative contemporary significance” was judged from a <strong>liberal Christian viewpoint</strong>. His history and evolution charts also use Western power hierarchies and period racial/national categories that modern scholarship does not accept. Histomaps.org treats those assumptions as part of the historical artifact to examine, rather than a worldview to inherit.</p>
++            </div>
++
++            <div class="sparks-bio-sources" aria-label="Research sources">
++              <span>Research</span>
++              <a href="https://carp.arts.gla.ac.uk/essay1.php?enum=1370358740" target="_blank" rel="noopener noreferrer">University of Glasgow / John Sparks archive</a>
++              <a href="https://www.davidrumsey.com/luna/servlet/detail/RUMSEY~8~1~200375~3001080%3AThe-Histomap-" target="_blank" rel="noopener noreferrer">David Rumsey Map Collection</a>
++              <a href="https://www.geographicus.com/P/AntiqueMap/histomapevolution-sparks-1949" target="_blank" rel="noopener noreferrer">Geographicus biography</a>
++              <a href="https://nla.gov.au/nla.obj-3011001492" target="_blank" rel="noopener noreferrer">National Library of Australia</a>
++              <a href="https://www.legacy.com/us/obituaries/statesman/name/anne-glanz-obituary?id=21321439" target="_blank" rel="noopener noreferrer">Anne Sparks Glanz obituary</a>
++              <a href="https://curtiswrightmaps.com/product/the-histomap-of-religion/" target="_blank" rel="noopener noreferrer">Histomap of Religion</a>
++            </div>
++          </div>
++        </div>
++      </article>
++    </div>
++
+     <header class="histomap-header unified-header">
+       <div class="header-primary">
+         <div class="header-readout header-readout-left header-top-year" aria-hidden="true" hidden>
+@@ -5842,8 +6414,11 @@
+         </div>
+ 
+         <div class="title-lockup">
+-          <span class="mini-line">HISTOMAP v0.34.149 · ELASTIC LIFELINES + TITLE-FIRST ZOOM</span>
+-          <h1 class="poster-title">THE HISTOMAP</h1>
++          <span class="mini-line">HISTOMAP v0.35.3 · PUBLIC PREVIEW</span>
++          <div class="histomap-brand-lockup">
++            <img class="histomap-brand-mark" src="assets/histomap-logo.svg" alt="" aria-hidden="true" />
++            <h1 class="poster-title">THE HISTOMAP</h1>
++          </div>
+           <div class="subtitle-block">
+             <span class="subline">FOUR THOUSAND YEARS OF WORLD HISTORY</span>
+             <span id="modelSubtitle" class="subline small">SPARKS APPROXIMATION · PROVISIONAL FLOW · 80 STREAMS</span>
+@@ -171676,6 +172251,38 @@
+       });
+     });
+ 
++    // v0.35.1 — John Bertram Sparks, creator of the original Histomap.
++    // His life crosses the original 1930 source boundary; binding to both the
++    // U.S. source stream and entity lets the modern extension carry the line
++    // through his documented death in 1949 without inventing source geometry.
++    {
++      const person=ensurePerson("John Bertram Sparks",{displayName:"John B. Sparks",birthYear:1886,deathYear:1949,aliases:["John Bertram Sparks","J. B. Sparks"]});
++      if(person){
++        person.displayName="John B. Sparks";
++        person.canonicalName="John Bertram Sparks";
++        person.aliases=[...new Set([...(person.aliases||[]),"John Bertram Sparks","J. B. Sparks"])];
++        person.chronologyBasis="historical";
++        person.life={
++          birth:personChronologyPoint(1886,{kind:"birth",precision:"year",confidence:"high",display:"1886",endpointState:"known",chronologyBasis:"historical",source:"University of Glasgow John Sparks archive"}),
++          death:personChronologyPoint(1949,{kind:"death",precision:"day",confidence:"high",display:"22 Dec 1949",endpointState:"known",chronologyBasis:"historical",source:"Geographicus / NLA authority data"}),
++          display:"1886–1949"
++        };
++        person.lifelineSpan={startYear:1886,endYear:1949,startEndpointState:"known",endEndpointState:"known",basis:"known-lifespan"};
++        person.lifelineLabelDateDisplay="1886–1949";
++        person.lifelineAttributes=["HISTOMAP CREATOR","ENGINEER"];
++        person.profile={
++          ...(person.profile||{}),
++          roleLabel:"Engineer, executive & creator of The Histomap",
++          civilizationLabel:"Britain / United States",
++          summary:"English-born engineer and business executive who created The Histomap (1931), a pioneering visual argument about four thousand years of relative historical power."
++        };
++        person.activation={mode:"explicit-only",reason:"v0.35.1-creator-biography",renderable:true};
++        person.streamBindings.unshift({streamId:"S002",entityId:"united_states",startYear:1886,endYear:1949,basis:"creator-biography-us-residence-and-publication",confidence:.92,sourceRecordId:"v0.35.1-john-b-sparks"});
++        person.provenance.push({sourceRecordId:"v0.35.1-john-b-sparks",basis:"public-biographical-research",reviewStatus:"researched-v0.35.1"});
++        person.reviewStatus="researched-v0.35.1";
++      }
++    }
++
+     registry.forEach(person => {
+       person.identityRecordIds = [...new Set(person.identityRecordIds)];
+       person.sourceRecordIds = [...new Set(person.sourceRecordIds)];
+@@ -172752,11 +173359,6 @@
+   let historicalPersonLifelineLayouts = new Map();
+   let selectedHistoricalPersonId = null;
+   let eventFamilyLaneCoordinateCache = new Map();
+-  let deepZoomImageRecords = new Map();
+-  let deepZoomImageTimer = null;
+-  let deepZoomImageGeneration = 0;
+-  let deepZoomImageAbortController = null;
+-  let deepZoomImageLastActive = false;
+   let selectedEventId = null;
+   let activeClusterRootId = null;
+   let selectedInteractionId = null;
+@@ -174117,7 +174719,6 @@
+ 
+   function scheduleSemanticSceneRefresh() {
+     if (heightMode !== "sparks") return;
+-    scheduleDeepZoomImageryRefresh(240);
+     if (semanticRenderTimer) clearTimeout(semanticRenderTimer);
+     semanticRenderTimer = setTimeout(() => {
+       semanticRenderTimer = null;
+@@ -174536,7 +175137,6 @@
+     const startOverride = cameraAnimationActive && cameraFlightState
+       ? { ...cameraFlightState }
+       : null;
+-    cancelDeepZoomImageWork();
+     stopCameraAnimationOnly(true);
+     cameraFlightState = null;
+ 
+@@ -174547,7 +175147,6 @@
+         targetAnchorX, targetAnchorY, targetZoom, fractionX, fractionY
+       );
+       commitSparksFlightFrame(targetFrame, true, true);
+-      scheduleDeepZoomImageryRefresh(180);
+       if (onComplete) onComplete();
+       return;
+     }
+@@ -174573,7 +175172,6 @@
+         metrics.targetZoom, fractionX, fractionY
+       );
+       commitSparksFlightFrame(targetFrame, true, true);
+-      scheduleDeepZoomImageryRefresh(180);
+       if (onComplete) onComplete();
+       return;
+     }
+@@ -174642,8 +175240,6 @@
+       if (sceneRenderCount !== cameraFlightStartRenderCount) {
+         console.warn("Histomap camera flight observed an unexpected scene render during travel.");
+       }
+-
+-      scheduleDeepZoomImageryRefresh(180);
+       if (onComplete) onComplete();
+     };
+ 
+@@ -177946,10 +178542,6 @@
+   }
+ 
+ 
+-  const DEEP_ZOOM_IMAGE_MIN_ZOOM = 4.5;
+-  const DEEP_ZOOM_IMAGE_MAX_VISIBLE = 6;
+-  const DEEP_ZOOM_IMAGE_MAX_CONCURRENT = 2;
