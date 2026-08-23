@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 780" role="img" aria-label="Original 1931 Histomap detail with full-chart inset">
+  <defs>
+    <clipPath id="frame"><rect width="1280" height="780" rx="4"/></clipPath>
+    <filter id="shadow" x="-40%" y="-20%" width="180%" height="160%"><feDropShadow dx="0" dy="9" stdDeviation="12" flood-color="#2a211a" flood-opacity=".26"/></filter>
+  </defs>
+  <g clip-path="url(#frame)">
+    <!-- Use the high-resolution original crop as the main reading surface. -->
+    <image href="/assets/sparks-original-crop.jpg" x="0" y="0" width="1280" height="780" preserveAspectRatio="xMidYMid slice"/>
+    <rect width="1280" height="780" fill="#f2eadc" fill-opacity=".06"/>
+    <!-- Full five-foot composition shown alongside the detail. -->
+    <g transform="translate(1050 22)" filter="url(#shadow)">
+      <rect width="205" height="722" rx="5" fill="#f1e7d3" stroke="#766a5f" stroke-opacity=".5"/>
+      <image href="/assets/original-histomap-full.jpg" x="12" y="12" width="181" height="698" preserveAspectRatio="xMidYMid meet"/>
+    </g>
+  </g>
+</svg>
