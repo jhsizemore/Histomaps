@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1100" role="img" aria-label="Static editorial preview of the World Histomap">
+  <defs>
+    <clipPath id="card"><rect x="18" y="18" width="864" height="1064" rx="22"/></clipPath>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".03"/><stop offset="1" stop-color="#2b241d" stop-opacity=".08"/></linearGradient>
+  </defs>
+  <rect width="900" height="1100" fill="#efe7d8"/>
+  <g clip-path="url(#card)">
+    <rect x="18" y="18" width="864" height="1064" fill="#eee5d6"/>
+    <!-- A clean strip of the real interface header. -->
+    <image href="/assets/hero-world-histomap.jpg" x="18" y="18" width="864" height="409" preserveAspectRatio="none"/>
+    <rect x="18" y="122" width="864" height="960" fill="#eee5d6"/>
+    <!-- A portrait crop of the real map surface: no interactivity, no browser chrome. -->
+    <image href="/assets/hero-world-histomap.jpg" x="-552" y="136" width="2016" height="954" preserveAspectRatio="none"/>
+    <rect x="18" y="18" width="864" height="1064" fill="url(#shade)"/>
+  </g>
+  <rect x="18" y="18" width="864" height="1064" rx="22" fill="none" stroke="#766a5f" stroke-opacity=".55" stroke-width="2"/>
+</svg>
