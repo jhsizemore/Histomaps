@@ -1,0 +1,401 @@
+-  const DEEP_ZOOM_IMAGE_REQUEST_CANDIDATES = 8;
+   const HIERARCHY_CONNECTOR_MIN_ZOOM = 4.5;
+ 
+   function deepReadingFocusedStreamKey() {
+@@ -177978,107 +178570,6 @@
+       p.y >= viewport.top - pad && p.y <= viewport.bottom + pad;
+   }
+ 
+-  function eventEligibleForDeepReading(ev, focusKey) {
+-    if (!ev || !focusKey) return false;
+-    if (eventStreamNavigationKey(ev) !== focusKey) return false;
+-    if (data.meta.sourceEndYear != null && ev.year > data.meta.sourceEndYear) return false;
+-    if (ev.wikipediaMatchStatus === "unresolved" || ev.wikipediaMatchStatus === "intentionally-none") return false;
+-    return !!(ev.wikipediaTitle || ev.wikipediaQuery || ev.wikiQuery || ev.title);
+-  }
+-
+-  function deepZoomImageCandidates(limit = DEEP_ZOOM_IMAGE_REQUEST_CANDIDATES) {
+-    if (heightMode !== "sparks" || mapZoom + 1e-6 < DEEP_ZOOM_IMAGE_MIN_ZOOM) return [];
+-    const focusKey = deepReadingFocusedStreamKey();
+-    if (!focusKey) return [];
+-    const viewport = currentWorldViewport(70);
+-    const centerX = (viewport.left + viewport.right) / 2;
+-    const centerY = (viewport.top + viewport.bottom) / 2;
+-
+-    return (data.events || [])
+-      .filter(ev => eventEligibleForDeepReading(ev, focusKey))
+-      .map(ev => ({ ev, p: displayedEventPoint(ev) }))
+-      .filter(item => pointInsideWorldViewport(item.p, viewport))
+-      .sort((a,b) => {
+-        const personBias = Number(isHistoricalPersonEvent(b.ev)) - Number(isHistoricalPersonEvent(a.ev));
+-        if (personBias) return personBias;
+-        const level = (a.ev.level || 3) - (b.ev.level || 3);
+-        if (level) return level;
+-        const ad = Math.hypot((a.p.x-centerX)*mapZoom, (a.p.y-centerY)*mapZoom);
+-        const bd = Math.hypot((b.p.x-centerX)*mapZoom, (b.p.y-centerY)*mapZoom);
+-        if (Math.abs(ad-bd) > .01) return ad-bd;
+-        return (b.ev.importance || 3) - (a.ev.importance || 3);
+-      })
+-      .slice(0, limit);
+-  }
+-
+-  function cancelDeepZoomImageWork() {
+-    deepZoomImageGeneration += 1;
+-    if (deepZoomImageTimer) clearTimeout(deepZoomImageTimer);
+-    deepZoomImageTimer = null;
+-    if (deepZoomImageAbortController) deepZoomImageAbortController.abort();
+-    deepZoomImageAbortController = null;
+-  }
+-
+-  function scheduleDeepZoomImageryRefresh(delay = 240) {
+-    if (deepZoomImageTimer) clearTimeout(deepZoomImageTimer);
+-    const generation = ++deepZoomImageGeneration;
+-    if (deepZoomImageAbortController) deepZoomImageAbortController.abort();
+-    deepZoomImageAbortController = null;
+-
+-    deepZoomImageTimer = setTimeout(() => {
+-      deepZoomImageTimer = null;
+-      refreshDeepZoomImagery(generation);
+-    }, delay);
+-  }
+-
+-  async function refreshDeepZoomImagery(generation = deepZoomImageGeneration) {
+-    const active = heightMode === "sparks" && mapZoom + 1e-6 >= DEEP_ZOOM_IMAGE_MIN_ZOOM && !!deepReadingFocusedStreamKey();
+-    if (!active) {
+-      if (deepZoomImageLastActive) scheduleRender();
+-      deepZoomImageLastActive = false;
+-      return;
+-    }
+-    deepZoomImageLastActive = true;
+-
+-    const candidates = deepZoomImageCandidates();
+-    // Even if all candidates are cached, a settled camera needs a fresh layout
+-    // pass so the relevant six tiles move with the new viewport.
+-    scheduleRender();
+-    if (!candidates.length) return;
+-
+-    const controller = new AbortController();
+-    deepZoomImageAbortController = controller;
+-    const queue = candidates.filter(item => !deepZoomImageRecords.has(item.ev.id));
+-    if (!queue.length) return;
+-
+-    let nextIndex = 0;
+-    let successful = candidates.filter(item => deepZoomImageRecords.get(item.ev.id)?.status === "ok").length;
+-
+-    async function worker() {
+-      while (nextIndex < queue.length && successful < DEEP_ZOOM_IMAGE_MAX_VISIBLE) {
+-        if (generation !== deepZoomImageGeneration || controller.signal.aborted) return;
+-        const item = queue[nextIndex++];
+-        try {
+-          const record = await resolveWikipediaForEvent(item.ev, controller.signal);
+-          if (generation !== deepZoomImageGeneration || controller.signal.aborted) return;
+-          if (record?.status === "ok" && (record.thumbnail || record.image)) {
+-            deepZoomImageRecords.set(item.ev.id, { ...record, status: "ok" });
+-            successful += 1;
+-          } else {
+-            deepZoomImageRecords.set(item.ev.id, { status: "no-image", fetchedAt: Date.now() });
+-          }
+-          scheduleRender();
+-        } catch (error) {
+-          if (error?.name === "AbortError") return;
+-          // Network failure is not made sticky: a later settled view may retry.
+-          console.warn("Deep-zoom Wikimedia image unavailable:", error);
+-        }
+-      }
+-    }
+-
+-    await Promise.all(Array.from({ length: DEEP_ZOOM_IMAGE_MAX_CONCURRENT }, () => worker()));
+-    if (deepZoomImageAbortController === controller) deepZoomImageAbortController = null;
+-  }
+ 
+   function hierarchyConnectorEvents() {
+     if (heightMode !== "sparks" || mapZoom + 1e-6 < HIERARCHY_CONNECTOR_MIN_ZOOM) return [];
+@@ -178140,147 +178631,6 @@
+     });
+   }
+ 
+-  function deepZoomImageSourceAspect(record) {
+-    const width = Number(record?.thumbnailWidth || record?.imageWidth);
+-    const height = Number(record?.thumbnailHeight || record?.imageHeight);
+-    if (!(width > 0) || !(height > 0)) return 1.36;
+-    return Math.max(.68, Math.min(1.72, width / height));
+-  }
+-
+-  function deepZoomImagePlacement(ev, p, occupied, record) {
+-    const zoom = Math.max(1,mapZoom);
+-    const baseWpx = W <= 700 ? 88 : 112;
+-    const baseHpx = W <= 700 ? 64 : 78;
+-    const aspect = deepZoomImageSourceAspect(record);
+-    const targetAreaPx = baseWpx * baseHpx;
+-    const desiredWpx = Math.sqrt(targetAreaPx * aspect);
+-    const desiredHpx = targetAreaPx / desiredWpx;
+-    const tileW = desiredWpx / zoom;
+-    const tileH = desiredHpx / zoom;
+-    const gap = 12 / zoom;
+-    const markerR = eventMarkerWorldRadius(ev);
+-    const viewport = currentWorldViewport(8);
+-    const bandBounds = visibleBandWorldBoundsForEventPoint(p);
+-    const bandScreenWidth = Math.max(0, bandBounds.right-bandBounds.left) * zoom;
+-    if (bandScreenWidth < desiredWpx * .88) return null;
+-
+-    const candidates = [
+-      { cx: p.x + markerR + gap + tileW/2, cy: p.y },
+-      { cx: p.x - markerR - gap - tileW/2, cy: p.y },
+-      { cx: p.x + tileW*.20, cy: p.y + markerR + gap + tileH/2 },
+-      { cx: p.x - tileW*.20, cy: p.y - markerR - gap - tileH/2 },
+-      { cx: p.x + tileW*.55, cy: p.y + tileH*.72 },
+-      { cx: p.x - tileW*.55, cy: p.y - tileH*.72 }
+-    ];
+-
+-    for (const candidate of candidates) {
+-      const cx = Math.max(bandBounds.left + tileW/2, Math.min(bandBounds.right - tileW/2, candidate.cx));
+-      const cy = Math.max(viewport.top + tileH/2, Math.min(viewport.bottom - tileH/2, candidate.cy));
+-      const box = { x1: cx-tileW/2, x2: cx+tileW/2, y1: cy-tileH/2, y2: cy+tileH/2, kind:"deep-image", owner:ev.id };
+-      if (box.x1 < viewport.left || box.x2 > viewport.right || box.y1 < viewport.top || box.y2 > viewport.bottom) continue;
+-      const padded = paddedBox(box, 7/zoom);
+-      if (mapTextObstacles.some(obstacle => obstacle.owner !== ev.id && boxesOverlap(padded, obstacle))) continue;
+-      if (occupied.some(obstacle => boxesOverlap(padded, obstacle))) continue;
+-      if (boxOverlapsEventMarkers(padded, ev.id)) continue;
+-      return { box, padded, cx, cy, tileW, tileH, aspect, desiredWpx, desiredHpx };
+-    }
+-    return null;
+-  }
+-
+-  function drawDeepZoomEventImagery(group) {
+-    if (heightMode !== "sparks" || mapZoom + 1e-6 < DEEP_ZOOM_IMAGE_MIN_ZOOM) return;
+-    const candidates = deepZoomImageCandidates(14)
+-      .filter(item => deepZoomImageRecords.get(item.ev.id)?.status === "ok")
+-      .slice(0, DEEP_ZOOM_IMAGE_MAX_VISIBLE);
+-    if (!candidates.length) return;
+-
+-    const occupied = [];
+-    let drawn = 0;
+-    for (const item of candidates) {
+-      if (drawn >= DEEP_ZOOM_IMAGE_MAX_VISIBLE) break;
+-      const ev = item.ev;
+-      const p = item.p;
+-      const record = deepZoomImageRecords.get(ev.id);
+-      const src = record?.thumbnail || record?.image;
+-      if (!src) continue;
+-      const placement = deepZoomImagePlacement(ev, p, occupied, record);
+-      if (!placement) continue;
+-      occupied.push(placement.padded);
+-      mapTextObstacles.push(placement.padded);
+-      drawn += 1;
+-
+-      const { box, tileW, tileH, aspect, desiredWpx } = placement;
+-      const markerTheme = eventMarkerTheme(ev);
+-      const groupNode = svgEl("g", {
+-        class: "deep-zoom-image-card",
+-        tabindex: "0",
+-        role: "button",
+-        "aria-label": `Open ${ev.title}`,
+-        "data-event-id": ev.id,
+-        "data-placement-stream-id": markerTheme.streamId || "",
+-        "data-thumbnail-aspect": aspect.toFixed(3),
+-        "data-thumbnail-width": record?.thumbnailWidth || record?.imageWidth || "",
+-        "data-thumbnail-height": record?.thumbnailHeight || record?.imageHeight || ""
+-      });
+-      groupNode.appendChild(svgEl("title", {})).textContent = `${ev.title} — Wikimedia image`;
+-
+-      const edgeX = Math.max(box.x1, Math.min(box.x2, p.x));
+-      const edgeY = Math.max(box.y1, Math.min(box.y2, p.y));
+-      groupNode.appendChild(svgEl("path", {
+-        d: `M ${p.x.toFixed(2)} ${p.y.toFixed(2)} L ${edgeX.toFixed(2)} ${edgeY.toFixed(2)}`,
+-        class: "deep-zoom-image-leader"
+-      }));
+-      groupNode.appendChild(svgEl("rect", {
+-        x: box.x1, y: box.y1, width: tileW, height: tileH,
+-        rx: 1.2/Math.max(1,mapZoom), class: "deep-zoom-image-mat"
+-      }));
+-
+-      const innerPad = 1.25/Math.max(1,mapZoom);
+-      const captionH = 16/Math.max(1,mapZoom);
+-      const imageW = Math.max(1, tileW-innerPad*2);
+-      const imageH = Math.max(1, tileH-innerPad*2);
+-      groupNode.appendChild(svgEl("image", {
+-        href: src,
+-        x: box.x1 + innerPad,
+-        y: box.y1 + innerPad,
+-        width: imageW,
+-        height: imageH,
+-        preserveAspectRatio: "xMidYMid meet"
+-      }));
+-      groupNode.appendChild(svgEl("rect", {
+-        x: box.x1 + innerPad,
+-        y: box.y1 + innerPad,
+-        width: imageW,
+-        height: captionH,
+-        class: "deep-zoom-image-caption-bg"
+-      }));
+-      const captionChars = Math.max(18, Math.min(36, Math.floor(desiredWpx / 3.5)));
+-      const caption = addText(
+-        groupNode,
+-        box.x1 + tileW/2,
+-        box.y1 + innerPad + captionH*.68,
+-        ev.title.length > captionChars ? `${ev.title.slice(0,captionChars-1).trim()}…` : ev.title,
+-        "deep-zoom-image-caption",
+-        "middle"
+-      );
+-      setSvgFontSize(caption, (W <= 700 ? 7.2 : 8.2)/Math.max(1,mapZoom));
+-
+-      groupNode.addEventListener("pointerdown", evt => evt.stopPropagation());
+-      groupNode.addEventListener("click", evt => {
+-        evt.preventDefault();
+-        evt.stopPropagation();
+-        resetCardNavigationHistory();
+-        focusEvent(ev.id, { forceDirect: true });
+-      });
+-      groupNode.addEventListener("keydown", evt => {
+-        if (evt.key !== "Enter" && evt.key !== " ") return;
+-        evt.preventDefault();
+-        resetCardNavigationHistory();
+-        focusEvent(ev.id, { forceDirect: true });
+-      });
+-      group.appendChild(groupNode);
+-    }
+-  }
+ 
+ 
+   let personLifelineConsumedEventIds = new Set();
+@@ -178445,8 +178795,8 @@
+   const PERSON_LIFELINE_LANE_GUTTER_SCREEN = 6.5;
+   const PERSON_LIFELINE_LANE_PITCH_SCREEN = 12.5;
+   const PERSON_LIFELINE_LEFT_ZONE_START = .055;
+-  const PERSON_LIFELINE_LEFT_ZONE_END_AT_1X = .64;
+-  const PERSON_LIFELINE_LEFT_ZONE_END_MAX = .74;
++  const PERSON_LIFELINE_LEFT_ZONE_END_AT_1X = .66;
++  const PERSON_LIFELINE_LEFT_ZONE_END_MAX = .78;
+   const EVENT_INTERIOR_RIGHT_FRACTION = .76;
+   const PERSON_LIFELINE_REUSE_GAP_YEARS = 2;
+ 
+@@ -178460,9 +178810,9 @@
+ 
+   function personLifelineDensitySpacingBonus(candidateOrLayout) {
+     const lanes=Math.max(1,Number(candidateOrLayout?.groupLaneCount||1));
+-    if(lanes>=11)return 1.20;
+-    if(lanes>=8)return 1.14;
+-    if(lanes>=5)return 1.08;
++    if(lanes>=11)return 1.34;
++    if(lanes>=8)return 1.24;
++    if(lanes>=5)return 1.14;
+     return 1;
+   }
+ 
+@@ -178490,6 +178840,7 @@
+ 
+ 
+   const FEATURED_PERSON_LIFELINE_IDS = new Set([
++    "john-bertram-sparks",
+     "alexander-the-great",
+     "amenemhat-i",
+     "senusret-i",
+@@ -179685,6 +180036,27 @@
+     };
+   }
+ 
++  function featuredPersonInlinePathLabelLayout(layout) {
++    if(!layout?.featured||layout.renderMode==='marker'||!layout.path?.d)return null;
++    const z=Math.max(1,mapZoom);
++    const presence=featuredPersonPresenceScale(z);
++    const dense=personLifelineDenseLineage(layout.person);
++    const populationDense=!!layout.densePopulation;
++    const text=String(layout.person?.displayName||'').toUpperCase();
++    if(!text)return null;
++    const namePx=(dense?6.9:populationDense?7.05:7.25)*presence;
++    const pathScreenLength=Math.max(0,Number(layout.path?.lengthWorld||0)*z);
++    const textWidth=measuredStickyLineWidth(text,namePx);
++    const safety=(dense?18:populationDense?20:24)*presence;
++    if(pathScreenLength<textWidth+safety)return null;
++    return {
++      text,
++      namePx,
++      startOffset:'50%',
++      density:(dense||populationDense)?'dense':'normal'
++    };
++  }
++
+   function reserveHistoricalPersonLifelinePresentationSpace() {
+     if(!historicalPersonLifelineLayouts?.size)return; const z=Math.max(1,mapZoom);
+     historicalPersonLifelineLayouts.forEach(layout=>{
+@@ -180226,6 +180598,22 @@
+             labelHit.addEventListener('pointerdown',evt=>evt.stopPropagation());
+             labelHit.addEventListener('click',openPerson);
+             personGroup.appendChild(labelHit);
++          }else{
++            const inlineLabel=featuredPersonInlinePathLabelLayout(layout);
++            if(inlineLabel){
++              const inlineText=svgEl('text',{
++                class:'person-lifeline-path-label featured-person-lifeline-path-label featured-person-lifeline-inline-label',
++                'text-anchor':'middle',
++                'data-inline-density':inlineLabel.density
++              });
++              setSvgFontSize(inlineText,inlineLabel.namePx/z);
++              const inlinePath=svgEl('textPath',{
++                href:`#${layout.pathId}`,'startOffset':inlineLabel.startOffset,'method':'align','spacing':'auto'
++              });
++              inlinePath.textContent=inlineLabel.text;
++              inlineText.appendChild(inlinePath);
++              personGroup.appendChild(inlineText);
++            }
+           }
+         } else {
+           const label=svgEl('text',{class:'person-lifeline-path-label','text-anchor':'middle'});
+@@ -181943,7 +182331,7 @@
+     );
+     const personTarget = pointTarget?.closest?.("[data-person-id]") || evt.target?.closest?.("[data-person-id]");
+     const eventTarget = evt.target?.closest?.(
+-      ".event-marker[data-event-id], .event-text-bloom[data-event-id], .deep-zoom-image-card[data-event-id]"
++      ".event-marker[data-event-id], .event-text-bloom[data-event-id]"
+     );
+     const ribbon = evt.target?.closest?.(".ribbon[data-id]");
+     if (!pointTarget && !personTarget && !eventTarget && !ribbon) {
+@@ -184556,13 +184944,9 @@
+     if (phaseChangeCardLayer) root.appendChild(phaseChangeCardLayer);
+     finishRenderPhase("annotations");
+ 
+-    // Image cards are laid out after historical annotations.
+-    const deepZoomImageLayer = svgEl("g", { class: "deep-zoom-image-layer", "clip-path": "url(#eventClip)" });
+-    root.appendChild(deepZoomImageLayer);
+-    drawDeepZoomEventImagery(deepZoomImageLayer);
+-
+-    // Absolute-top hit surface for the person: later event/image furniture
+-    // cannot intercept an intended click on Alexander.
++
++    // Absolute-top hit surface for the person: later event furniture
++    // cannot intercept an intended click on a lifeline.
+     const personLifelineInteractionLayer = svgEl("g", { class: "historical-person-lifeline-interaction-layer", "clip-path": "url(#eventClip)" });
+     root.appendChild(personLifelineInteractionLayer);
+     drawHistoricalPersonLifelineInteractionOverlay(personLifelineInteractionLayer);
+@@ -184661,8 +185045,7 @@
+       visibleIntermediateYearRailCount: svg.querySelectorAll('.intermediate-year-rail').length,
+       selectedYearControlCount: document.querySelectorAll('#focusSlider, #focusNumber').length,
+       selectedYearVisualCount: svg.querySelectorAll('.focus-chip, .focus-handle, #navigatorFocusLine, .grid-line.focus').length,
+-      eventTooltipTargetCount: svg.querySelectorAll('.event-marker[data-event-id], .event-text-bloom[data-event-id], .deep-zoom-image-card[data-event-id]').length,
+-      dimensionAwareImageCount: svg.querySelectorAll('.deep-zoom-image-card[data-thumbnail-aspect]').length,
++      eventTooltipTargetCount: svg.querySelectorAll('.event-marker[data-event-id], .event-text-bloom[data-event-id]').length,
+       streamThemedMarkerCount: svg.querySelectorAll('.event-marker[data-stream-id]').length,
+       concentricCircleMarkerCount: svg.querySelectorAll('.event-marker[data-marker-geometry="concentric-circles"]').length,
+       textCount: svg.querySelectorAll("text").length,
+@@ -184694,8 +185077,6 @@
+   function beginSinglePan(pointerId) {
+     const p = pointers.get(pointerId);
+     if (!p) return;
+-    cancelDeepZoomImageWork();
+-
+     gesture = {
+       type: "pan",
+       pointerId,
+@@ -184717,8 +185098,6 @@
+   function beginPinch() {
+     const pts = [...pointers.values()].slice(0, 2);
+     if (pts.length < 2) return;
+-    cancelDeepZoomImageWork();
+-
+     const dx = pts[1].clientX - pts[0].clientX;
+     const dy = pts[1].clientY - pts[0].clientY;
+     const distance = Math.max(1, Math.hypot(dx, dy));
+@@ -184862,7 +185241,6 @@
+       // release. This preserves ordinary wheel scrolling without taxing drag.
+       syncSparksScrollToCamera("auto");
+       updateStickyStreamStrip({ live: false, force: true });
