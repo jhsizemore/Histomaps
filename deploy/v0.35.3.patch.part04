@@ -1,0 +1,194 @@
+-      scheduleDeepZoomImageryRefresh(180);
+     }
+     if (wasPinch) scheduleSemanticSceneRefresh();
+ 
+@@ -185326,7 +185704,6 @@
+       selectedId = null;
+       selectedTopologyStreamId = null;
+       focusedStreamNavigationKey = null;
+-      cancelDeepZoomImageWork();
+       setActiveRibbonStyles();
+       scheduleRender();
+     }
+@@ -185361,8 +185738,6 @@
+       syncZoomControls();
+       updateViewCopy();
+       if (navigatorVisible) updateNavigatorViewport();
+-      scheduleDeepZoomImageryRefresh(260);
+-
+       // Labels, phase cards and other viewport-dependent reading furniture are
+       // refreshed only after scrolling settles. Cached placements make revisits
+       // deterministic, while world-resident markers remain continuously visible.
+@@ -185398,6 +185773,148 @@
+     }, 40);
+   });
+ 
++  // v0.35.3 — public trust/provenance overlays + header logomark. Footer controls are emitted
++  // after this script, so opening uses delegated click handling.
++  const publicOverlayIds = new Set(["aboutOverlay", "termsOverlay"]);
++  let publicOverlayReturnFocus = null;
++
++  function openPublicInfoOverlay(id) {
++    if (!publicOverlayIds.has(id)) return;
++    const overlay = document.getElementById(id);
++    if (!overlay) return;
++    publicOverlayReturnFocus = document.activeElement;
++    overlay.hidden = false;
++    overlay.classList.remove("is-closing");
++    requestAnimationFrame(() => overlay.querySelector(".public-info-close")?.focus({ preventScroll: true }));
++  }
++
++  function closePublicInfoOverlay(overlay) {
++    if (!overlay || overlay.hidden) return;
++    overlay.classList.add("is-closing");
++    window.setTimeout(() => {
++      overlay.hidden = true;
++      overlay.classList.remove("is-closing");
++      if (publicOverlayReturnFocus && typeof publicOverlayReturnFocus.focus === "function") {
++        publicOverlayReturnFocus.focus({ preventScroll: true });
++      }
++      publicOverlayReturnFocus = null;
++    }, window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ? 0 : 200);
++  }
++
++  document.addEventListener("click", evt => {
++    const opener = evt.target?.closest?.("[data-open-public-overlay]");
++    if (opener) {
++      evt.preventDefault();
++      openPublicInfoOverlay(opener.getAttribute("data-open-public-overlay"));
++      return;
++    }
++    const closer = evt.target?.closest?.("[data-close-public-overlay]");
++    if (closer) {
++      evt.preventDefault();
++      closePublicInfoOverlay(document.getElementById(closer.getAttribute("data-close-public-overlay")));
++    }
++  });
++  document.querySelectorAll(".public-info-overlay").forEach(overlay => {
++    overlay.addEventListener("pointerdown", evt => { if (evt.target === overlay) closePublicInfoOverlay(overlay); });
++  });
++
++  // v0.35 — first-visit welcome. Keep the map itself untouched until the
++  // visitor chooses to enter, then remember dismissal locally in this browser.
++  const welcomeOverlay = document.getElementById("welcomeOverlay");
++  const welcomeEnter = document.getElementById("welcomeEnter");
++  const WELCOME_STORAGE_KEY = "histomap.v0.35.welcomeSeen";
++
++  function histomapWelcomeSeen() {
++    try { return localStorage.getItem(WELCOME_STORAGE_KEY) === "1"; }
++    catch (_err) { return false; }
++  }
++
++  function rememberHistomapWelcome() {
++    try { localStorage.setItem(WELCOME_STORAGE_KEY, "1"); }
++    catch (_err) {}
++  }
++
++  function dismissHistomapWelcome() {
++    if (!welcomeOverlay || welcomeOverlay.hidden) return;
++    rememberHistomapWelcome();
++    welcomeOverlay.classList.add("is-closing");
++    window.setTimeout(() => {
++      welcomeOverlay.hidden = true;
++      welcomeOverlay.classList.remove("is-closing");
++    }, window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ? 0 : 220);
++  }
++
++  // v0.35.1 — creator biography overlay opened from the public credit.
++  const sparksBioOverlay = document.getElementById("sparksBioOverlay");
++  const sparksBioClose = document.getElementById("sparksBioClose");
++  const sparksCreditButton = document.getElementById("sparksCreditButton");
++  let sparksBioReturnFocus = null;
++
++  function openSparksBio() {
++    if (!sparksBioOverlay) return;
++    sparksBioReturnFocus = document.activeElement;
++    sparksBioOverlay.hidden = false;
++    sparksBioOverlay.classList.remove("is-closing");
++    requestAnimationFrame(() => sparksBioClose?.focus({ preventScroll: true }));
++  }
++
++  function closeSparksBio() {
++    if (!sparksBioOverlay || sparksBioOverlay.hidden) return;
++    sparksBioOverlay.classList.add("is-closing");
++    window.setTimeout(() => {
++      sparksBioOverlay.hidden = true;
++      sparksBioOverlay.classList.remove("is-closing");
++      if (sparksBioReturnFocus && typeof sparksBioReturnFocus.focus === "function") {
++        sparksBioReturnFocus.focus({ preventScroll: true });
++      }
++      sparksBioReturnFocus = null;
++    }, window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ? 0 : 200);
++  }
++
++  // The footer is emitted after this main script, so bind the credit trigger
++  // through document delegation rather than capturing a null button at startup.
++  document.addEventListener("click", evt => {
++    const trigger = evt.target?.closest?.("#sparksCreditButton");
++    if (!trigger) return;
++    evt.preventDefault();
++    openSparksBio();
++  });
++  sparksBioClose?.addEventListener("click", closeSparksBio);
++  sparksBioOverlay?.addEventListener("pointerdown", evt => {
++    if (evt.target === sparksBioOverlay) closeSparksBio();
++  });
++
++  if (welcomeOverlay) {
++    if (!histomapWelcomeSeen()) {
++      welcomeOverlay.hidden = false;
++      requestAnimationFrame(() => welcomeEnter?.focus({ preventScroll: true }));
++    } else {
++      welcomeOverlay.hidden = true;
++    }
++  }
++  if (welcomeEnter) welcomeEnter.addEventListener("click", dismissHistomapWelcome);
++  window.addEventListener("keydown", evt => {
++    if (evt.key !== "Escape") return;
++    const openPublicOverlay = [...document.querySelectorAll(".public-info-overlay")].find(overlay => !overlay.hidden);
++    if (openPublicOverlay) {
++      evt.preventDefault();
++      evt.stopImmediatePropagation();
++      closePublicInfoOverlay(openPublicOverlay);
++      return;
++    }
++    if (sparksBioOverlay && !sparksBioOverlay.hidden) {
++      evt.preventDefault();
++      evt.stopImmediatePropagation();
++      closeSparksBio();
++      return;
++    }
++    if (welcomeOverlay && !welcomeOverlay.hidden) {
++      evt.preventDefault();
++      evt.stopImmediatePropagation();
++      dismissHistomapWelcome();
++    }
++  }, true);
++
+   document.body.classList.add("height-sparks");
+   document.body.classList.remove("height-fill");
+   syncSparksChartHeight(mapZoom);
+@@ -185408,8 +185925,6 @@
+ 
+   updateCanvasGeometry();
+   syncZoomControls();
+-  scheduleDeepZoomImageryRefresh(320);
+-
+   if (closeInteraction) {
+     closeInteraction.addEventListener("click", () => {
+       resetCardNavigationHistory();
+@@ -185424,6 +185939,14 @@
+ 
+ </script>
+ 
++    <footer class="public-credit" aria-label="Histomap credits and project information">
++      Based on <em>The Histomap</em> (1931) by <button id="sparksCreditButton" type="button" aria-haspopup="dialog" aria-controls="sparksBioOverlay">John B. Sparks</button>
++      <span class="credit-separator">·</span> Interactive implementation by <a href="https://kliawota.design" target="_blank" rel="noopener noreferrer">J. Hunter Sizemore</a>
++      <span class="credit-separator">·</span> <button type="button" data-open-public-overlay="aboutOverlay" aria-haspopup="dialog" aria-controls="aboutOverlay">About &amp; Method</button>
++      <span class="credit-separator">·</span> <button type="button" data-open-public-overlay="termsOverlay" aria-haspopup="dialog" aria-controls="termsOverlay">Terms</button>
++      <span class="credit-separator">·</span> <span class="credit-copyright">© 2026</span>
++    </footer>
++
+   </main>
+ </body>
+ </html>
