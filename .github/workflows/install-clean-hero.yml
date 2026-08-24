@@ -1,0 +1,68 @@
+name: Install verified reconstructed homepage hero
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/install-clean-hero.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reconstruct and verify hero bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .github/hero45/part00.txt .github/hero45/part01.txt .github/hero45/part02.txt .github/hero45/part03.txt .github/hero45/part04.txt .github/hero45/part05.txt | tr -d '\r\n' | base64 -d > assets/histomap-hero-live.webp
+          test "$(stat -c%s assets/histomap-hero-live.webp)" -eq 77522
+          echo 'd83d1a3056c546b532611bd09f69329553f29567e8b6d68563bb7bb681f4ca7d  assets/histomap-hero-live.webp' | sha256sum --check -
+          test "$(file --brief --mime-type assets/histomap-hero-live.webp)" = 'image/webp'
+
+      - name: Point homepage at verified local asset
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          local = '/assets/histomap-hero-live.webp?v=378'
+          raw = 'https://raw.githubusercontent.com/jhsizemore/Histomaps/dcf0e3bc1db3c14a7da64ce0b50b4d57f8b6db50/assets/histomap-hero-hires.webp'
+
+          p = Path('index.html')
+          s = p.read_text()
+          s = s.replace(raw, local)
+          s = re.sub(r'/assets/histomap-hero-(?:hires|live)\.webp\?v=\d+', local, s)
+          s = re.sub(r'assets/editorial-pass\.css\?v=\d+', 'assets/editorial-pass.css?v=378', s)
+          p.write_text(s)
+
+          p = Path('assets/editorial-pass.css')
+          s = p.read_text()
+          s = s.replace(raw, local)
+          s = re.sub(r'/assets/histomap-hero-(?:hires|live)\.webp\?v=\d+', local, s)
+          s = re.sub(r'/\* v0\.37\.\d+[^*]*\*/', '/* v0.37.8 verified reconstructed local homepage hero */', s, count=1)
+          p.write_text(s)
+
+      - name: Verify homepage references
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '/assets/histomap-hero-live.webp?v=378' index.html
+          grep -q '/assets/histomap-hero-live.webp?v=378' assets/editorial-pass.css
+          if grep -q 'raw.githubusercontent.com.*histomap-hero' index.html assets/editorial-pass.css; then
+            echo 'External hero URL remains' >&2
+            exit 1
+          fi
+
+      - name: Commit verified local hero
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'histomaps-hero-install'
+          git config user.email 'actions@users.noreply.github.com'
+          git add assets/histomap-hero-live.webp index.html assets/editorial-pass.css
+          git commit -m 'Install verified reconstructed homepage hero'
+          git push
