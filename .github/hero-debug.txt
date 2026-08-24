@@ -1,0 +1,12 @@
+TRY https://lh3.googleusercontent.com/d/1a6cvWWDOx4QcOs-dK5_l4Laj9recD2On=w1782
+/tmp/hero-candidate: HTML document, ASCII text, with very long lines (65536), with no line terminators
+bytes=906090
+TRY https://drive.google.com/thumbnail?id=1a6cvWWDOx4QcOs-dK5_l4Laj9recD2On&sz=w2000
+/tmp/hero-candidate: HTML document, ASCII text, with very long lines (65536), with no line terminators
+bytes=905697
+TRY https://drive.google.com/uc?export=view&id=1a6cvWWDOx4QcOs-dK5_l4Laj9recD2On
+/tmp/hero-candidate: HTML document, ASCII text, with very long lines (65536), with no line terminators
+bytes=905717
+TRY https://drive.usercontent.google.com/download?id=1a6cvWWDOx4QcOs-dK5_l4Laj9recD2On&export=download&confirm=t
+/tmp/hero-candidate: HTML document, ASCII text, with very long lines (65536), with no line terminators
+bytes=906377
