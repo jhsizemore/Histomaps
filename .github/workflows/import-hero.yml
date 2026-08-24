@@ -1,0 +1,50 @@
+name: Import high-resolution Histomap hero
+
+on:
+  push:
+    paths:
+      - '.github/workflows/import-hero.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import-hero:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download approved hero from Google Drive
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://drive.usercontent.google.com/download?id=1a6cvWWDOx4QcOs-dK5_l4Laj9recD2On&export=download&confirm=t'
+          curl --fail --location --retry 3 --retry-delay 2 "$URL" --output /tmp/histomap-hero.jpg
+          bytes=$(stat -c%s /tmp/histomap-hero.jpg)
+          mime=$(file --brief --mime-type /tmp/histomap-hero.jpg)
+          echo "Downloaded $bytes bytes as $mime"
+          test "$bytes" -gt 100000
+          case "$mime" in image/jpeg|image/png|image/webp) ;; *) echo 'Not an image'; exit 1 ;; esac
+          cp /tmp/histomap-hero.jpg assets/histomap-hero-hires.jpg
+
+      - name: Point homepage at local high-resolution asset
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          s = s.replace('/assets/histomap-hero-hires.webp?v=371', '/assets/histomap-hero-hires.jpg?v=372')
+          s = s.replace('/assets/histomap-hero-hires.webp', '/assets/histomap-hero-hires.jpg?v=372')
+          p.write_text(s)
+          PY
+
+      - name: Commit imported asset
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/histomap-hero-hires.jpg index.html
+          git commit -m 'Use full-resolution local Histomap hero'
+          git push
