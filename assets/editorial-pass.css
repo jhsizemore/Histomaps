@@ -1,9 +1,9 @@
-/* v0.37.0 opening-section refinement with resilient hero fallbacks */
+/* v0.37.4 homepage hero uses one verified high-resolution local asset */
 .brand img,
 .footer-brand img{width:40px;height:40px;aspect-ratio:1/1;object-fit:contain}
 
 /* HERO: the actual <img> is visible, with a second known-good local image behind it as a fallback. */
-.hero-static-map{position:relative;display:block;min-height:620px;border-radius:34px;overflow:hidden;background:#e9dfcf url('/assets/hero-world-histomap.jpg?v=370') center center/cover no-repeat;background-image:url('/assets/hero-world-histomap.jpg?v=370')!important;border:1px solid rgba(45,38,31,.14);box-shadow:0 28px 70px rgba(66,48,34,.15);text-decoration:none;isolation:isolate}
+.hero-static-map{position:relative;display:block;min-height:620px;border-radius:34px;overflow:hidden;background:#e9dfcf url('/assets/histomap-hero-hires.webp?v=374') center center/cover no-repeat;background-image:url('/assets/histomap-hero-hires.webp?v=374')!important;border:1px solid rgba(45,38,31,.14);box-shadow:0 28px 70px rgba(66,48,34,.15);text-decoration:none;isolation:isolate}
 .hero-static-map>img{display:block!important;position:absolute;inset:0;z-index:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:center center}
 .hero-static-map:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 55%,rgba(26,19,15,.10))}
 .hero-static-map .map-label{z-index:2;background:rgba(242,234,220,.95)}
