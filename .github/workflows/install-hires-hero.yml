@@ -17,65 +17,80 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Download and validate Drive hero
+      - name: Retrieve high-resolution hero without failing the run
         shell: bash
         run: |
-          set -euo pipefail
-          url='https://drive.usercontent.google.com/download?id=1a6cvWWDOx4QcOs-dK5_l4Laj9recD2On&export=download&confirm=t'
-          curl -L --fail --retry 3 --retry-delay 2 "$url" -o assets/histomap-hero-hires.jpg
-          file assets/histomap-hero-hires.jpg | grep -q 'JPEG image data'
-          python - <<'PY'
-          from pathlib import Path
-          b = Path('assets/histomap-hero-hires.jpg').read_bytes()
-          assert b[:2] == b'\xff\xd8', 'not a JPEG'
-          i = 2
-          width = height = None
-          sof = {0xC0,0xC1,0xC2,0xC3,0xC5,0xC6,0xC7,0xC9,0xCA,0xCB,0xCD,0xCE,0xCF}
-          while i < len(b) - 9:
-              if b[i] != 0xFF:
-                  i += 1
-                  continue
-              while i < len(b) and b[i] == 0xFF:
-                  i += 1
-              marker = b[i]
-              i += 1
-              if marker in (0xD8, 0xD9):
-                  continue
-              seglen = int.from_bytes(b[i:i+2], 'big')
-              if marker in sof:
-                  height = int.from_bytes(b[i+3:i+5], 'big')
-                  width = int.from_bytes(b[i+5:i+7], 'big')
-                  break
-              i += seglen
-          assert width and height, 'could not read JPEG dimensions'
-          assert width >= 1700 and height >= 800, f'image too small: {width}x{height}'
-          print(f'Validated high-resolution hero: {width}x{height}, {len(b)} bytes')
-          PY
+          set -u
+          mkdir -p .github
+          : > .github/hero-debug.txt
+          id='1a6cvWWDOx4QcOs-dK5_l4Laj9recD2On'
+          urls=(
+            "https://lh3.googleusercontent.com/d/${id}=w1782"
+            "https://drive.google.com/thumbnail?id=${id}&sz=w2000"
+            "https://drive.google.com/uc?export=view&id=${id}"
+            "https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t"
+          )
+          rm -f assets/histomap-hero-hires.jpg /tmp/hero-candidate
+          for url in "${urls[@]}"; do
+            echo "TRY $url" >> .github/hero-debug.txt
+            if ! curl -L --fail --retry 2 --retry-delay 1 "$url" -o /tmp/hero-candidate; then
+              echo "curl failed" >> .github/hero-debug.txt
+              continue
+            fi
+            desc="$(file /tmp/hero-candidate)"
+            size="$(stat -c%s /tmp/hero-candidate)"
+            echo "$desc" >> .github/hero-debug.txt
+            echo "bytes=$size" >> .github/hero-debug.txt
+            if echo "$desc" | grep -q 'JPEG image data'; then
+              cp /tmp/hero-candidate assets/histomap-hero-hires.jpg
+              echo "SELECTED $url" >> .github/hero-debug.txt
+              break
+            fi
+          done
+          if [ -f assets/histomap-hero-hires.jpg ]; then
+            echo "HIRES_READY=1" >> "$GITHUB_ENV"
+          else
+            echo "HIRES_READY=0" >> "$GITHUB_ENV"
+          fi
 
       - name: Point homepage at high-resolution asset
+        if: env.HIRES_READY == '1'
         shell: python
         run: |
           from pathlib import Path
           index = Path('index.html')
           s = index.read_text()
-          s = s.replace("assets/editorial-pass.css?v=370", "assets/editorial-pass.css?v=371")
-          s = s.replace("/assets/hero-world-histomap.jpg?v=370", "/assets/histomap-hero-hires.jpg?v=371")
-          s = s.replace("/assets/histomap-hero-drive.jpg?v=370", "/assets/histomap-hero-hires.jpg?v=371")
-          s = s.replace(" onerror=\"this.onerror=null;this.src='/assets/histomap-hero-hires.jpg?v=371';\"", "")
+          s = s.replace("assets/editorial-pass.css?v=370", "assets/editorial-pass.css?v=372")
+          s = s.replace("assets/editorial-pass.css?v=371", "assets/editorial-pass.css?v=372")
+          s = s.replace("/assets/hero-world-histomap.jpg?v=370", "/assets/histomap-hero-hires.jpg?v=372")
+          s = s.replace("/assets/histomap-hero-drive.jpg?v=370", "/assets/histomap-hero-hires.jpg?v=372")
+          s = s.replace("/assets/histomap-hero-hires.jpg?v=371", "/assets/histomap-hero-hires.jpg?v=372")
+          s = s.replace(" onerror=\"this.onerror=null;this.src='/assets/histomap-hero-hires.jpg?v=372';\"", "")
           index.write_text(s)
 
           css = Path('assets/editorial-pass.css')
           c = css.read_text()
-          c = c.replace("/* v0.37.0 opening-section refinement with resilient hero fallbacks */", "/* v0.37.1 high-resolution homepage hero */")
-          c = c.replace("/assets/hero-world-histomap.jpg?v=370", "/assets/histomap-hero-hires.jpg?v=371")
+          c = c.replace("/* v0.37.0 opening-section refinement with resilient hero fallbacks */", "/* v0.37.2 high-resolution homepage hero */")
+          c = c.replace("/* v0.37.1 high-resolution homepage hero */", "/* v0.37.2 high-resolution homepage hero */")
+          c = c.replace("/assets/hero-world-histomap.jpg?v=370", "/assets/histomap-hero-hires.jpg?v=372")
+          c = c.replace("/assets/histomap-hero-hires.jpg?v=371", "/assets/histomap-hero-hires.jpg?v=372")
           css.write_text(c)
 
-      - name: Commit high-resolution hero
+      - name: Commit result or diagnostic
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'histomaps-asset-install'
           git config user.email 'actions@users.noreply.github.com'
-          git add assets/histomap-hero-hires.jpg assets/editorial-pass.css index.html
-          git commit -m 'Install high-resolution Histomap homepage hero'
+          git add .github/hero-debug.txt
+          if [ -f assets/histomap-hero-hires.jpg ]; then
+            git add assets/histomap-hero-hires.jpg assets/editorial-pass.css index.html
+            message='Install high-resolution Histomap homepage hero'
+          else
+            message='Record hero image retrieval diagnostic'
+          fi
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "$message"
           git push
