@@ -1,0 +1,69 @@
+name: Restore homepage hero as local asset
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/restore-local-hero.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Recover verified hero from immutable Git history
+        shell: bash
+        run: |
+          set -euo pipefail
+          src='https://raw.githubusercontent.com/jhsizemore/Histomaps/dcf0e3bc1db3c14a7da64ce0b50b4d57f8b6db50/assets/histomap-hero-hires.webp'
+          curl --fail --location --retry 3 "$src" -o assets/histomap-hero-live.webp
+          bytes=$(stat -c%s assets/histomap-hero-live.webp)
+          mime=$(file --brief --mime-type assets/histomap-hero-live.webp)
+          echo "Recovered $bytes bytes as $mime"
+          test "$bytes" -gt 100000
+          test "$mime" = 'image/webp'
+
+      - name: Point homepage only at local recovered image
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          local = '/assets/histomap-hero-live.webp?v=377'
+          raw = 'https://raw.githubusercontent.com/jhsizemore/Histomaps/dcf0e3bc1db3c14a7da64ce0b50b4d57f8b6db50/assets/histomap-hero-hires.webp'
+
+          p = Path('index.html')
+          s = p.read_text()
+          s = s.replace(raw, local)
+          s = re.sub(r'assets/editorial-pass\.css\?v=\d+', 'assets/editorial-pass.css?v=377', s)
+          p.write_text(s)
+
+          p = Path('assets/editorial-pass.css')
+          s = p.read_text()
+          s = s.replace(raw, local)
+          s = re.sub(r'/\* v0\.37\.\d+[^*]*\*/', '/* v0.37.7 verified local homepage hero */', s, count=1)
+          p.write_text(s)
+
+      - name: Verify local-only hero references
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '/assets/histomap-hero-live.webp?v=377' index.html
+          grep -q '/assets/histomap-hero-live.webp?v=377' assets/editorial-pass.css
+          if grep -q 'raw.githubusercontent.com.*histomap-hero' index.html assets/editorial-pass.css; then
+            echo 'External hero URL still present' >&2
+            exit 1
+          fi
+
+      - name: Commit recovered local hero
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'histomaps-hero-restore'
+          git config user.email 'actions@users.noreply.github.com'
+          git add assets/histomap-hero-live.webp index.html assets/editorial-pass.css
+          git commit -m 'Restore homepage hero as verified local asset'
+          git push
