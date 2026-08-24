@@ -1,5 +1,6 @@
 name: Install high-resolution homepage hero
 
+# Retry after workflow was present on the default branch.
 on:
   push:
     branches: [main]
