@@ -1,10 +1,10 @@
-/* v0.36.6 opening-section refinement using Drive-supplied Histomap imagery */
+/* v0.36.8 opening-section refinement using Drive-supplied Histomap imagery */
 .brand img,
 .footer-brand img{width:40px;height:40px;aspect-ratio:1/1;object-fit:contain}
 
-/* HERO: static crop from the current interface. */
-.hero-static-map{position:relative;display:block;min-height:620px;border-radius:34px;overflow:hidden;background:#e9dfcf;border:1px solid rgba(45,38,31,.14);box-shadow:0 28px 70px rgba(66,48,34,.15);text-decoration:none;isolation:isolate}
-.hero-static-map>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center}
+/* HERO: pull the verified image directly from GitHub raw so Cloudflare's static-asset layer cannot blank it. */
+.hero-static-map{position:relative;display:block;min-height:620px;border-radius:34px;overflow:hidden;background:#e9dfcf url('https://raw.githubusercontent.com/jhsizemore/Histomaps/f6938cd8fee3252ed8755cf1f28e6c338a37aa41/assets/histomap-hero-drive.jpg') center center/cover no-repeat;border:1px solid rgba(45,38,31,.14);box-shadow:0 28px 70px rgba(66,48,34,.15);text-decoration:none;isolation:isolate}
+.hero-static-map>img{display:none!important}
 .hero-static-map:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 55%,rgba(26,19,15,.10))}
 .hero-static-map .map-label{z-index:2;background:rgba(242,234,220,.95)}
 
