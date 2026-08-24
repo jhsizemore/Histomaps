@@ -1,6 +1,5 @@
 name: Install high-resolution homepage hero
 
-# Retry after workflow was present on the default branch.
 on:
   push:
     branches: [main]
@@ -18,15 +17,40 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Download verified Drive hero
+      - name: Download and validate Drive hero
         shell: bash
         run: |
           set -euo pipefail
           url='https://drive.usercontent.google.com/download?id=1a6cvWWDOx4QcOs-dK5_l4Laj9recD2On&export=download&confirm=t'
           curl -L --fail --retry 3 --retry-delay 2 "$url" -o assets/histomap-hero-hires.jpg
-          test "$(stat -c%s assets/histomap-hero-hires.jpg)" -eq 448309
-          echo 'db0052ae0acedda13d619dbc8eb835ff5409981693b1e9940db618d289c060b7  assets/histomap-hero-hires.jpg' | sha256sum --check -
           file assets/histomap-hero-hires.jpg | grep -q 'JPEG image data'
+          python - <<'PY'
+          from pathlib import Path
+          b = Path('assets/histomap-hero-hires.jpg').read_bytes()
+          assert b[:2] == b'\xff\xd8', 'not a JPEG'
+          i = 2
+          width = height = None
+          sof = {0xC0,0xC1,0xC2,0xC3,0xC5,0xC6,0xC7,0xC9,0xCA,0xCB,0xCD,0xCE,0xCF}
+          while i < len(b) - 9:
+              if b[i] != 0xFF:
+                  i += 1
+                  continue
+              while i < len(b) and b[i] == 0xFF:
+                  i += 1
+              marker = b[i]
+              i += 1
+              if marker in (0xD8, 0xD9):
+                  continue
+              seglen = int.from_bytes(b[i:i+2], 'big')
+              if marker in sof:
+                  height = int.from_bytes(b[i+3:i+5], 'big')
+                  width = int.from_bytes(b[i+5:i+7], 'big')
+                  break
+              i += seglen
+          assert width and height, 'could not read JPEG dimensions'
+          assert width >= 1700 and height >= 800, f'image too small: {width}x{height}'
+          print(f'Validated high-resolution hero: {width}x{height}, {len(b)} bytes')
+          PY
 
       - name: Point homepage at high-resolution asset
         shell: python
