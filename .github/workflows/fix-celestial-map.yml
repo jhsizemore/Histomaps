@@ -1,0 +1,31 @@
+name: Fix Celestial Map Met image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-celestial-map.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update stale Met image id
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -i 's#/iiif/358366/746613/main-image#/iiif/358366/725771/main-image#g' index.html
+          grep -q '/iiif/358366/725771/main-image' index.html
+          ! grep -q '/iiif/358366/746613/main-image' index.html
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name 'histomaps-image-fix'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Fix Celestial Map Met image source'
+          git push
