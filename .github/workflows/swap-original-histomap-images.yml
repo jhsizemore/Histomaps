@@ -1,0 +1,52 @@
+name: Use uploaded original Histomap images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/swap-original-histomap-images.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Replace legacy image URLs with uploaded local assets
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text()
+          old_detail = 'https://raw.githubusercontent.com/jhsizemore/Histomaps/f6938cd8fee3252ed8755cf1f28e6c338a37aa41/assets/histomap-original-drive.jpg'
+          old_full = 'https://raw.githubusercontent.com/jhsizemore/Histomaps/f6938cd8fee3252ed8755cf1f28e6c338a37aa41/assets/histomap-long-drive.jpg'
+          assert old_detail in s, 'legacy detail image URL not found'
+          assert old_full in s, 'legacy full image URL not found'
+          s = s.replace(old_detail, '/assets/histomap-original.jpg')
+          s = s.replace(old_full, '/assets/histomap-long.jpg')
+          p.write_text(s)
+
+      - name: Verify local assets and references
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(stat -c%s assets/histomap-original.jpg)" -gt 400000
+          test "$(stat -c%s assets/histomap-long.jpg)" -gt 80000
+          grep -q 'src="/assets/histomap-original.jpg"' index.html
+          grep -q 'src="/assets/histomap-long.jpg"' index.html
+          ! grep -q 'histomap-original-drive.jpg' index.html
+          ! grep -q 'histomap-long-drive.jpg' index.html
+
+      - name: Commit image swap
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'histomaps-image-update'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Use uploaded original Histomap images'
+          git push
