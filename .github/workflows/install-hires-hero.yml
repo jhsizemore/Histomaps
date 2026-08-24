@@ -1,0 +1,56 @@
+name: Install high-resolution homepage hero
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/install-hires-hero.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download verified Drive hero
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://drive.usercontent.google.com/download?id=1a6cvWWDOx4QcOs-dK5_l4Laj9recD2On&export=download&confirm=t'
+          curl -L --fail --retry 3 --retry-delay 2 "$url" -o assets/histomap-hero-hires.jpg
+          test "$(stat -c%s assets/histomap-hero-hires.jpg)" -eq 448309
+          echo 'db0052ae0acedda13d619dbc8eb835ff5409981693b1e9940db618d289c060b7  assets/histomap-hero-hires.jpg' | sha256sum --check -
+          file assets/histomap-hero-hires.jpg | grep -q 'JPEG image data'
+
+      - name: Point homepage at high-resolution asset
+        shell: python
+        run: |
+          from pathlib import Path
+          index = Path('index.html')
+          s = index.read_text()
+          s = s.replace("assets/editorial-pass.css?v=370", "assets/editorial-pass.css?v=371")
+          s = s.replace("/assets/hero-world-histomap.jpg?v=370", "/assets/histomap-hero-hires.jpg?v=371")
+          s = s.replace("/assets/histomap-hero-drive.jpg?v=370", "/assets/histomap-hero-hires.jpg?v=371")
+          s = s.replace(" onerror=\"this.onerror=null;this.src='/assets/histomap-hero-hires.jpg?v=371';\"", "")
+          index.write_text(s)
+
+          css = Path('assets/editorial-pass.css')
+          c = css.read_text()
+          c = c.replace("/* v0.37.0 opening-section refinement with resilient hero fallbacks */", "/* v0.37.1 high-resolution homepage hero */")
+          c = c.replace("/assets/hero-world-histomap.jpg?v=370", "/assets/histomap-hero-hires.jpg?v=371")
+          css.write_text(c)
+
+      - name: Commit high-resolution hero
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'histomaps-asset-install'
+          git config user.email 'actions@users.noreply.github.com'
+          git add assets/histomap-hero-hires.jpg assets/editorial-pass.css index.html
+          git commit -m 'Install high-resolution Histomap homepage hero'
+          git push
