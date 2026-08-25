@@ -23,3 +23,8 @@ The intended next production step is to replace the bootstrap/patch assembly wit
 The project begins with John B. Sparks's 1931 *The Histomap: Four Thousand Years of World History*. Histomaps.org is an independent interactive implementation and extension of the visual format by J. Hunter Sizemore.
 
 Implementation and original editorial work © 2026 J. Hunter Sizemore.
+
+
+## World Histomap production
+
+`/world/` is the protected v0.36.2 mobile production build. The readable development master, deployment patches, mobile source layers, and QA scaffolding are intentionally not kept on this public production branch. HTML, CSS and JavaScript are minified for deployment.

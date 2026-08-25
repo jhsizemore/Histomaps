@@ -1,48 +1,5 @@
-/* Histomap v0.36.1 development service worker. Same-origin app shell + runtime map assets. */
-const CACHE = 'histomap-world-v0.36.1-r2';
-const SHELL = ['./','./mobile-v0.36.css?v=3','./mobile-v0.36.1-fixes.css?v=1','./mobile-v0.36.js?v=3','./mobile-v0.36.1-fixes.js?v=1','./manifest.webmanifest','../assets/favicon.svg','../assets/histomap-logo.svg'];
-self.addEventListener('install', event => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE);
-    await Promise.allSettled(SHELL.map(url => cache.add(url)));
-    await self.skipWaiting();
-  })());
-});
-self.addEventListener('activate', event => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.filter(key => key.startsWith('histomap-world-') && key !== CACHE).map(key => caches.delete(key)));
-    await self.clients.claim();
-  })());
-});
-self.addEventListener('fetch', event => {
-  const request = event.request;
-  if (request.method !== 'GET') return;
-  const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
-  if (request.mode === 'navigate') {
-    event.respondWith((async () => {
-      try {
-        const response = await fetch(request);
-        const cache = await caches.open(CACHE);
-        cache.put(request,response.clone()).catch(() => {});
-        return response;
-      } catch (_) {
-        return (await caches.match(request)) || (await caches.match('./'));
-      }
-    })());
-    return;
-  }
-  event.respondWith((async () => {
-    const cached = await caches.match(request);
-    const network = fetch(request).then(async response => {
-      if (response && response.ok) {
-        const cache = await caches.open(CACHE);
-        cache.put(request,response.clone()).catch(() => {});
-      }
-      return response;
-    }).catch(() => null);
-    if (cached) { event.waitUntil(network); return cached; }
-    return (await network) || Response.error();
-  })());
-});
+const CACHE='histomap-world-v0.36.2-production';
+const SHELL=['./','./manifest.webmanifest','../assets/favicon.svg','../assets/histomap-logo.svg'];
+self.addEventListener('install',e=>e.waitUntil((async()=>{const c=await caches.open(CACHE);await Promise.allSettled(SHELL.map(u=>c.add(u)));await self.skipWaiting()})()));
+self.addEventListener('activate',e=>e.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('histomap-world-')&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim()})()));
+self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);if(u.origin!==self.location.origin)return;if(r.mode==='navigate'){e.respondWith((async()=>{try{const x=await fetch(r);const c=await caches.open(CACHE);c.put(r,x.clone()).catch(()=>{});return x}catch(_){return(await caches.match(r))||(await caches.match('./'))}})());return}e.respondWith((async()=>{const hit=await caches.match(r);const net=fetch(r).then(async x=>{if(x&&x.ok){const c=await caches.open(CACHE);c.put(r,x.clone()).catch(()=>{})}return x}).catch(()=>null);if(hit){e.waitUntil(net);return hit}return(await net)||Response.error()})())});
