@@ -56,13 +56,16 @@ assert(await page.locator('.hm-search-result').count() > 0, 'Search returned no 
 await page.locator('.hm-command-close').click();
 console.log('PASS search opens, filters, and closes');
 
-// Layer toggles.
+// Layer toggles — tap the visible switch/label surface, as a finger would.
 await page.locator('[data-action="layers"]').click();
 const eventsToggle = page.locator('[data-layer="events"]');
-await eventsToggle.uncheck();
+const eventsRow = eventsToggle.locator('xpath=ancestor::label[1]');
+await eventsRow.locator('i').click();
 assert(await page.evaluate(() => document.body.classList.contains('hm-layer-events-off')), 'Events layer did not turn off');
-await eventsToggle.check();
+assert(!(await eventsToggle.isChecked()), 'Events checkbox stayed checked after visible switch tap');
+await eventsRow.locator('i').click();
 assert(!(await page.evaluate(() => document.body.classList.contains('hm-layer-events-off'))), 'Events layer did not turn back on');
+assert(await eventsToggle.isChecked(), 'Events checkbox did not return to checked');
 await page.locator('.hm-command-close').click();
 console.log('PASS layers toggle');
 
