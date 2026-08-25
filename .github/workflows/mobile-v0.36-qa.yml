@@ -1,4 +1,4 @@
-name: Histomap v0.36 mobile QA
+name: Histomap v0.36.1 mobile QA
 
 on:
   push:
@@ -20,25 +20,44 @@ jobs:
       - name: Check out development branch
         uses: actions/checkout@v4
 
-      - name: Verify mobile layer is wired
+      - name: Verify v0.36.1 interaction layer
         shell: bash
         run: |
           set -euo pipefail
           test -s world/mobile-v0.36.css
           test -s world/mobile-v0.36.js
-          grep -q 'mobile-v0.36.css' world/index.html
-          grep -q 'mobile-v0.36.js' world/index.html
-          grep -q 'touch-action: none' world/mobile-v0.36.css
-          grep -q 'visualViewport' world/mobile-v0.36.js
-          grep -q 'assistSmallTap' world/mobile-v0.36.js
+          test -s world/manifest.webmanifest
+          test -s world/sw.js
+          node --check world/mobile-v0.36.js
+          python3 -m json.tool world/manifest.webmanifest >/dev/null
+          grep -q 'mobile-v0.36.css?v=2' world/index.html
+          grep -q 'mobile-v0.36.js?v=2' world/index.html
+          grep -q 'manifest.webmanifest' world/index.html
+          grep -q 'HISTOMAP_MOBILE_V0361' world/mobile-v0.36.js
+          grep -q 'startInertia' world/mobile-v0.36.js
+          grep -q 'detectDoubleTap' world/mobile-v0.36.js
+          grep -q 'openSearch' world/mobile-v0.36.js
+          grep -q 'openLayers' world/mobile-v0.36.js
+          grep -q 'openJourneys' world/mobile-v0.36.js
+          grep -q 'enhanceHitTargets' world/mobile-v0.36.js
+          grep -q 'cullOffscreenDetail' world/mobile-v0.36.js
+          grep -q 'serviceWorker.register' world/mobile-v0.36.js
+          grep -q 'hm-thumb-dock' world/mobile-v0.36.css
+          grep -q 'hm-mobile-sheet.hm-sheet-full' world/mobile-v0.36.css
+          grep -q 'hm-zoom-overview' world/mobile-v0.36.css
+          grep -q '#timelineNavigator.visible' world/mobile-v0.36.css
+          grep -q 'person-lifeline-stem-hit.hm-expanded-person-hit' world/mobile-v0.36.css
 
       - name: Serve development build
         shell: bash
         run: |
+          set -euo pipefail
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/histomap-http.log 2>&1 &
           echo $! >/tmp/histomap-http.pid
           sleep 2
           curl --fail --silent http://127.0.0.1:8765/world/ >/dev/null
+          curl --fail --silent http://127.0.0.1:8765/world/manifest.webmanifest >/dev/null
+          curl --fail --silent http://127.0.0.1:8765/world/sw.js >/dev/null
 
       - name: Resolve Chrome
         id: chrome
@@ -50,7 +69,7 @@ jobs:
           echo "path=$CHROME" >> "$GITHUB_OUTPUT"
           "$CHROME" --version
 
-      - name: Smoke test phone portrait and landscape viewports
+      - name: Smoke test mobile interaction system
         shell: bash
         env:
           CHROME: ${{ steps.chrome.outputs.path }}
@@ -58,25 +77,17 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/histomap-mobile-qa
           for CASE in 360x800 390x844 430x932 844x390; do
-            W="${CASE%x*}"
-            H="${CASE#*x}"
-            OUT="/tmp/histomap-mobile-qa/${CASE}.html"
-            "$CHROME" \
-              --headless=new \
-              --no-sandbox \
-              --disable-gpu \
-              --disable-dev-shm-usage \
-              --hide-scrollbars \
-              --window-size="$W,$H" \
-              --virtual-time-budget=12000 \
-              --dump-dom \
-              http://127.0.0.1:8765/world/ > "$OUT"
+            W="${CASE%x*}"; H="${CASE#*x}"; OUT="/tmp/histomap-mobile-qa/${CASE}.html"
+            "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --window-size="$W,$H" --virtual-time-budget=16000 --dump-dom "http://127.0.0.1:8765/world/?hmqa=1" > "$OUT"
             grep -q '<svg id="histomap"' "$OUT"
-            grep -q 'mobile-v0.36.css' "$OUT"
-            grep -q 'mobile-v0.36.js' "$OUT"
             grep -Eq '<body[^>]*class="[^"]*histomap-mobile' "$OUT"
-            grep -q 'HISTOMAP_MOBILE_V036' world/mobile-v0.36.js
-            echo "PASS $CASE"
+            grep -q 'data-hm-qa="1"' "$OUT"
+            grep -q 'data-hm-mobile-ready="true"' "$OUT"
+            grep -q 'class="hm-thumb-dock"' "$OUT"
+            grep -q 'class="hm-mobile-context"' "$OUT"
+            grep -q 'class="hm-command-sheet"' "$OUT"
+            grep -q 'data-hm-semantic-band=' "$OUT"
+            echo "PASS v0.36.1 $CASE"
           done
 
       - name: Smoke test desktop remains desktop
@@ -86,48 +97,34 @@ jobs:
         run: |
           set -euo pipefail
           OUT=/tmp/histomap-mobile-qa/1280x800.html
-          "$CHROME" \
-            --headless=new \
-            --no-sandbox \
-            --disable-gpu \
-            --disable-dev-shm-usage \
-            --hide-scrollbars \
-            --window-size=1280,800 \
-            --virtual-time-budget=12000 \
-            --dump-dom \
-            http://127.0.0.1:8765/world/ > "$OUT"
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --window-size=1280,800 --virtual-time-budget=14000 --dump-dom http://127.0.0.1:8765/world/ > "$OUT"
           grep -q '<svg id="histomap"' "$OUT"
-          if grep -Eq '<body[^>]*class="[^"]*histomap-mobile' "$OUT"; then
-            echo 'Desktop viewport incorrectly entered mobile mode.' >&2
-            exit 1
-          fi
+          if grep -Eq '<body[^>]*class="[^"]*histomap-mobile' "$OUT"; then echo 'Desktop viewport incorrectly entered mobile mode.' >&2; exit 1; fi
           echo 'PASS 1280x800 desktop guard'
 
-      - name: Capture QA screenshots
+      - name: Capture post-onboarding mobile UI
         shell: bash
         env:
           CHROME: ${{ steps.chrome.outputs.path }}
         run: |
           set -euo pipefail
           for CASE in 360x800 390x844 430x932 844x390; do
-            W="${CASE%x*}"
-            H="${CASE#*x}"
-            "$CHROME" \
-              --headless=new \
-              --no-sandbox \
-              --disable-gpu \
-              --disable-dev-shm-usage \
-              --hide-scrollbars \
-              --window-size="$W,$H" \
-              --virtual-time-budget=12000 \
-              --screenshot="/tmp/histomap-mobile-qa/${CASE}.png" \
-              http://127.0.0.1:8765/world/
+            W="${CASE%x*}"; H="${CASE#*x}"
+            "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --window-size="$W,$H" --virtual-time-budget=16000 --screenshot="/tmp/histomap-mobile-qa/${CASE}.png" "http://127.0.0.1:8765/world/?hmqa=1"
           done
+
+      - name: Capture welcome layout guard
+        shell: bash
+        env:
+          CHROME: ${{ steps.chrome.outputs.path }}
+        run: |
+          set -euo pipefail
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --hide-scrollbars --window-size=390,844 --virtual-time-budget=12000 --screenshot="/tmp/histomap-mobile-qa/390x844-welcome.png" http://127.0.0.1:8765/world/
 
       - name: Upload mobile QA evidence
         uses: actions/upload-artifact@v4
         with:
-          name: histomap-v0.36-mobile-qa
+          name: histomap-v0.36.1-mobile-qa
           path: /tmp/histomap-mobile-qa/
           if-no-files-found: error
           retention-days: 7

@@ -5,17 +5,18 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#eee5d6">
   <meta name="description" content="Explore four thousand years of world history as flowing streams, events and human lifelines.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="canonical" href="https://histomaps.org/world/">
+  <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="../assets/favicon.svg?v=366" type="image/svg+xml">
-  <title>The World Histomap — v0.36 Mobile Development</title>
+  <title>The World Histomap — v0.36.1 Mobile Development</title>
   <style>
     html,body{height:100%;margin:0;background:#eee5d6;color:#2b241d;font-family:Georgia,"Times New Roman",serif}
-    body{display:grid;place-items:center}
-    main{width:min(560px,calc(100% - 40px));text-align:center}
+    body{display:grid;place-items:center}main{width:min(560px,calc(100% - 40px));text-align:center}
     h1{margin:0 0 12px;font-weight:500;letter-spacing:-.03em;font-size:clamp(38px,8vw,64px)}
     p{margin:0;color:#66594d;font:600 12px/1.5 "Helvetica Neue",Arial,sans-serif;letter-spacing:.04em;text-transform:uppercase}
-    .bar{height:2px;width:160px;margin:22px auto 0;background:rgba(70,55,42,.15);overflow:hidden}
-    .bar:after{content:"";display:block;height:100%;width:48%;background:#776153;animation:load 1.15s ease-in-out infinite alternate}
+    .bar{height:2px;width:160px;margin:22px auto 0;background:rgba(70,55,42,.15);overflow:hidden}.bar:after{content:"";display:block;height:100%;width:48%;background:#776153;animation:load 1.15s ease-in-out infinite alternate}
     @keyframes load{from{transform:translateX(-70%)}to{transform:translateX(180%)}}
     #error{display:none;margin-top:18px;color:#7b2f28;text-transform:none;letter-spacing:0;font-size:13px}
     .back{position:fixed;left:16px;top:14px;z-index:3;font:700 10px/1 Arial,sans-serif;letter-spacing:.09em;text-transform:uppercase;text-decoration:none;color:#66594d;border:1px solid rgba(70,55,42,.18);padding:9px 11px;border-radius:999px;background:rgba(238,229,214,.8);backdrop-filter:blur(6px)}
@@ -23,17 +24,11 @@
 </head>
 <body>
 <a class="back" href="../" aria-label="Back to Histomaps.org">← Histomaps.org</a>
-<main>
-  <h1>THE WORLD HISTOMAP</h1>
-  <p>Preparing the v0.36 mobile development build</p>
-  <div class="bar" aria-hidden="true"></div>
-  <p id="error">The Histomap could not be assembled. Please reload the page.</p>
-</main>
+<main><h1>THE WORLD HISTOMAP</h1><p>Preparing the v0.36.1 mobile interaction build</p><div class="bar" aria-hidden="true"></div><p id="error">The Histomap could not be assembled. Please reload the page.</p></main>
 <script>
 (() => {
   const basePath = '../histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html';
   const patchPaths = [1,2,3,4].map(n => `../deploy/v0.35.3.patch.part0${n}`);
-
   function applyUnifiedPatch(source, patch) {
     const sourceHadFinalNewline = source.endsWith('\n');
     let lines = source.replace(/\r\n/g,'\n').split('\n');
@@ -45,17 +40,15 @@
       if (!m) continue;
       const oldStart = Number(m[1]);
       const oldCount = m[2] === undefined ? 1 : Number(m[2]);
-      const replacement = [];
-      const expected = [];
+      const replacement = [], expected = [];
       i++;
       for (; i < p.length && !p[i].startsWith('@@ '); i++) {
         const row = p[i];
         if (row.startsWith('--- ') || row.startsWith('+++ ') || row === '\\ No newline at end of file') continue;
-        const tag = row[0];
-        const body = row.slice(1);
-        if (tag === ' ') { expected.push(body); replacement.push(body); }
-        else if (tag === '-') expected.push(body);
-        else if (tag === '+') replacement.push(body);
+        const tag = row[0], text = row.slice(1);
+        if (tag === ' ') { expected.push(text); replacement.push(text); }
+        else if (tag === '-') expected.push(text);
+        else if (tag === '+') replacement.push(text);
       }
       i--;
       const at = oldStart - 1 + offset;
@@ -66,27 +59,26 @@
     }
     return lines.join('\n') + (sourceHadFinalNewline ? '\n' : '');
   }
-
   async function boot() {
-    const responses = await Promise.all([basePath, ...patchPaths].map(path => fetch(path, {cache:'no-cache'})));
-    responses.forEach((response, i) => { if (!response.ok) throw new Error(`Could not load ${i === 0 ? basePath : patchPaths[i-1]}`); });
+    const responses = await Promise.all([basePath, ...patchPaths].map(path => fetch(path,{cache:'no-cache'})));
+    responses.forEach((response,i) => { if (!response.ok) throw new Error(`Could not load ${i === 0 ? basePath : patchPaths[i-1]}`); });
     const texts = await Promise.all(responses.map(response => response.text()));
-    let html = applyUnifiedPatch(texts[0], texts.slice(1).join(''));
+    let html = applyUnifiedPatch(texts[0],texts.slice(1).join(''));
     html = html.replaceAll('src="assets/histomap-logo.svg"','src="../assets/histomap-logo.svg?v=366"');
     html = html.replaceAll('href="assets/favicon.svg"','href="../assets/favicon.svg?v=366"');
-    if (!/<link[^>]+rel=["']icon["']/i.test(html)) {
-      html = html.replace('</head>', '<link rel="icon" href="../assets/favicon.svg?v=366" type="image/svg+xml">\n</head>');
-    }
-    html = html.replace('</head>', '<link rel="stylesheet" href="./mobile-v0.36.css?v=1">\n<script src="./mobile-v0.36.js?v=1" defer><\/script>\n</head>');
-    document.open();
-    document.write(html);
-    document.close();
+    if (!/<link[^>]+rel=["']icon["']/i.test(html)) html = html.replace('</head>','<link rel="icon" href="../assets/favicon.svg?v=366" type="image/svg+xml">\n</head>');
+    const mobileHead = [
+      '<meta name="theme-color" content="#eee5d6">',
+      '<meta name="apple-mobile-web-app-capable" content="yes">',
+      '<meta name="apple-mobile-web-app-status-bar-style" content="default">',
+      '<link rel="manifest" href="./manifest.webmanifest">',
+      '<link rel="stylesheet" href="./mobile-v0.36.css?v=2">',
+      '<script src="./mobile-v0.36.js?v=2" defer><\/script>'
+    ].join('\n');
+    html = html.replace('</head>',`${mobileHead}\n</head>`);
+    document.open(); document.write(html); document.close();
   }
-
-  boot().catch(error => {
-    console.error('Histomaps bootstrap failed:', error);
-    document.getElementById('error').style.display = 'block';
-  });
+  boot().catch(error => { console.error('Histomaps bootstrap failed:',error); document.getElementById('error').style.display = 'block'; });
 })();
 </script>
 </body>
