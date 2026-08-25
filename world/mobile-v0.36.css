@@ -329,6 +329,59 @@ body.histomap-mobile.mobile-interacting #histomap * {
   body.histomap-mobile .sparks-bio-card,
   body.histomap-mobile .public-info-card {
     max-height: calc(var(--hm-mobile-vh) - 14px) !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin;
+  }
+
+  body.histomap-mobile .welcome-overlay,
+  body.histomap-mobile .sparks-bio-overlay,
+  body.histomap-mobile .public-info-overlay {
+    padding: 7px calc(8px + var(--hm-mobile-safe-right)) calc(7px + var(--hm-mobile-safe-bottom)) calc(8px + var(--hm-mobile-safe-left)) !important;
+  }
+
+  body.histomap-mobile .welcome-card,
+  body.histomap-mobile .public-info-card {
+    padding: 14px 20px calc(12px + var(--hm-mobile-safe-bottom)) !important;
+  }
+
+  body.histomap-mobile .welcome-card h2,
+  body.histomap-mobile .public-info-card h2,
+  body.histomap-mobile .sparks-bio-content h2 {
+    margin-top: 5px !important;
+    margin-bottom: 8px !important;
+    font-size: 30px !important;
+    line-height: 1 !important;
+  }
+
+  body.histomap-mobile .welcome-card p,
+  body.histomap-mobile .public-info-card p,
+  body.histomap-mobile .public-info-card li,
+  body.histomap-mobile .sparks-bio-content p {
+    margin-top: 6px !important;
+    margin-bottom: 6px !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+  }
+
+  body.histomap-mobile .welcome-card blockquote,
+  body.histomap-mobile .welcome-card aside {
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  body.histomap-mobile .welcome-actions {
+    margin-top: 9px !important;
+    gap: 6px !important;
+  }
+
+  body.histomap-mobile .welcome-enter {
+    min-height: 44px !important;
+  }
+
+  body.histomap-mobile .sparks-bio-content {
+    padding: 16px 20px calc(14px + var(--hm-mobile-safe-bottom)) !important;
   }
 }
 
