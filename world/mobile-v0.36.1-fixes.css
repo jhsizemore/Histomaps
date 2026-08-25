@@ -1,0 +1,65 @@
+/* v0.36.1 mobile refinement: reclaim map height and simplify the persistent stream rail. */
+@media (max-width: 820px) {
+  :root { --stream-strip-height: 34px !important; }
+
+  body.histomap-mobile .sticky-stream-strip {
+    height: var(--stream-strip-height) !important;
+    background: rgba(247,241,227,.965) !important;
+    box-shadow: 0 1px 0 rgba(255,255,255,.5), 0 3px 8px rgba(56,45,30,.035) !important;
+  }
+
+  body.histomap-mobile .sticky-top-year-box,
+  body.histomap-mobile .sticky-stream-region,
+  body.histomap-mobile .sticky-stream-rule,
+  body.histomap-mobile .sticky-stream-connectors {
+    display: none !important;
+  }
+
+  body.histomap-mobile .sticky-stream-slot {
+    justify-content: flex-start !important;
+    padding: 8px 2px 2px !important;
+  }
+
+  body.histomap-mobile .sticky-stream-slot::before {
+    top: 5px !important;
+    bottom: 5px !important;
+    opacity: .52 !important;
+  }
+
+  body.histomap-mobile .sticky-stream-title {
+    font-size: clamp(6.2px, 1.8vw, 7.5px) !important;
+    line-height: 1 !important;
+    letter-spacing: .035em !important;
+    text-overflow: clip !important;
+  }
+
+  body.histomap-mobile .sticky-stream-title-line {
+    display: inline !important;
+    white-space: nowrap !important;
+  }
+
+  body.histomap-mobile .sticky-stream-title-line + .sticky-stream-title-line::before {
+    content: " ";
+  }
+
+  body.histomap-mobile .sticky-stream-diamond {
+    width: 3px !important;
+    height: 3px !important;
+    margin-top: 6px !important;
+    opacity: .76 !important;
+  }
+}
+
+@media (max-width: 430px) {
+  :root { --stream-strip-height: 32px !important; }
+  body.histomap-mobile .sticky-stream-slot { padding-top: 7px !important; }
+  body.histomap-mobile .sticky-stream-title { font-size: clamp(5.9px, 1.85vw, 7px) !important; }
+  body.histomap-mobile .sticky-stream-diamond { margin-top: 5px !important; }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  :root { --stream-strip-height: 28px !important; }
+  body.histomap-mobile .sticky-stream-slot { padding-top: 6px !important; }
+  body.histomap-mobile .sticky-stream-title { font-size: 6.2px !important; }
+  body.histomap-mobile .sticky-stream-diamond { display: none !important; }
+}
