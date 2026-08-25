@@ -7,14 +7,14 @@
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="./manifest.webmanifest">
-<title>Histomap Mobile Preview — Discipline Pass 1</title>
+<title>Histomap Mobile Preview — Discipline Pass 2</title>
 <style>
-*{box-sizing:border-box}html,body{position:fixed;inset:0;width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none;background:#eee5d6;color:#2d241c;font-family:Georgia,"Times New Roman",serif}#mapFrame{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#eee5d6}.preview-brand{position:fixed;z-index:1000;top:calc(env(safe-area-inset-top,0px) + 5px);left:calc(env(safe-area-inset-left,0px) + 6px);height:25px;display:flex;align-items:center;gap:5px;padding:3px 7px 3px 4px;border:1px solid rgba(65,49,36,.10);border-radius:999px;background:rgba(248,242,230,.74);box-shadow:0 2px 10px rgba(42,31,22,.06);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);pointer-events:none}.preview-brand img{width:18px;height:18px;border-radius:50%}.preview-brand span{font:900 7px/1 Arial,sans-serif;letter-spacing:.12em;color:rgba(62,47,36,.75)}.target-pill{position:fixed;z-index:1002;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 55px);transform:translateX(-50%);max-width:min(78vw,360px);min-width:150px;display:flex;align-items:baseline;justify-content:center;gap:6px;padding:6px 10px 7px;border:1px solid rgba(65,49,36,.14);border-radius:999px;background:rgba(250,245,235,.91);box-shadow:0 4px 16px rgba(42,31,22,.10);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);pointer-events:none;white-space:nowrap}.target-pill strong{min-width:0;overflow:hidden;text-overflow:ellipsis;font:600 12px/1.05 Georgia,"Times New Roman",serif;color:#34291f}.target-pill span{flex:0 0 auto;font:900 7px/1 Arial,sans-serif;letter-spacing:.055em;text-transform:uppercase;color:#78685b}.target-reticle{position:fixed;z-index:1001;left:50%;top:46%;width:17px;height:17px;transform:translate(-50%,-50%);border:1px solid rgba(72,51,36,.54);border-radius:50%;box-shadow:0 0 0 2px rgba(248,242,230,.45);pointer-events:none}.target-reticle:before,.target-reticle:after{content:"";position:absolute;background:rgba(72,51,36,.60)}.target-reticle:before{left:50%;top:-5px;width:1px;height:25px;transform:translateX(-50%)}.target-reticle:after{top:50%;left:-5px;height:1px;width:25px;transform:translateY(-50%)}.target-dot{position:absolute;left:50%;top:50%;width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;background:#5c4332}.rotate-hint{position:fixed;z-index:1003;top:calc(env(safe-area-inset-top,0px) + 36px);left:50%;transform:translateX(-50%);display:none;align-items:center;gap:7px;padding:7px 10px;border:1px solid rgba(65,49,36,.13);border-radius:999px;background:rgba(250,245,235,.94);box-shadow:0 5px 16px rgba(42,31,22,.10);font:800 8px/1 Arial,sans-serif;letter-spacing:.04em;color:#5e4a3c;pointer-events:none;white-space:nowrap;transition:opacity .45s ease,transform .45s ease}.rotate-hint b{font-size:16px;font-weight:400;line-height:8px}.rotate-hint.fade{opacity:0;transform:translate(-50%,-5px)}@media (orientation:portrait) and (max-width:820px){.rotate-hint{display:flex}}@media (orientation:landscape){.target-reticle{top:50%}.target-pill{bottom:calc(env(safe-area-inset-bottom,0px) + 49px);padding-top:5px;padding-bottom:6px}.preview-brand{height:22px}.preview-brand img{width:15px;height:15px}}
+*{box-sizing:border-box}html,body{position:fixed;inset:0;width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none;background:#eee5d6;color:#2d241c;font-family:Georgia,"Times New Roman",serif}#mapFrame{position:fixed;z-index:0;inset:0;width:100%;height:100%;border:0;display:block;background:#eee5d6}.preview-brand{position:fixed;z-index:1000;top:calc(env(safe-area-inset-top,0px) + 4px);left:calc(env(safe-area-inset-left,0px) + 5px);height:24px;display:flex;align-items:center;gap:5px;padding:3px 7px 3px 4px;border:1px solid rgba(65,49,36,.10);border-radius:999px;background:rgba(248,242,230,.72);box-shadow:0 2px 10px rgba(42,31,22,.06);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);pointer-events:none;transition:transform .18s cubic-bezier(.2,.78,.25,1),opacity .14s ease}.preview-brand img{width:17px;height:17px;border-radius:50%}.preview-brand span{font:900 7px/1 Arial,sans-serif;letter-spacing:.12em;color:rgba(62,47,36,.75)}.preview-brand.chrome-hidden{transform:translateY(calc(-100% - env(safe-area-inset-top,0px) - 8px));opacity:0}.target-pill{position:fixed;z-index:1002;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 45px);transform:translateX(-50%);max-width:min(80vw,380px);min-width:145px;display:flex;align-items:baseline;justify-content:center;gap:6px;padding:5px 9px 6px;border:1px solid rgba(65,49,36,.13);border-radius:999px;background:rgba(250,245,235,.88);box-shadow:0 3px 14px rgba(42,31,22,.09);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);pointer-events:none;white-space:nowrap}.target-pill strong{min-width:0;overflow:hidden;text-overflow:ellipsis;font:600 11.5px/1.05 Georgia,"Times New Roman",serif;color:#34291f}.target-pill span{flex:0 0 auto;font:900 6.8px/1 Arial,sans-serif;letter-spacing:.055em;text-transform:uppercase;color:#78685b}.target-reticle{position:fixed;z-index:1001;left:50%;top:46%;width:16px;height:16px;transform:translate(-50%,-50%);border:1px solid rgba(72,51,36,.50);border-radius:50%;box-shadow:0 0 0 2px rgba(248,242,230,.40);pointer-events:none}.target-reticle:before,.target-reticle:after{content:"";position:absolute;background:rgba(72,51,36,.56)}.target-reticle:before{left:50%;top:-5px;width:1px;height:24px;transform:translateX(-50%)}.target-reticle:after{top:50%;left:-5px;height:1px;width:24px;transform:translateY(-50%)}.target-dot{position:absolute;left:50%;top:50%;width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;background:#5c4332}.rotate-hint{position:fixed;z-index:1003;top:calc(env(safe-area-inset-top,0px) + 34px);left:50%;transform:translateX(-50%);display:none;align-items:center;gap:7px;padding:6px 9px;border:1px solid rgba(65,49,36,.12);border-radius:999px;background:rgba(250,245,235,.91);box-shadow:0 4px 14px rgba(42,31,22,.09);font:800 7.5px/1 Arial,sans-serif;letter-spacing:.04em;color:#5e4a3c;pointer-events:none;white-space:nowrap;transition:opacity .18s ease,transform .18s cubic-bezier(.2,.78,.25,1)}.rotate-hint b{font-size:15px;font-weight:400;line-height:8px}.rotate-hint.fade,.rotate-hint.chrome-hidden{opacity:0;transform:translate(-50%,-7px)}@media (orientation:portrait) and (max-width:820px){.rotate-hint{display:flex}}@media (orientation:landscape){.target-reticle{top:50%}.target-pill{bottom:calc(env(safe-area-inset-bottom,0px) + 39px);padding-top:4px;padding-bottom:5px}.preview-brand{height:21px}.preview-brand img{width:14px;height:14px}}
 </style>
 </head>
 <body>
 <iframe id="mapFrame" title="Histomap mobile preview" src="/mobile-preview-core/?core=0362" allow="fullscreen"></iframe>
-<div class="preview-brand"><img src="../assets/histomap-logo.svg" alt=""><span>HISTOMAP</span></div>
+<div id="previewBrand" class="preview-brand"><img src="../assets/histomap-logo.svg" alt=""><span>HISTOMAP</span></div>
 <div id="rotateHint" class="rotate-hint"><b>↻</b><span>Rotate to landscape for more stream space</span></div>
 <div class="target-reticle" aria-hidden="true"><i class="target-dot"></i></div>
 <div class="target-pill" aria-live="polite"><strong id="streamName">Target a stream</strong><span id="streamYear">—</span></div>
@@ -22,110 +22,83 @@
 (()=>{
 'use strict';
 const frame=document.getElementById('mapFrame');
+const brand=document.getElementById('previewBrand');
 const nameEl=document.getElementById('streamName');
 const yearEl=document.getElementById('streamYear');
 const rotate=document.getElementById('rotateHint');
 let inner=null,doc=null,svg=null,interval=0;
+let gestureY=null,gestureTravel=0,headerHidden=false;
 
-// The preview shell changes frequently; do not let its old service worker pin stale UI.
 if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(reg=>{if(reg.scope.includes('/mobile-preview/'))reg.unregister().catch(()=>{});})).catch(()=>{});}
 setTimeout(()=>rotate.classList.add('fade'),6200);
 
 const patchCSS=`
-:root{--hm-mobile-vh:100vh!important;--hm-mobile-vw:100vw!important;--hm-mobile-header-h:0px!important;--hm-mobile-dock-h:46px!important;--stream-strip-height:0px!important}
-html,body{overscroll-behavior:none!important;scrollbar-width:none!important}
+:root{--hm-mobile-vh:100vh!important;--hm-mobile-vw:100vw!important;--hm-mobile-header-h:0px!important;--hm-mobile-dock-h:42px!important;--stream-strip-height:0px!important}
+html,body{width:100%!important;height:100%!important;margin:0!important;padding:0!important;overflow:hidden!important;overscroll-behavior:none!important;scrollbar-width:none!important}
 body::-webkit-scrollbar{display:none!important}
-body.histomap-mobile{height:100vh!important;min-height:100vh!important}
-body.histomap-mobile .map-stage{height:100vh!important;min-height:0!important;inset:0!important}
+body.histomap-mobile{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;min-height:100vh!important;margin:0!important;padding:0!important;overflow:hidden!important}
+body.histomap-mobile .map-stage{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
 body.histomap-mobile .unified-header,.public-credit,.identity,.focus-pill,.zoom-pill,.edge-help,.sticky-stream-strip,.hm-mobile-context{display:none!important}
-body.histomap-mobile #histomap{position:absolute!important;top:0!important;bottom:0!important;left:-19px!important;right:auto!important;width:calc(100% + 38px)!important;height:100%!important;max-width:none!important}
-body.histomap-mobile .hm-thumb-dock{position:fixed!important;z-index:92!important;left:max(5px,var(--hm-mobile-safe-left))!important;right:max(5px,var(--hm-mobile-safe-right))!important;bottom:calc(3px + var(--hm-mobile-safe-bottom))!important;height:46px!important;gap:1px!important;padding:2px!important;border-radius:14px!important;background:rgba(248,242,230,.88)!important;box-shadow:0 5px 18px rgba(38,28,20,.12)!important;transform:none!important;transition:none!important}
-body.histomap-mobile .hm-thumb-button{min-width:0!important;min-height:0!important;grid-template-rows:18px 8px!important;gap:1px!important;padding:2px 1px!important;border-radius:10px!important;font-size:6.5px!important;line-height:1!important}
-body.histomap-mobile .hm-thumb-button svg{width:17px!important;height:17px!important}
-body.histomap-mobile .hm-command-panel{max-height:min(78vh,520px)!important}
-body.histomap-mobile .axis-label{font-size:8px!important}
-body.histomap-mobile #histomap.portrait-map .axis-label{font-size:8.5px!important}
-body.histomap-mobile .ribbon-label{paint-order:stroke!important;stroke-width:2.4px!important}
-@media (orientation:landscape){body.histomap-mobile .hm-thumb-dock{height:41px!important;left:max(7px,var(--hm-mobile-safe-left))!important;right:max(7px,var(--hm-mobile-safe-right))!important}body.histomap-mobile .hm-thumb-button{grid-template-rows:17px 7px!important;font-size:6px!important}body.histomap-mobile .hm-thumb-button svg{width:16px!important;height:16px!important}body.histomap-mobile #histomap{left:-16px!important;width:calc(100% + 32px)!important}}
+body.histomap-mobile #histomap{position:absolute!important;top:0!important;bottom:0!important;left:-26px!important;right:auto!important;width:calc(100% + 52px)!important;height:100%!important;max-width:none!important;margin:0!important;padding:0!important}
+body.histomap-mobile .hm-thumb-dock{position:fixed!important;z-index:92!important;left:max(4px,var(--hm-mobile-safe-left))!important;right:max(4px,var(--hm-mobile-safe-right))!important;bottom:calc(2px + var(--hm-mobile-safe-bottom))!important;height:42px!important;gap:1px!important;padding:2px!important;border-radius:13px!important;background:rgba(248,242,230,.84)!important;box-shadow:0 4px 16px rgba(38,28,20,.10)!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important;transform:none!important;transition:none!important}
+body.histomap-mobile .hm-thumb-button{min-width:0!important;min-height:0!important;grid-template-rows:16px 7px!important;gap:1px!important;padding:1px!important;border-radius:9px!important;font-size:6px!important;line-height:1!important}
+body.histomap-mobile .hm-thumb-button svg{width:15px!important;height:15px!important}
+body.histomap-mobile .hm-command-panel{max-height:min(82vh,560px)!important}
+body.histomap-mobile .axis-label{font-size:7.4px!important}
+body.histomap-mobile #histomap.portrait-map .axis-label{font-size:7.8px!important}
+body.histomap-mobile .ribbon-label{paint-order:stroke!important;stroke-width:2.2px!important}
+@media (orientation:landscape){:root{--hm-mobile-dock-h:36px!important}body.histomap-mobile .hm-thumb-dock{height:36px!important;left:max(5px,var(--hm-mobile-safe-left))!important;right:max(5px,var(--hm-mobile-safe-right))!important;bottom:calc(2px + var(--hm-mobile-safe-bottom))!important}body.histomap-mobile .hm-thumb-button{grid-template-rows:14px 6px!important;font-size:5.7px!important}body.histomap-mobile .hm-thumb-button svg{width:14px!important;height:14px!important}body.histomap-mobile #histomap{left:-20px!important;width:calc(100% + 40px)!important}}
 `;
 
+function setHeaderHidden(hidden){
+  if(headerHidden===hidden)return;headerHidden=hidden;
+  brand.classList.toggle('chrome-hidden',hidden);
+  if(!rotate.classList.contains('fade'))rotate.classList.toggle('chrome-hidden',hidden);
+}
+function gestureStart(event){if(event.pointerType&&event.pointerType!=='touch'&&event.pointerType!=='pen')return;gestureY=event.clientY;gestureTravel=0;}
+function gestureMove(event){
+  if(gestureY==null)return;const dy=event.clientY-gestureY;gestureY=event.clientY;if(Math.abs(dy)<.5)return;
+  if((gestureTravel>0&&dy<0)||(gestureTravel<0&&dy>0))gestureTravel=0;gestureTravel+=dy;
+  if(gestureTravel<=-11){setHeaderHidden(true);gestureTravel=0;}else if(gestureTravel>=9){setHeaderHidden(false);gestureTravel=0;}
+}
+function gestureEnd(){gestureY=null;gestureTravel=0;}
 function cleanText(v){return String(v||'').replace(/\s+/g,' ').replace(/^[•·\-–—\s]+|[•·\-–—\s]+$/g,'').trim();}
 function cssEscape(v){try{return inner.CSS.escape(String(v));}catch(_){return String(v).replace(/["\\]/g,'\\$&');}}
 function targetPoint(){return{x:inner.innerWidth*.5,y:inner.innerHeight*(inner.innerWidth>inner.innerHeight?.50:.46)};}
 
 function findRibbon(x,y){
   if(!doc||!svg)return null;
-  try{
-    const stack=doc.elementsFromPoint(x,y);
-    for(const node of stack){const r=node instanceof inner.Element?node.closest('.ribbon[data-id],.ribbon[data-stream-id]'):null;if(r&&svg.contains(r))return r;}
-  }catch(_){}
-  // Geometry fallback catches a ribbon even when a label/event sits over the target.
-  let screenPoint;
-  try{screenPoint=svg.createSVGPoint();screenPoint.x=x;screenPoint.y=y;}catch(_){return null;}
+  try{const stack=doc.elementsFromPoint(x,y);for(const node of stack){const r=node instanceof inner.Element?node.closest('.ribbon[data-id],.ribbon[data-stream-id]'):null;if(r&&svg.contains(r))return r;}}catch(_){}
+  let screenPoint;try{screenPoint=svg.createSVGPoint();screenPoint.x=x;screenPoint.y=y;}catch(_){return null;}
   const ribbons=[...svg.querySelectorAll('.ribbon')];
-  for(let i=ribbons.length-1;i>=0;i--){
-    const r=ribbons[i];
-    try{if(r.getClientRects().length===0)continue;const m=r.getScreenCTM();if(!m||!r.isPointInFill)continue;const local=screenPoint.matrixTransform(m.inverse());if(r.isPointInFill(local))return r;}catch(_){}
-  }
+  for(let i=ribbons.length-1;i>=0;i--){const r=ribbons[i];try{if(r.getClientRects().length===0)continue;const m=r.getScreenCTM();if(!m||!r.isPointInFill)continue;const local=screenPoint.matrixTransform(m.inverse());if(r.isPointInFill(local))return r;}catch(_){}}
   return null;
 }
-
 function nearestLabelForKey(key,y){
-  if(!key||!doc)return'';
-  const escaped=cssEscape(key);
-  const selectors=[`.ribbon-label[data-stream-key="${escaped}"]`,`.ribbon-label[data-id="${escaped}"]`];
-  let labels=[];
-  for(const sel of selectors){try{labels.push(...doc.querySelectorAll(sel));}catch(_){}}
-  labels=[...new Set(labels)];
-  let best='',score=Infinity;
-  for(const label of labels){
-    const text=cleanText(label.textContent);if(!text)continue;
-    const r=label.getBoundingClientRect();
-    const visible=r.bottom>-80&&r.top<inner.innerHeight+80&&r.right>-80&&r.left<inner.innerWidth+80;
-    const s=Math.abs((r.top+r.height/2)-y)+(visible?0:10000);
-    if(s<score){score=s;best=text;}
-  }
-  if(best)return best;
-  try{
-    const slot=doc.querySelector(`.sticky-stream-slot[data-stream-key="${escaped}"] .sticky-stream-title,[data-stream-key="${escaped}"] .sticky-stream-title`);
-    const t=cleanText(slot?.textContent);if(t)return t;
-  }catch(_){}
-  return'';
+  if(!key||!doc)return'';const escaped=cssEscape(key);const selectors=[`.ribbon-label[data-stream-key="${escaped}"]`,`.ribbon-label[data-id="${escaped}"]`];let labels=[];
+  for(const sel of selectors){try{labels.push(...doc.querySelectorAll(sel));}catch(_){}}labels=[...new Set(labels)];let best='',score=Infinity;
+  for(const label of labels){const text=cleanText(label.textContent);if(!text)continue;const r=label.getBoundingClientRect();const visible=r.bottom>-80&&r.top<inner.innerHeight+80&&r.right>-80&&r.left<inner.innerWidth+80;const s=Math.abs((r.top+r.height/2)-y)+(visible?0:10000);if(s<score){score=s;best=text;}}
+  if(best)return best;try{const slot=doc.querySelector(`.sticky-stream-slot[data-stream-key="${escaped}"] .sticky-stream-title,[data-stream-key="${escaped}"] .sticky-stream-title`);const t=cleanText(slot?.textContent);if(t)return t;}catch(_){}return'';
 }
-
 function streamName(ribbon,y){
-  if(!ribbon)return'';
-  const streamKey=ribbon.getAttribute('data-stream-id')||ribbon.dataset.streamId||'';
-  const entityKey=ribbon.getAttribute('data-id')||ribbon.dataset.id||'';
-  let name=nearestLabelForKey(streamKey,y)||nearestLabelForKey(entityKey,y);
-  if(name)return name;
-  for(const attr of ['aria-label','data-name','title']){const v=cleanText(ribbon.getAttribute(attr));if(v)return v;}
-  const title=cleanText(ribbon.querySelector('title')?.textContent);if(title)return title;
-  return'';
+  if(!ribbon)return'';const streamKey=ribbon.getAttribute('data-stream-id')||ribbon.dataset.streamId||'';const entityKey=ribbon.getAttribute('data-id')||ribbon.dataset.id||'';let name=nearestLabelForKey(streamKey,y)||nearestLabelForKey(entityKey,y);if(name)return name;
+  for(const attr of ['aria-label','data-name','title']){const v=cleanText(ribbon.getAttribute(attr));if(v)return v;}const title=cleanText(ribbon.querySelector('title')?.textContent);if(title)return title;return'';
 }
-
-function parseYear(text){
-  const raw=String(text||'').toUpperCase().replace(/,/g,'').trim();const m=raw.match(/(-?\d+(?:\.\d+)?)/);if(!m)return null;let v=Number(m[1]);if(!Number.isFinite(v))return null;
-  if(/\bB\.?\s*C\.?(?:\s*E\.?)?\b/.test(raw)||/\bBCE\b/.test(raw))v=-Math.abs(v);else if(/\bCE\b/.test(raw)||/\bA\.?\s*D\.?\b/.test(raw))v=Math.abs(v);return v;
-}
+function parseYear(text){const raw=String(text||'').toUpperCase().replace(/,/g,'').trim();const m=raw.match(/(-?\d+(?:\.\d+)?)/);if(!m)return null;let v=Number(m[1]);if(!Number.isFinite(v))return null;if(/\bB\.?\s*C\.?(?:\s*E\.?)?\b/.test(raw)||/\bBCE\b/.test(raw))v=-Math.abs(v);else if(/\bCE\b/.test(raw)||/\bA\.?\s*D\.?\b/.test(raw))v=Math.abs(v);return v;}
 function formatYear(v){if(!Number.isFinite(v))return'—';const n=Math.round(v);if(n<0)return`${Math.abs(n)} BCE`;if(n===0)return'1 BCE / 1 CE';return`${n} CE`;}
 function yearAt(y){
-  if(!svg)return null;const ticks=[];
-  for(const node of svg.querySelectorAll('.axis-label')){const yr=parseYear(node.textContent);if(!Number.isFinite(yr))continue;const r=node.getBoundingClientRect();if(!r.width&&!r.height)continue;const yy=r.top+r.height/2;if(yy<-100||yy>inner.innerHeight+100)continue;if(ticks.some(t=>Math.abs(t.y-yy)<2&&t.year===yr))continue;ticks.push({year:yr,y:yy});}
-  ticks.sort((a,b)=>a.y-b.y);if(!ticks.length)return null;if(ticks.length===1)return ticks[0].year;
-  let a=null,b=null;for(const t of ticks){if(t.y<=y)a=t;if(t.y>=y&&!b)b=t;}if(!a){a=ticks[0];b=ticks[1];}else if(!b){a=ticks[ticks.length-2];b=ticks[ticks.length-1];}else if(a===b){const i=ticks.indexOf(a);a=ticks[Math.max(0,i-1)];b=ticks[Math.min(ticks.length-1,i+1)];}
-  if(!a||!b||Math.abs(b.y-a.y)<.5)return a?.year??b?.year??null;const p=(y-a.y)/(b.y-a.y);return a.year+(b.year-a.year)*p;
+  if(!svg)return null;const ticks=[];for(const node of svg.querySelectorAll('.axis-label')){const yr=parseYear(node.textContent);if(!Number.isFinite(yr))continue;const r=node.getBoundingClientRect();if(!r.width&&!r.height)continue;const yy=r.top+r.height/2;if(yy<-100||yy>inner.innerHeight+100)continue;if(ticks.some(t=>Math.abs(t.y-yy)<2&&t.year===yr))continue;ticks.push({year:yr,y:yy});}
+  ticks.sort((a,b)=>a.y-b.y);if(!ticks.length)return null;if(ticks.length===1)return ticks[0].year;let a=null,b=null;for(const t of ticks){if(t.y<=y)a=t;if(t.y>=y&&!b)b=t;}if(!a){a=ticks[0];b=ticks[1];}else if(!b){a=ticks[ticks.length-2];b=ticks[ticks.length-1];}else if(a===b){const i=ticks.indexOf(a);a=ticks[Math.max(0,i-1)];b=ticks[Math.min(ticks.length-1,i+1)];}if(!a||!b||Math.abs(b.y-a.y)<.5)return a?.year??b?.year??null;const p=(y-a.y)/(b.y-a.y);return a.year+(b.year-a.year)*p;
 }
-
-function updateTarget(){
-  if(!inner||!doc||!svg)return;const p=targetPoint();const ribbon=findRibbon(p.x,p.y);const name=streamName(ribbon,p.y);nameEl.textContent=name||'Between streams';yearEl.textContent=formatYear(yearAt(p.y));
-}
+function updateTarget(){if(!inner||!doc||!svg)return;const p=targetPoint();const ribbon=findRibbon(p.x,p.y);const name=streamName(ribbon,p.y);nameEl.textContent=name||'Between streams';yearEl.textContent=formatYear(yearAt(p.y));}
 function bind(){
   if(!inner||!doc)return;svg=doc.getElementById('histomap');if(!svg){setTimeout(bind,100);return;}
-  const style=doc.createElement('style');style.id='hm-preview-discipline-pass-1';style.textContent=patchCSS;doc.head.appendChild(style);
+  const old=doc.getElementById('hm-preview-discipline-pass-1');old?.remove();const style=doc.createElement('style');style.id='hm-preview-discipline-pass-2';style.textContent=patchCSS;doc.head.appendChild(style);
   const root=doc.documentElement;root.style.setProperty('--hm-mobile-vh','100vh','important');root.style.setProperty('--hm-mobile-vw','100vw','important');
   const immediate=()=>requestAnimationFrame(updateTarget);
-  svg.addEventListener('pointermove',immediate,{passive:true});svg.addEventListener('pointerup',immediate,{passive:true});svg.addEventListener('wheel',immediate,{passive:true});inner.addEventListener('scroll',immediate,{passive:true});inner.addEventListener('resize',immediate,{passive:true});inner.addEventListener('orientationchange',()=>setTimeout(updateTarget,120),{passive:true});
+  svg.addEventListener('pointerdown',gestureStart,{passive:true});svg.addEventListener('pointermove',gestureMove,{passive:true});svg.addEventListener('pointerup',gestureEnd,{passive:true});svg.addEventListener('pointercancel',gestureEnd,{passive:true});
+  svg.addEventListener('pointermove',immediate,{passive:true});svg.addEventListener('pointerup',immediate,{passive:true});svg.addEventListener('wheel',event=>{if(event.deltaY>4)setHeaderHidden(true);else if(event.deltaY<-4)setHeaderHidden(false);immediate();},{passive:true});
+  inner.addEventListener('resize',immediate,{passive:true});inner.addEventListener('orientationchange',()=>{setHeaderHidden(false);setTimeout(updateTarget,120);},{passive:true});
   clearInterval(interval);interval=setInterval(updateTarget,125);updateTarget();
 }
 frame.addEventListener('load',()=>{try{inner=frame.contentWindow;doc=frame.contentDocument;bind();}catch(err){console.error('Mobile preview shell could not access core',err);}});
