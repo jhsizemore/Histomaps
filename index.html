@@ -16,6 +16,15 @@
 <link href="assets/favicon.svg?v=366" rel="icon" type="image/svg+xml"/>
 <link href="assets/site.css" rel="stylesheet"/>
 <link href="assets/editorial-pass.css?v=380" rel="stylesheet"/>
+<style>
+.hero-video{position:relative;overflow:hidden;border-radius:34px;background:#1f1b18;border:1px solid rgba(45,38,31,.14);box-shadow:0 28px 70px rgba(66,48,34,.15)}
+.hero-video-frame{position:relative;aspect-ratio:16/9;background:#1f1b18}
+.hero-video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+.hero-video-label{padding:18px 20px;background:rgba(242,234,220,.98);display:flex;justify-content:space-between;gap:20px;align-items:end;border-top:1px solid rgba(45,38,31,.12)}
+.hero-video-label strong{font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:400}
+.hero-video-label span{font-size:10px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);text-align:right}
+@media(max-width:720px){.hero-video{border-radius:22px}.hero-video-label{padding:14px;display:block}.hero-video-label span{display:block;margin-top:7px;text-align:left}}
+</style>
 <title>Histomaps.org — History, seen in streams</title>
 </head>
 <body>
@@ -33,10 +42,12 @@
 <p class="hero-copy">A histomap is a visual argument about history. Civilizations, peoples, ideas and other historical subjects flow through time as streams — growing, shrinking, splitting, merging and disappearing while lives and events unfold within them.</p>
 <div class="actions"><a class="button primary" href="/world/">Explore the World Histomap <span>→</span></a><a class="button ghost" href="/about/">What is a Histomap?</a></div>
 </div>
-<a aria-label="Explore the World Histomap" class="hero-static-map" href="/world/" style="background-image:url('/assets/histomap-hero-live.webp?v=378');background-size:cover;background-position:center center;background-repeat:no-repeat;">
-<img alt="Static detail from the current World Histomap showing civilization streams, events and lifelines" src="/assets/histomap-hero-live.webp?v=378" fetchpriority="high" decoding="async"/>
-<div class="map-label"><strong>The World Histomap</strong><span>Current interactive public preview</span></div>
-</a>
+<div class="hero-video" aria-label="Histomap app video preview">
+<div class="hero-video-frame">
+<iframe src="https://www.youtube-nocookie.com/embed/mMmvgp8OHQ8?rel=0" title="Histomap app preview" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+<div class="hero-video-label"><strong>See the Histomap in motion</strong><span>App preview · Watch here</span></div>
+</div>
 </section>
 <section class="section" id="first-map">
 <div class="shell">
