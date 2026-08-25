@@ -1,0 +1,133 @@
+name: Histomap v0.36 mobile QA
+
+on:
+  push:
+    branches: [mobile-v0.36]
+    paths:
+      - 'world/**'
+      - 'deploy/**'
+      - 'histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html'
+      - '.github/workflows/mobile-v0.36-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out development branch
+        uses: actions/checkout@v4
+
+      - name: Verify mobile layer is wired
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s world/mobile-v0.36.css
+          test -s world/mobile-v0.36.js
+          grep -q 'mobile-v0.36.css' world/index.html
+          grep -q 'mobile-v0.36.js' world/index.html
+          grep -q 'touch-action: none' world/mobile-v0.36.css
+          grep -q 'visualViewport' world/mobile-v0.36.js
+          grep -q 'assistSmallTap' world/mobile-v0.36.js
+
+      - name: Serve development build
+        shell: bash
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/histomap-http.log 2>&1 &
+          echo $! >/tmp/histomap-http.pid
+          sleep 2
+          curl --fail --silent http://127.0.0.1:8765/world/ >/dev/null
+
+      - name: Resolve Chrome
+        id: chrome
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          test -n "$CHROME"
+          echo "path=$CHROME" >> "$GITHUB_OUTPUT"
+          "$CHROME" --version
+
+      - name: Smoke test phone portrait and landscape viewports
+        shell: bash
+        env:
+          CHROME: ${{ steps.chrome.outputs.path }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/histomap-mobile-qa
+          for CASE in 360x800 390x844 430x932 844x390; do
+            W="${CASE%x*}"
+            H="${CASE#*x}"
+            OUT="/tmp/histomap-mobile-qa/${CASE}.html"
+            "$CHROME" \
+              --headless=new \
+              --no-sandbox \
+              --disable-gpu \
+              --disable-dev-shm-usage \
+              --hide-scrollbars \
+              --window-size="$W,$H" \
+              --virtual-time-budget=12000 \
+              --dump-dom \
+              http://127.0.0.1:8765/world/ > "$OUT"
+            grep -q '<svg id="histomap"' "$OUT"
+            grep -q 'mobile-v0.36.css' "$OUT"
+            grep -q 'mobile-v0.36.js' "$OUT"
+            grep -Eq '<body[^>]*class="[^"]*histomap-mobile' "$OUT"
+            grep -q 'HISTOMAP_MOBILE_V036' world/mobile-v0.36.js
+            echo "PASS $CASE"
+          done
+
+      - name: Smoke test desktop remains desktop
+        shell: bash
+        env:
+          CHROME: ${{ steps.chrome.outputs.path }}
+        run: |
+          set -euo pipefail
+          OUT=/tmp/histomap-mobile-qa/1280x800.html
+          "$CHROME" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --disable-dev-shm-usage \
+            --hide-scrollbars \
+            --window-size=1280,800 \
+            --virtual-time-budget=12000 \
+            --dump-dom \
+            http://127.0.0.1:8765/world/ > "$OUT"
+          grep -q '<svg id="histomap"' "$OUT"
+          if grep -Eq '<body[^>]*class="[^"]*histomap-mobile' "$OUT"; then
+            echo 'Desktop viewport incorrectly entered mobile mode.' >&2
+            exit 1
+          fi
+          echo 'PASS 1280x800 desktop guard'
+
+      - name: Capture QA screenshots
+        shell: bash
+        env:
+          CHROME: ${{ steps.chrome.outputs.path }}
+        run: |
+          set -euo pipefail
+          for CASE in 360x800 390x844 430x932 844x390; do
+            W="${CASE%x*}"
+            H="${CASE#*x}"
+            "$CHROME" \
+              --headless=new \
+              --no-sandbox \
+              --disable-gpu \
+              --disable-dev-shm-usage \
+              --hide-scrollbars \
+              --window-size="$W,$H" \
+              --virtual-time-budget=12000 \
+              --screenshot="/tmp/histomap-mobile-qa/${CASE}.png" \
+              http://127.0.0.1:8765/world/
+          done
+
+      - name: Upload mobile QA evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: histomap-v0.36-mobile-qa
+          path: /tmp/histomap-mobile-qa/
+          if-no-files-found: error
+          retention-days: 7
