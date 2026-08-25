@@ -1,9 +1,10 @@
-name: Build public Histomaps
+name: Freeze protected World Histomap production build
 
-# Legacy v0.35.3 builder retained for manual use only.
-# Do not run automatically: it writes to root index.html and would overwrite
-# the current Histomaps.org editorial homepage.
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-public.yml'
   workflow_dispatch:
 
 permissions:
@@ -16,29 +17,132 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-      - name: Generate legacy public build
+      - name: Assemble frozen v0.35.3 source
         shell: bash
         run: |
           set -euo pipefail
-          cp histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html index.html
+          cp histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html /tmp/index.html
           cat deploy/v0.35.3.patch.part01 \
               deploy/v0.35.3.patch.part02 \
               deploy/v0.35.3.patch.part03 \
               deploy/v0.35.3.patch.part04 > /tmp/v0.35.3.patch
-          patch -p0 < /tmp/v0.35.3.patch
-          echo '5877e2f06bf617b160e6b2fbb5f5acc9ed60c633b4417e87db3ae20d9a171ac2  index.html' | sha256sum --check -
+          (cd /tmp && patch -p0 < /tmp/v0.35.3.patch)
+          echo '5877e2f06bf617b160e6b2fbb5f5acc9ed60c633b4417e87db3ae20d9a171ac2  /tmp/index.html' | sha256sum --check -
 
-      - name: Commit generated legacy build
+      - name: Prepare production paths and metadata
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- index.html; then
-            echo 'index.html is already current.'
-            exit 0
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('/tmp/index.html')
+          html = p.read_text(encoding='utf-8')
+          html = html.replace('src="assets/histomap-logo.svg"', 'src="../assets/histomap-logo.svg?v=366"')
+          html = html.replace('href="assets/favicon.svg"', 'href="../assets/favicon.svg?v=366"')
+          additions = []
+          if 'rel="canonical"' not in html and "rel='canonical'" not in html:
+              additions.append('<link rel="canonical" href="https://histomaps.org/world/">')
+          if 'name="description"' not in html and "name='description'" not in html:
+              additions.append('<meta name="description" content="Explore four thousand years of world history as flowing streams, events and human lifelines.">')
+          if 'name="author"' not in html and "name='author'" not in html:
+              additions.append('<meta name="author" content="J. Hunter Sizemore">')
+          if 'name="copyright"' not in html and "name='copyright'" not in html:
+              additions.append('<meta name="copyright" content="© 2026 J. Hunter Sizemore">')
+          if additions:
+              html = html.replace('</head>', ''.join(additions) + '</head>', 1)
+          p.write_text(html, encoding='utf-8')
+          PY
+
+      - name: Minify HTML, CSS and JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p world
+          npx --yes html-minifier-terser@7.2.0 /tmp/index.html \
+            --output world/index.html \
+            --collapse-whitespace \
+            --conservative-collapse \
+            --remove-comments \
+            --remove-redundant-attributes \
+            --remove-script-type-attributes \
+            --remove-style-link-type-attributes \
+            --use-short-doctype \
+            --minify-css true \
+            --minify-js true
+          tmp="$(mktemp)"
+          printf '%s\n' '<!-- Histomaps World v0.35.3 production build | © 2026 J. Hunter Sizemore | Based on John B. Sparks, The Histomap (1931). -->' > "$tmp"
+          cat world/index.html >> "$tmp"
+          mv "$tmp" world/index.html
+
+      - name: Validate production artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_bytes="$(wc -c < /tmp/index.html)"
+          production_bytes="$(wc -c < world/index.html)"
+          test "$production_bytes" -lt "$source_bytes"
+          grep -qi '<!doctype html' world/index.html
+          grep -q '../assets/histomap-logo.svg?v=366' world/index.html
+          grep -qi 'Sparks' world/index.html
+          grep -qi 'lifeline' world/index.html
+          if grep -q 'v0.35.3.patch.part' world/index.html; then
+            echo 'Production file still references deployment patches.' >&2
+            exit 1
           fi
+          if grep -q 'histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html' world/index.html; then
+            echo 'Production file still references readable source.' >&2
+            exit 1
+          fi
+          printf 'version=v0.35.3-production\nsource_sha256=%s\nproduction_sha256=%s\nsource_bytes=%s\nproduction_bytes=%s\n' \
+            "$(sha256sum /tmp/index.html | cut -d' ' -f1)" \
+            "$(sha256sum world/index.html | cut -d' ' -f1)" \
+            "$source_bytes" "$production_bytes" > world/BUILD
+
+      - name: Add conservative production security headers
+        shell: bash
+        run: |
+          cat > _headers <<'EOF'
+          /*
+            X-Content-Type-Options: nosniff
+            Referrer-Policy: strict-origin-when-cross-origin
+            Permissions-Policy: camera=(), microphone=(), geolocation=()
+          EOF
+
+      - name: Remove public development scaffolding
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html
+          rm -rf deploy
+          rm -f .github/hero-debug.txt
+          rm -rf .github/hero-parts
+          rm -f .github/workflows/build-public.yml
+
+      - name: Mark repository as production-only mirror
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('README.md')
+          text = p.read_text(encoding='utf-8')
+          old = '''## World Histomap development\n\nThe current World Histomap public preview is assembled from the existing v0.34.149 base plus the v0.35.3 deployment patches. This is a temporary bridge while the readable development build and the final production build are kept distinct.\n\nThe intended next production step is to replace the bootstrap/patch assembly with a static optimized public build once the v0.35 public-facing feature set is frozen.\n'''
+          new = '''## World Histomap production\n\n`/world/` is a frozen, static production build. The readable development master and deployment patch scaffolding are intentionally not kept on the current public branch. HTML, CSS and JavaScript are minified for deployment; development should continue from the readable private master rather than from the production artifact.\n'''
+          if old in text:
+              text = text.replace(old, new)
+          else:
+              text += '\n\n' + new
+          p.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Commit frozen production build
+        shell: bash
+        run: |
+          set -euo pipefail
           git config user.name 'histomaps-build'
           git config user.email 'actions@users.noreply.github.com'
-          git add index.html
-          git commit -m 'Deploy Histomaps v0.35.3 public preview'
+          git add -A
+          git commit -m 'Deploy protected Histomaps v0.35.3 production build'
           git push
