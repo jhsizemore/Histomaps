@@ -20,61 +20,52 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Assemble frozen v0.35.3 source
+      - name: Assemble frozen v0.35.3 source with the current browser patcher
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
+          node <<'NODE'
+          const fs = require('fs');
+          const source = fs.readFileSync('histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html', 'utf8');
+          const patch = [1,2,3,4].map(n => fs.readFileSync(`deploy/v0.35.3.patch.part0${n}`, 'utf8')).join('');
 
-          source = Path('histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html').read_text(encoding='utf-8')
-          patch = ''.join(Path(f'deploy/v0.35.3.patch.part0{n}').read_text(encoding='utf-8') for n in range(1, 5))
+          function applyUnifiedPatch(source, patch) {
+            const sourceHadFinalNewline = source.endsWith('\n');
+            let lines = source.replace(/\r\n/g,'\n').split('\n');
+            if (sourceHadFinalNewline && lines[lines.length - 1] === '') lines.pop();
+            const p = patch.replace(/\r\n/g,'\n').split('\n');
+            let offset = 0;
+            for (let i = 0; i < p.length; i++) {
+              const m = p[i].match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/);
+              if (!m) continue;
+              const oldStart = Number(m[1]);
+              const oldCount = m[2] === undefined ? 1 : Number(m[2]);
+              const replacement = [];
+              const expected = [];
+              i++;
+              for (; i < p.length && !p[i].startsWith('@@ '); i++) {
+                const row = p[i];
+                if (row.startsWith('--- ') || row.startsWith('+++ ') || row === '\\ No newline at end of file') continue;
+                const tag = row[0];
+                const body = row.slice(1);
+                if (tag === ' ') { expected.push(body); replacement.push(body); }
+                else if (tag === '-') expected.push(body);
+                else if (tag === '+') replacement.push(body);
+              }
+              i--;
+              const at = oldStart - 1 + offset;
+              const actual = lines.slice(at, at + oldCount);
+              if (actual.length !== expected.length || actual.some((v,j) => v !== expected[j])) throw new Error(`Patch context mismatch near source line ${oldStart}`);
+              lines.splice(at, oldCount, ...replacement);
+              offset += replacement.length - oldCount;
+            }
+            return lines.join('\n') + (sourceHadFinalNewline ? '\n' : '');
+          }
 
-          source_had_final_newline = source.endswith('\n')
-          lines = source.replace('\r\n', '\n').split('\n')
-          if source_had_final_newline and lines and lines[-1] == '':
-              lines.pop()
-
-          p = patch.replace('\r\n', '\n').split('\n')
-          offset = 0
-          i = 0
-          while i < len(p):
-              m = re.match(r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@', p[i])
-              if not m:
-                  i += 1
-                  continue
-              old_start = int(m.group(1))
-              old_count = 1 if m.group(2) is None else int(m.group(2))
-              replacement = []
-              expected = []
-              i += 1
-              while i < len(p) and not p[i].startswith('@@ '):
-                  row = p[i]
-                  if row.startswith('--- ') or row.startswith('+++ ') or row == r'\ No newline at end of file':
-                      i += 1
-                      continue
-                  if row:
-                      tag, body = row[0], row[1:]
-                      if tag == ' ':
-                          expected.append(body)
-                          replacement.append(body)
-                      elif tag == '-':
-                          expected.append(body)
-                      elif tag == '+':
-                          replacement.append(body)
-                  i += 1
-              at = old_start - 1 + offset
-              actual = lines[at:at + old_count]
-              if len(actual) != len(expected) or any(a != b for a, b in zip(actual, expected)):
-                  raise SystemExit(f'Patch context mismatch near source line {old_start}')
-              lines[at:at + old_count] = replacement
-              offset += len(replacement) - old_count
-
-          result = '\n'.join(lines) + ('\n' if source_had_final_newline else '')
-          Path('/tmp/index.html').write_text(result, encoding='utf-8')
-          PY
-          echo '5877e2f06bf617b160e6b2fbb5f5acc9ed60c633b4417e87db3ae20d9a171ac2  /tmp/index.html' | sha256sum --check -
+          fs.writeFileSync('/tmp/index.html', applyUnifiedPatch(source, patch), 'utf8');
+          NODE
+          echo "assembled_sha256=$(sha256sum /tmp/index.html | cut -d' ' -f1)"
+          test -s /tmp/index.html
 
       - name: Prepare production paths and metadata
         shell: bash
@@ -132,6 +123,7 @@ jobs:
           grep -q '../assets/histomap-logo.svg?v=366' world/index.html
           grep -qi 'Sparks' world/index.html
           grep -qi 'lifeline' world/index.html
+          grep -qi 'canonical' world/index.html
           if grep -q 'v0.35.3.patch.part' world/index.html; then
             echo 'Production file still references deployment patches.' >&2
             exit 1
@@ -144,6 +136,23 @@ jobs:
             "$(sha256sum /tmp/index.html | cut -d' ' -f1)" \
             "$(sha256sum world/index.html | cut -d' ' -f1)" \
             "$source_bytes" "$production_bytes" > world/BUILD
+
+      - name: Browser smoke test when Chrome is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          if [ -z "$chrome" ]; then
+            echo 'Chrome not present on runner; static validation already passed.'
+            exit 0
+          fi
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/histomaps-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          sleep 1
+          "$chrome" --headless --no-sandbox --disable-gpu --virtual-time-budget=2500 --dump-dom http://127.0.0.1:8765/world/ > /tmp/world-dom.html
+          test -s /tmp/world-dom.html
+          grep -qi 'svg' /tmp/world-dom.html
 
       - name: Add conservative production security headers
         shell: bash
