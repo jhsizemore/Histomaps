@@ -106,22 +106,41 @@ await page.locator('#closeEvent').click();
 await page.waitForFunction(() => !document.getElementById('eventPanel')?.classList.contains('visible'));
 console.log('PASS event sheet peek → half → full → close');
 
-// Find a safe map point: ribbons are allowed, events/lifelines/buttons are not.
+// Find a central pan surface, avoiding the timeline gutter and event/lifeline hit targets.
 const point = await page.evaluate(() => {
   const svg = document.getElementById('histomap');
   const rect = svg.getBoundingClientRect();
   const strip = document.getElementById('stickyStreamStrip')?.getBoundingClientRect();
   const dock = document.querySelector('.hm-thumb-dock')?.getBoundingClientRect();
-  const top = Math.max(rect.top + 20, (strip?.bottom || rect.top) + 28);
-  const bottom = Math.min(rect.bottom - 20, (dock?.top || rect.bottom) - 35);
+  const top = Math.max(rect.top + 80, (strip?.bottom || rect.top) + 48);
+  const bottom = Math.min(rect.bottom - 80, (dock?.top || rect.bottom) - 55);
+  const cx = rect.left + rect.width * .58;
+  const cy = top + (bottom - top) * .5;
   const excluded = '.event-marker,.event-label,.person-lifeline-stem-hit,.person-lifeline-node-hit,.featured-person-lifeline-fallback-hit,.featured-person-lifeline-label-hit,[data-person-id][role="button"],button,a,input,select,[role="button"]';
-  for (let y = top; y < bottom; y += 34) {
-    for (let x = Math.max(48, rect.left + 48); x < Math.min(innerWidth - 48, rect.right - 48); x += 34) {
+  const xOffsets = [0, -42, 42, -78, 78, -112, 112];
+  const yOffsets = [0, -44, 44, -88, 88, -128, 128];
+  for (const oy of yOffsets) {
+    for (const ox of xOffsets) {
+      const x = Math.max(rect.left + 105, Math.min(rect.right - 45, cx + ox));
+      const y = Math.max(top, Math.min(bottom, cy + oy));
       const el = document.elementFromPoint(x, y);
-      if (el && svg.contains(el) && !el.closest(excluded)) return { x, y };
+      if (el && svg.contains(el) && !el.closest(excluded)) {
+        return { x, y, tag: el.tagName, cls: el.getAttribute('class') || '' };
+      }
     }
   }
-  return { x: innerWidth * .5, y: top + (bottom - top) * .55 };
+  return { x: Math.max(rect.left + 120, cx), y: cy, tag: 'fallback', cls: '' };
+});
+console.log(`Gesture target ${Math.round(point.x)},${Math.round(point.y)} ${point.tag}.${point.cls}`);
+
+await page.evaluate(() => {
+  window.__hmQaPointerLog = [];
+  const svg = document.getElementById('histomap');
+  for (const type of ['pointerdown','pointermove','pointerup']) {
+    svg.addEventListener(type, event => {
+      if (window.__hmQaPointerLog.length < 24) window.__hmQaPointerLog.push({type, pointerType:event.pointerType, x:event.clientX, y:event.clientY, trusted:event.isTrusted});
+    }, true);
+  }
 });
 
 const cdp = await context.newCDPSession(page);
@@ -131,14 +150,17 @@ const viewBox = () => page.locator('#histomap').getAttribute('viewBox');
 // One-finger pan.
 const beforePan = await viewBox();
 await touch('touchStart', [{ x: point.x, y: point.y, id: 1, radiusX: 2, radiusY: 2, force: 1 }]);
-for (let i = 1; i <= 4; i++) {
-  await touch('touchMove', [{ x: point.x + i * 5, y: point.y - i * 24, id: 1, radiusX: 2, radiusY: 2, force: 1 }]);
-  await sleep(45);
+for (let i = 1; i <= 5; i++) {
+  await touch('touchMove', [{ x: point.x - i * 8, y: point.y - i * 28, id: 1, radiusX: 2, radiusY: 2, force: 1 }]);
+  await sleep(50);
 }
 await touch('touchEnd', []);
-await sleep(500);
+await sleep(600);
 const afterPan = await viewBox();
-assert(beforePan !== afterPan, `Pan did not move camera: ${beforePan}`);
+const pointerLog = await page.evaluate(() => window.__hmQaPointerLog || []);
+assert(pointerLog.some(row => row.type === 'pointerdown' && row.pointerType === 'touch' && row.trusted), `Trusted touch pointerdown was not generated: ${JSON.stringify(pointerLog)}`);
+assert(pointerLog.some(row => row.type === 'pointermove' && row.pointerType === 'touch' && row.trusted), `Trusted touch pointermove was not generated: ${JSON.stringify(pointerLog)}`);
+assert(beforePan !== afterPan, `Pan did not move camera: ${beforePan}; target=${JSON.stringify(point)}; pointers=${JSON.stringify(pointerLog)}`);
 console.log('PASS trusted one-finger pan changes camera');
 
 // Pinch zoom.
