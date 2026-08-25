@@ -9,8 +9,8 @@
 .hero-static-map:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.03),transparent 55%,rgba(26,19,15,.10))}
 .hero-static-map .map-label{z-index:2;background:rgba(242,234,220,.95)}
 
-/* SPARKS: the original chart is visible in the dark card, then shown at detail + full-sheet scale. */
-.sparks-card{background-image:linear-gradient(90deg,rgba(34,27,22,.96) 0%,rgba(34,27,22,.89) 50%,rgba(34,27,22,.68) 100%),url('/assets/sparks-original-crop.jpg');background-size:cover;background-position:center 10%;color:#f6efe6}
+/* SPARKS: the Patreon cover provides the editorial texture behind the 1931 introduction. */
+.sparks-card{background-image:linear-gradient(90deg,rgba(34,27,22,.95) 0%,rgba(34,27,22,.88) 52%,rgba(34,27,22,.70) 100%),url('/assets/patreon-histomap-cover.jpg?v=380');background-size:cover;background-position:58% center;color:#f6efe6}
 .sparks-card .eyebrow,.sparks-card h3,.sparks-card p{color:#f6efe6}
 .sparks-gallery{display:grid;grid-template-columns:minmax(0,1fr) 270px;min-height:510px;margin-top:54px;border:1px solid var(--line);background:#e7dbc7;overflow:hidden}
 .sparks-detail{position:relative;min-width:0;overflow:hidden;background:#d7c7b1;border-right:1px solid var(--line)}
