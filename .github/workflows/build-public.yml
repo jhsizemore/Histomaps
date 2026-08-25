@@ -24,12 +24,56 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cp histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html /tmp/index.html
-          cat deploy/v0.35.3.patch.part01 \
-              deploy/v0.35.3.patch.part02 \
-              deploy/v0.35.3.patch.part03 \
-              deploy/v0.35.3.patch.part04 > /tmp/v0.35.3.patch
-          (cd /tmp && patch -p0 < /tmp/v0.35.3.patch)
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          source = Path('histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html').read_text(encoding='utf-8')
+          patch = ''.join(Path(f'deploy/v0.35.3.patch.part0{n}').read_text(encoding='utf-8') for n in range(1, 5))
+
+          source_had_final_newline = source.endswith('\n')
+          lines = source.replace('\r\n', '\n').split('\n')
+          if source_had_final_newline and lines and lines[-1] == '':
+              lines.pop()
+
+          p = patch.replace('\r\n', '\n').split('\n')
+          offset = 0
+          i = 0
+          while i < len(p):
+              m = re.match(r'^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@', p[i])
+              if not m:
+                  i += 1
+                  continue
+              old_start = int(m.group(1))
+              old_count = 1 if m.group(2) is None else int(m.group(2))
+              replacement = []
+              expected = []
+              i += 1
+              while i < len(p) and not p[i].startswith('@@ '):
+                  row = p[i]
+                  if row.startswith('--- ') or row.startswith('+++ ') or row == r'\ No newline at end of file':
+                      i += 1
+                      continue
+                  if row:
+                      tag, body = row[0], row[1:]
+                      if tag == ' ':
+                          expected.append(body)
+                          replacement.append(body)
+                      elif tag == '-':
+                          expected.append(body)
+                      elif tag == '+':
+                          replacement.append(body)
+                  i += 1
+              at = old_start - 1 + offset
+              actual = lines[at:at + old_count]
+              if len(actual) != len(expected) or any(a != b for a, b in zip(actual, expected)):
+                  raise SystemExit(f'Patch context mismatch near source line {old_start}')
+              lines[at:at + old_count] = replacement
+              offset += len(replacement) - old_count
+
+          result = '\n'.join(lines) + ('\n' if source_had_final_newline else '')
+          Path('/tmp/index.html').write_text(result, encoding='utf-8')
+          PY
           echo '5877e2f06bf617b160e6b2fbb5f5acc9ed60c633b4417e87db3ae20d9a171ac2  /tmp/index.html' | sha256sum --check -
 
       - name: Prepare production paths and metadata
