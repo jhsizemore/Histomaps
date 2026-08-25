@@ -1,4 +1,4 @@
-/* v0.36.1 mobile refinement: viewport-true context year + reliable double-tap zoom. */
+/* v0.36.1 mobile refinement: viewport-true context year, double-tap zoom, and sheet race repair. */
 (() => {
   'use strict';
 
@@ -113,6 +113,18 @@
     if (delay) window.setTimeout(run, delay); else run();
   }
 
+  function guardCommandSheetRace() {
+    const sheet = document.querySelector('.hm-command-sheet');
+    if (!sheet || sheet.dataset.hmRaceGuard === 'true') return;
+    sheet.dataset.hmRaceGuard = 'true';
+    new MutationObserver(() => {
+      if (body.classList.contains('hm-command-open') && sheet.hidden) {
+        sheet.hidden = false;
+        requestAnimationFrame(() => sheet.classList.add('visible'));
+      }
+    }).observe(sheet, {attributes:true, attributeFilter:['hidden']});
+  }
+
   function doubleTapEligible(target) {
     if (!(target instanceof Element) || !svg?.contains(target)) return false;
     return !target.closest('.event-marker,.event-label,.person-lifeline-stem-hit,.person-lifeline-node-hit,.featured-person-lifeline-fallback-hit,.featured-person-lifeline-label-hit,[data-person-id][role="button"],button,a,input,select,[role="button"]');
@@ -174,6 +186,7 @@
   document.addEventListener('pointercancel', event => pointerStart.delete(event.pointerId), true);
 
   const bodyObserver = new MutationObserver(() => {
+    guardCommandSheetRace();
     if (!svg || !document.contains(svg)) attach();
     if (mobileActive()) schedule(80);
   });
@@ -183,6 +196,7 @@
   window.addEventListener('orientationchange', () => schedule(120), {passive:true});
   window.visualViewport?.addEventListener('resize', () => schedule(80), {passive:true});
 
+  guardCommandSheetRace();
   if (!attach()) {
     const wait = new MutationObserver(() => { if (attach()) wait.disconnect(); });
     wait.observe(body, {childList:true, subtree:true});
