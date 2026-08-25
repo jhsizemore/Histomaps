@@ -1,0 +1,5 @@
+version=v0.35.3-production
+source_sha256=cba6d178177eb6aefd99fc0ccfa4f498f6b86abe5c49c1bb2ba67029115d8ee5
+production_sha256=1be224c1edb70ff1ddfd83303d11046221d80d6518d93cc36cd19180a9699219
+source_bytes=6371479
+production_bytes=4183285

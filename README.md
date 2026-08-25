@@ -12,11 +12,9 @@ Histomaps.org is a publishing project for visual historical arguments. A Histoma
 - `/journal/a-histomap-is-an-argument/` — project manifesto / launch essay
 - `/assets/` — shared website and brand assets
 
-## World Histomap development
+## World Histomap production
 
-The current World Histomap public preview is assembled from the existing v0.34.149 base plus the v0.35.3 deployment patches. This is a temporary bridge while the readable development build and the final production build are kept distinct.
-
-The intended next production step is to replace the bootstrap/patch assembly with a static optimized public build once the v0.35 public-facing feature set is frozen.
+`/world/` is a frozen, static production build. The readable development master and deployment patch scaffolding are intentionally not kept on the current public branch. HTML, CSS and JavaScript are minified for deployment; development should continue from the readable private master rather than from the production artifact.
 
 ## Attribution
 
