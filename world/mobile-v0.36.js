@@ -220,10 +220,13 @@
     const button = thumbDock.querySelector('[data-action="home-back"]');
     if (!button) return;
     const back = visibleBackButton();
+    const mode = back ? 'back' : 'now';
     const label = back ? 'Back' : 'Now';
+    if (button.dataset.contextMode === mode) return;
+    button.dataset.contextMode = mode;
     button.classList.toggle('is-back', !!back);
     button.setAttribute('aria-label', label);
-    button.innerHTML = `${iconMarkup(back ? 'back' : 'now')}<span>${label}</span>`;
+    button.innerHTML = `${iconMarkup(mode)}<span>${label}</span>`;
   }
 
   function createContextReadout() {
@@ -637,7 +640,7 @@
     const direct = closestInteractive(event.target);
     if (moved <= 10 && !gestureHadPinch) {
       if (direct) { pulseSelection(direct); haptic(); advanceCoach('tap'); }
-      else { assistSmallTap(event); detectDoubleTap(event); }
+      else if (!assistSmallTap(event)) detectDoubleTap(event);
     } else if (!gestureHadPinch && touchTrack.size === 0) startInertia(track,event);
     if (touchTrack.size === 0) gestureHadPinch = false;
     markInteracting();
