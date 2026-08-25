@@ -1,5 +1,4 @@
-version=v0.36.2-mobile-production
-source_sha256=b36fd0f365aeefb87c6ccb16550550268559d7f72d8adcb900b3cc372b34746a
-production_sha256=ef1cf71a93498e236d0973cb3be411f4876dbd680d5630714ed2b9d31a692135
-source_bytes=6458419
-production_bytes=4245695
+version=v0.36.3-mobile-preview-discipline-1
+core_version=v0.36.2-mobile-production
+core_production_sha256=ef1cf71a93498e236d0973cb3be411f4876dbd680d5630714ed2b9d31a692135
+changes=fixed_chrome,maximized_stream_field,compact_date_rails,landscape_nudge,target_stream_pill
