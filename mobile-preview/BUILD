@@ -1,4 +1,4 @@
-version=v0.36.3-mobile-preview-discipline-1
+version=v0.36.4-mobile-preview-discipline-2
 core_version=v0.36.2-mobile-production
 core_production_sha256=ef1cf71a93498e236d0973cb3be411f4876dbd680d5630714ed2b9d31a692135
-changes=fixed_chrome,maximized_stream_field,compact_date_rails,landscape_nudge,target_stream_pill
+changes=full_viewport_streams,ui_overlays,no_layout_shift,gesture_autohide_header,compact_date_rails,landscape_nudge,target_stream_pill
