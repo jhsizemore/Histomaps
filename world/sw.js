@@ -1,6 +1,6 @@
 /* Histomap v0.36.1 development service worker. Same-origin app shell + runtime map assets. */
-const CACHE = 'histomap-world-v0.36.1';
-const SHELL = ['./','./mobile-v0.36.css?v=2','./mobile-v0.36.js?v=2','./manifest.webmanifest','../assets/favicon.svg','../assets/histomap-logo.svg'];
+const CACHE = 'histomap-world-v0.36.1-r2';
+const SHELL = ['./','./mobile-v0.36.css?v=3','./mobile-v0.36.1-fixes.css?v=1','./mobile-v0.36.js?v=3','./mobile-v0.36.1-fixes.js?v=1','./manifest.webmanifest','../assets/favicon.svg','../assets/histomap-logo.svg'];
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
