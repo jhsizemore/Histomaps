@@ -106,7 +106,7 @@ jobs:
           cd /tmp/hm-playwright
           npm init -y >/dev/null 2>&1
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --silent playwright-core@1.54.2
-          ln -s "$GITHUB_WORKSPACE/.github/scripts/mobile-v0.36.1-interaction-qa.mjs" ./interaction-qa.mjs
+          cp "$GITHUB_WORKSPACE/.github/scripts/mobile-v0.36.1-interaction-qa.mjs" ./interaction-qa.mjs
 
       - name: Run trusted touch interaction QA
         shell: bash
