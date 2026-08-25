@@ -24,7 +24,7 @@
 </head>
 <body>
 <a class="back" href="../" aria-label="Back to Histomaps.org">← Histomaps.org</a>
-<main><h1>THE WORLD HISTOMAP</h1><p>Preparing the v0.36.1 mobile interaction build</p><div class="bar" aria-hidden="true"></div><p id="error">The Histomap could not be assembled. Please reload the page.</p></main>
+<main><h1>THE WORLD HISTOMAP</h1><p>Preparing the v0.36.1 mobile refinement build</p><div class="bar" aria-hidden="true"></div><p id="error">The Histomap could not be assembled. Please reload the page.</p></main>
 <script>
 (() => {
   const basePath = '../histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html';
@@ -72,8 +72,10 @@
       '<meta name="apple-mobile-web-app-capable" content="yes">',
       '<meta name="apple-mobile-web-app-status-bar-style" content="default">',
       '<link rel="manifest" href="./manifest.webmanifest">',
-      '<link rel="stylesheet" href="./mobile-v0.36.css?v=2">',
-      '<script src="./mobile-v0.36.js?v=2" defer><\/script>'
+      '<link rel="stylesheet" href="./mobile-v0.36.css?v=3">',
+      '<link rel="stylesheet" href="./mobile-v0.36.1-fixes.css?v=1">',
+      '<script src="./mobile-v0.36.js?v=3" defer><\/script>',
+      '<script src="./mobile-v0.36.1-fixes.js?v=1" defer><\/script>'
     ].join('\n');
     html = html.replace('</head>',`${mobileHead}\n</head>`);
     document.open(); document.write(html); document.close();
