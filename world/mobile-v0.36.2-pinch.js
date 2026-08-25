@@ -8,7 +8,6 @@
 
   const pointers = new Map();
   let pinch = null;
-  let raf = 0;
 
   function mobileActive() {
     return body.classList.contains('histomap-mobile');
@@ -55,7 +54,6 @@
   }
 
   function applyPinch() {
-    raf = 0;
     if (!pinch || pointers.size < 2 || !mobileActive()) return;
     const control = slider();
     if (!control) return;
@@ -75,10 +73,6 @@
     control.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
-  function schedulePinch() {
-    if (!raf) raf = requestAnimationFrame(applyPinch);
-  }
-
   function pointerEligible(event) {
     const svg = mapSvg();
     return mobileActive() && svg && event.pointerType === 'touch' && svg.contains(event.target);
@@ -95,7 +89,9 @@
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (pointers.size >= 2) {
       if (!pinch) beginPinch();
-      schedulePinch();
+      // Apply immediately so the zoom is committed before a fast touchend/pointerup.
+      // This is also more reliable for synthetic PointerEvent QA and very quick pinches.
+      applyPinch();
       if (event.cancelable) event.preventDefault();
     }
   }
@@ -105,8 +101,6 @@
     if (pointers.size < 2) {
       pinch = null;
       body.classList.remove('hm-pinching');
-      if (raf) cancelAnimationFrame(raf);
-      raf = 0;
     }
   }
 
