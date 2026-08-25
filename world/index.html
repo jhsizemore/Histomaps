@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#eee5d6">
   <meta name="description" content="Explore four thousand years of world history as flowing streams, events and human lifelines.">
   <link rel="canonical" href="https://histomaps.org/world/">
-  <link rel="icon" href="../assets/favicon.svg?v=365" type="image/svg+xml">
+  <link rel="icon" href="../assets/favicon.svg?v=366" type="image/svg+xml">
   <title>The World Histomap — Histomaps.org</title>
   <style>
     html,body{height:100%;margin:0;background:#eee5d6;color:#2b241d;font-family:Georgia,"Times New Roman",serif}
@@ -72,10 +72,10 @@
     responses.forEach((response, i) => { if (!response.ok) throw new Error(`Could not load ${i === 0 ? basePath : patchPaths[i-1]}`); });
     const texts = await Promise.all(responses.map(response => response.text()));
     let html = applyUnifiedPatch(texts[0], texts.slice(1).join(''));
-    html = html.replaceAll('src="assets/histomap-logo.svg"','src="../assets/histomap-logo.svg?v=365"');
-    html = html.replaceAll('href="assets/favicon.svg"','href="../assets/favicon.svg?v=365"');
+    html = html.replaceAll('src="assets/histomap-logo.svg"','src="../assets/histomap-logo.svg?v=366"');
+    html = html.replaceAll('href="assets/favicon.svg"','href="../assets/favicon.svg?v=366"');
     if (!/<link[^>]+rel=["']icon["']/i.test(html)) {
-      html = html.replace('</head>', '<link rel="icon" href="../assets/favicon.svg?v=365" type="image/svg+xml">\n</head>');
+      html = html.replace('</head>', '<link rel="icon" href="../assets/favicon.svg?v=366" type="image/svg+xml">\n</head>');
     }
     document.open();
     document.write(html);
