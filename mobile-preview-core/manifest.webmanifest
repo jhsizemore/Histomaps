@@ -1,0 +1,12 @@
+{
+  "name": "The World Histomap",
+  "short_name": "Histomap",
+  "description": "Explore four thousand years of world history as flowing civilisations, events and human lifelines.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eee5d6",
+  "theme_color": "#eee5d6",
+  "icons": [{"src":"../assets/favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]
+}
