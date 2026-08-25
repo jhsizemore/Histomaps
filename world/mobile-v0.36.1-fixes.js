@@ -1,4 +1,4 @@
-/* v0.36.1 mobile refinement: make the persistent context year follow the visible timeline. */
+/* v0.36.1 mobile refinement: viewport-true context year + reliable double-tap zoom. */
 (() => {
   'use strict';
 
@@ -8,6 +8,8 @@
   let svg = null;
   let scheduled = 0;
   let observer = null;
+  let pointerStart = new Map();
+  let lastMapTap = null;
 
   function mobileActive() {
     return body.classList.contains('histomap-mobile');
@@ -111,6 +113,48 @@
     if (delay) window.setTimeout(run, delay); else run();
   }
 
+  function doubleTapEligible(target) {
+    if (!(target instanceof Element) || !svg?.contains(target)) return false;
+    return !target.closest('.event-marker,.event-label,.person-lifeline-stem-hit,.person-lifeline-node-hit,.featured-person-lifeline-fallback-hit,.featured-person-lifeline-label-hit,[data-person-id][role="button"],button,a,input,select,[role="button"]');
+  }
+
+  function onCapturePointerDown(event) {
+    if (!mobileActive() || event.pointerType !== 'touch' || !svg?.contains(event.target)) return;
+    pointerStart.set(event.pointerId, {x:event.clientX,y:event.clientY,t:performance.now()});
+  }
+
+  function onCapturePointerUp(event) {
+    if (!mobileActive() || event.pointerType !== 'touch') return;
+    const start = pointerStart.get(event.pointerId);
+    pointerStart.delete(event.pointerId);
+    if (!start || !doubleTapEligible(event.target)) return;
+    const moved = Math.hypot(event.clientX - start.x, event.clientY - start.y);
+    const dt = performance.now() - start.t;
+    if (moved > 10 || dt > 430) return;
+
+    const now = performance.now();
+    if (lastMapTap && now - lastMapTap.t < 310 && Math.hypot(event.clientX - lastMapTap.x,event.clientY - lastMapTap.y) < 34) {
+      lastMapTap = null;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      try {
+        svg.dispatchEvent(new WheelEvent('wheel', {
+          bubbles:true,
+          cancelable:true,
+          ctrlKey:true,
+          deltaY:-440,
+          clientX:event.clientX,
+          clientY:event.clientY,
+          view:window
+        }));
+        navigator.vibrate?.(8);
+      } catch (_) {}
+      schedule(120);
+      return;
+    }
+    lastMapTap = {x:event.clientX,y:event.clientY,t:now};
+  }
+
   function attach() {
     svg = document.getElementById('histomap');
     if (!svg) return false;
@@ -124,6 +168,10 @@
     schedule(80);
     return true;
   }
+
+  document.addEventListener('pointerdown', onCapturePointerDown, true);
+  document.addEventListener('pointerup', onCapturePointerUp, true);
+  document.addEventListener('pointercancel', event => pointerStart.delete(event.pointerId), true);
 
   const bodyObserver = new MutationObserver(() => {
     if (!svg || !document.contains(svg)) attach();
@@ -141,5 +189,9 @@
   }
 
   window.setInterval(() => { if (mobileActive()) update(); }, 700);
-  window.HISTOMAP_MOBILE_V0361_REFINEMENT = Object.freeze({version:'0.36.1-refinement', updateContextYear:update});
+  window.HISTOMAP_MOBILE_V0361_REFINEMENT = Object.freeze({
+    version:'0.36.1-refinement',
+    updateContextYear:update,
+    yearAtViewportCenter
+  });
 })();
