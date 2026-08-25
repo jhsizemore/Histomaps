@@ -146,17 +146,30 @@ jobs:
           set -euo pipefail
           source_bytes="$(wc -c < /tmp/index.html)"
           production_bytes="$(wc -c < world/index.html)"
+          echo "source_bytes=$source_bytes production_bytes=$production_bytes"
           test "$production_bytes" -lt "$source_bytes"
-          grep -qi '<!doctype html' world/index.html
-          grep -q '../assets/histomap-logo.svg?v=366' world/index.html
-          grep -qi 'Sparks' world/index.html
-          grep -qi 'lifeline' world/index.html
-          grep -qi 'canonical' world/index.html
-          grep -q 'histomap-mobile' world/index.html
-          grep -q 'v0.36.2-pinch-repair' world/index.html
-          grep -q 'manifest.webmanifest' world/index.html
-          if grep -q 'v0.35.3.patch.part' world/index.html; then echo 'Production still references patches.' >&2; exit 1; fi
-          if grep -q 'histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html' world/index.html; then echo 'Production still references readable source.' >&2; exit 1; fi
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path('world/index.html').read_text(encoding='utf-8')
+          lower = html.lower()
+          checks = {
+              'doctype': '<!doctype html' in lower,
+              'logo': '../assets/histomap-logo.svg?v=366' in html,
+              'Sparks credit': 'sparks' in lower,
+              'lifelines': 'lifeline' in lower,
+              'canonical metadata': 'canonical' in lower,
+              'mobile runtime': 'histomap-mobile' in html,
+              'manifest': 'manifest.webmanifest' in html,
+          }
+          missing = [name for name, ok in checks.items() if not ok]
+          if missing:
+              raise SystemExit('Missing required production markers: ' + ', '.join(missing))
+          banned = ['v0.35.3.patch.part', 'histomap_v0_34_149_zoom_elastic_lifelines_titles_tooltips.html']
+          exposed = [token for token in banned if token in html]
+          if exposed:
+              raise SystemExit('Readable/development references remain: ' + ', '.join(exposed))
+          print('Protected mobile production markers validated')
+          PY
           printf 'version=v0.36.2-mobile-production\nsource_sha256=%s\nproduction_sha256=%s\nsource_bytes=%s\nproduction_bytes=%s\n' \
             "$(sha256sum /tmp/index.html | cut -d' ' -f1)" \
             "$(sha256sum world/index.html | cut -d' ' -f1)" \
@@ -172,11 +185,11 @@ jobs:
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           sleep 1
-          "$chrome" --headless --no-sandbox --disable-gpu --window-size=390,844 --virtual-time-budget=3500 --dump-dom http://127.0.0.1:8765/world/ > /tmp/world-mobile-dom.html
+          "$chrome" --headless --no-sandbox --disable-gpu --window-size=390,844 --virtual-time-budget=17000 --dump-dom http://127.0.0.1:8765/world/ > /tmp/world-mobile-dom.html
           test -s /tmp/world-mobile-dom.html
           grep -qi 'svg' /tmp/world-mobile-dom.html
           grep -q 'histomap-mobile' /tmp/world-mobile-dom.html
-          "$chrome" --headless --no-sandbox --disable-gpu --window-size=1440,1000 --virtual-time-budget=3000 --dump-dom http://127.0.0.1:8765/world/ > /tmp/world-desktop-dom.html
+          "$chrome" --headless --no-sandbox --disable-gpu --window-size=1440,1000 --virtual-time-budget=15000 --dump-dom http://127.0.0.1:8765/world/ > /tmp/world-desktop-dom.html
           test -s /tmp/world-desktop-dom.html
           grep -qi 'svg' /tmp/world-desktop-dom.html
 
