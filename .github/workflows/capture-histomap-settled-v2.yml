@@ -1,0 +1,145 @@
+name: Capture Histomap settled stop-motion v2
+
+on:
+  push:
+    branches:
+      - video/histomap-scroll-2026-08-27
+    paths:
+      - .github/workflows/capture-histomap-settled-v2.yml
+  workflow_dispatch:
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install capture tools
+        run: |
+          npm init -y
+          npm install playwright@1.55.0
+          npx playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version | head -n 1
+
+      - name: Capture settled frames
+        run: |
+          cat > capture-settled.js <<'JS'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const { execSync, spawn } = require('child_process');
+
+          (async () => {
+            const width = 1920, height = 1080;
+            const fps = 8;
+            const frames = 678; // 84.75 seconds at 8 settled snapshots/sec
+            const settleMs = 220;
+
+            fs.mkdirSync('capture/frames', { recursive: true });
+            const server = spawn('python3', ['-m','http.server','8080','--bind','127.0.0.1'], { stdio: ['ignore','pipe','pipe'] });
+            await new Promise(r => setTimeout(r, 1000));
+
+            const browser = await chromium.launch({ headless: true });
+            const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1 });
+            await context.addInitScript(() => {
+              try { localStorage.setItem('histomap.v0.35.welcomeSeen','1'); } catch (e) {}
+            });
+            const page = await context.newPage();
+            await page.goto('http://127.0.0.1:8080/world/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await page.waitForTimeout(3000);
+
+            await page.evaluate(() => {
+              document.documentElement.style.scrollBehavior = 'auto';
+              document.body.style.scrollBehavior = 'auto';
+              const welcome = document.getElementById('welcomeOverlay'); if (welcome) welcome.hidden = true;
+              document.querySelectorAll('.public-info-overlay').forEach(x => x.hidden = true);
+              const bio = document.getElementById('sparksBioOverlay'); if (bio) bio.hidden = true;
+              const slider = document.querySelector('#lensSlider');
+              if (slider && slider.value !== '1') {
+                slider.value = '1';
+                slider.dispatchEvent(new Event('input', { bubbles: true }));
+                slider.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+              window.scrollTo(0,0);
+            });
+            await page.waitForTimeout(500);
+
+            const info = await page.evaluate(() => {
+              const se = document.scrollingElement || document.documentElement;
+              return {
+                title: document.title,
+                scrollHeight: se.scrollHeight,
+                clientHeight: window.innerHeight,
+                maxScroll: Math.max(0, se.scrollHeight - window.innerHeight),
+                zoom: document.querySelector('#zoomReadout')?.textContent?.trim() || null,
+                visible: document.querySelector('#visibleReadout')?.textContent?.trim() || null,
+                bodyClass: document.body.className
+              };
+            });
+
+            const frameMeta = [];
+            for (let i = 0; i < frames; i++) {
+              const y = info.maxScroll * i / (frames - 1);
+              await page.evaluate(y => window.scrollTo(0, y), y);
+
+              // The app's full redraw is debounced to 110 ms after scrolling. Wait twice that,
+              // then two browser paints, before taking the frame.
+              await page.waitForTimeout(settleMs);
+              await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+
+              // If headers/events/lifelines are still changing, allow one extra settling window.
+              const sig1 = await page.evaluate(() => ({
+                labels: Array.from(document.querySelectorAll('.ribbon-label')).map(e => (e.textContent || '').trim()).filter(Boolean).slice(0,12),
+                events: document.querySelectorAll('.event-marker').length,
+                lifelines: document.querySelectorAll('.lifeline, [class*="lifeline"]').length
+              }));
+              await page.waitForTimeout(35);
+              const sig2 = await page.evaluate(() => ({
+                labels: Array.from(document.querySelectorAll('.ribbon-label')).map(e => (e.textContent || '').trim()).filter(Boolean).slice(0,12),
+                events: document.querySelectorAll('.event-marker').length,
+                lifelines: document.querySelectorAll('.lifeline, [class*="lifeline"]').length
+              }));
+              if (JSON.stringify(sig1) !== JSON.stringify(sig2)) {
+                await page.waitForTimeout(120);
+                await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+              }
+
+              await page.screenshot({ path: `capture/frames/frame${String(i).padStart(4,'0')}.jpg`, type: 'jpeg', quality: 92 });
+              if (i % 20 === 0 || i === frames - 1) {
+                const labels = await page.evaluate(() => Array.from(document.querySelectorAll('.ribbon-label')).map(e => (e.textContent || '').trim()).filter(Boolean).slice(0,8));
+                frameMeta.push({ i, y, labels });
+                console.log(`${i+1}/${frames} y=${y.toFixed(1)} ${labels.join(' | ')}`);
+              }
+            }
+
+            fs.writeFileSync('capture/capture-info.json', JSON.stringify({ width, height, fps, duration: frames/fps, frames, settleMs, info, checkpoints: frameMeta }, null, 2));
+            await page.evaluate(() => window.scrollTo(0,0)); await page.waitForTimeout(settleMs); await page.screenshot({ path:'capture/start.png' });
+            await page.evaluate(y => window.scrollTo(0,y), info.maxScroll); await page.waitForTimeout(settleMs); await page.screenshot({ path:'capture/end.png' });
+
+            await browser.close();
+            server.kill('SIGTERM');
+
+            // 8 settled snapshots/sec, each held for exactly 3 frames => a stable 24 fps video.
+            execSync('ffmpeg -y -framerate 8 -i capture/frames/frame%04d.jpg -vf fps=24 -an -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -movflags +faststart capture/histomap-settled-silent.mp4', { stdio:'inherit' });
+          })().catch(e => { console.error(e); process.exit(1); });
+          JS
+          node capture-settled.js
+
+      - name: Upload settled capture
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: histomap-settled-capture-v2
+          path: |
+            capture/histomap-settled-silent.mp4
+            capture/capture-info.json
+            capture/start.png
+            capture/end.png
+          if-no-files-found: warn
+          retention-days: 2
