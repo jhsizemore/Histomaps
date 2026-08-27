@@ -11,7 +11,7 @@ on:
 jobs:
   capture:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
 
@@ -19,11 +19,14 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install Playwright
+      - name: Install capture tools
         run: |
           npm init -y
           npm install playwright@1.55.0
           npx playwright install --with-deps chromium
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version | head -n 1
 
       - name: Capture settled frames
         run: |
@@ -36,8 +39,8 @@ jobs:
             const width = 1920, height = 1080;
             const fps = 10;
             const duration = 84.7;
-            const frames = Math.round(fps * duration); // 847
-            const settleMs = 220; // app redraw debounce is 110ms; allow a full post-debounce paint
+            const frames = Math.round(fps * duration);
+            const settleMs = 220;
 
             fs.mkdirSync('capture/frames', { recursive: true });
             const server = spawn('python3', ['-m','http.server','8080','--bind','127.0.0.1'], { stdio: ['ignore','pipe','pipe'] });
@@ -86,14 +89,14 @@ jobs:
               const y = info.maxScroll * i / (frames - 1);
               await page.evaluate(y => window.scrollTo(0, y), y);
 
-              // Do not photograph while scrolling. Allow the app's 110ms delayed redraw,
-              // then wait for two complete animation frames so headers/events/lifelines paint.
+              // The app schedules its full post-scroll render after 110ms. We wait twice that,
+              // then wait two browser paints before committing the snapshot.
               await page.waitForTimeout(settleMs);
               await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 
-              // A second stability check catches a late SVG/DOM update without forcing a long pause every frame.
+              // Confirm that the rendered scene signature has stopped changing. If it has not,
+              // give event/lifeline/header rendering another short settling window.
               const sig1 = await page.evaluate(() => ({
-                y: window.scrollY,
                 labels: Array.from(document.querySelectorAll('.ribbon-label')).map(e => (e.textContent || '').trim()).filter(Boolean).slice(0,12),
                 events: document.querySelectorAll('.event-marker').length,
                 lifelines: document.querySelectorAll('.lifeline, [class*="lifeline"]').length
@@ -104,7 +107,7 @@ jobs:
                 events: document.querySelectorAll('.event-marker').length,
                 lifelines: document.querySelectorAll('.lifeline, [class*="lifeline"]').length
               }));
-              if (JSON.stringify(sig1.labels) !== JSON.stringify(sig2.labels) || sig1.events !== sig2.events || sig1.lifelines !== sig2.lifelines) {
+              if (JSON.stringify(sig1) !== JSON.stringify(sig2)) {
                 await page.waitForTimeout(120);
                 await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
               }
@@ -124,13 +127,14 @@ jobs:
             await browser.close();
             server.kill('SIGTERM');
 
-            // Visual-only master. The audio is intentionally not part of this render.
+            // Stitch the visual master first. No audio is involved here.
             execSync('ffmpeg -y -framerate 10 -i capture/frames/frame%04d.jpg -vf fps=25 -an -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p -movflags +faststart capture/histomap-settled-silent.mp4', { stdio:'inherit' });
           })().catch(e => { console.error(e); process.exit(1); });
           JS
           node capture-settled.js
 
       - name: Upload settled capture
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: histomap-settled-capture
@@ -139,4 +143,5 @@ jobs:
             capture/capture-info.json
             capture/start.png
             capture/end.png
+          if-no-files-found: warn
           retention-days: 2
