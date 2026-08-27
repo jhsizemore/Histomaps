@@ -1,0 +1,166 @@
+name: Capture Histomap Scroll
+
+on:
+  push:
+    branches:
+      - video/histomap-scroll-2026-08-27
+  workflow_dispatch:
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Capture smooth 1x scroll
+        run: |
+          mkdir -p output
+          cat > capture.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+
+          const browser = await chromium.launch({ headless: true });
+          const context = await browser.newContext({
+            viewport: { width: 1920, height: 1080 },
+            screen: { width: 1920, height: 1080 },
+            deviceScaleFactor: 1,
+            recordVideo: {
+              dir: 'output',
+              size: { width: 1920, height: 1080 }
+            }
+          });
+
+          const page = await context.newPage();
+          await page.goto('https://histomaps.com/world', {
+            waitUntil: 'networkidle',
+            timeout: 120000
+          });
+          await page.waitForTimeout(1500);
+
+          // Browser zoom remains 100% / 1x. Disable only CSS smooth-scroll so our
+          // animation controls the motion precisely and continuously.
+          await page.evaluate(() => {
+            document.documentElement.style.scrollBehavior = 'auto';
+            if (document.body) document.body.style.scrollBehavior = 'auto';
+          });
+
+          const target = await page.evaluate(() => {
+            const scrollingElement = document.scrollingElement || document.documentElement;
+            const candidates = [scrollingElement, ...document.querySelectorAll('*')];
+            let best = null;
+
+            for (const el of candidates) {
+              if (!(el instanceof Element)) continue;
+              const distance = Math.max(0, el.scrollHeight - el.clientHeight);
+              if (distance < 200) continue;
+
+              const style = getComputedStyle(el);
+              const isDocument = el === scrollingElement;
+              if (!isDocument && !/(auto|scroll)/.test(style.overflowY)) continue;
+
+              const rect = isDocument
+                ? { width: innerWidth, height: innerHeight, top: 0, bottom: innerHeight }
+                : el.getBoundingClientRect();
+              const visibleHeight = isDocument
+                ? innerHeight
+                : Math.max(0, Math.min(innerHeight, rect.bottom) - Math.max(0, rect.top));
+              const visibleWidth = Math.max(1, Math.min(innerWidth, rect.width || 1));
+              const score = distance * Math.max(1, visibleHeight) * visibleWidth;
+
+              if (!best || score > best.score) {
+                best = { el, score, distance, isDocument };
+              }
+            }
+
+            if (!best) {
+              const distance = Math.max(0, scrollingElement.scrollHeight - innerHeight);
+              best = { el: scrollingElement, score: distance, distance, isDocument: true };
+            }
+
+            if (!best.isDocument) {
+              best.el.setAttribute('data-video-scroll-target', 'true');
+            }
+
+            const desc = best.isDocument ? 'document' : [
+              best.el.tagName,
+              best.el.id ? `#${best.el.id}` : '',
+              best.el.className && typeof best.el.className === 'string'
+                ? `.${best.el.className.trim().split(/\s+/).slice(0,3).join('.')}`
+                : ''
+            ].join('');
+
+            return {
+              kind: best.isDocument ? 'document' : 'element',
+              distance: best.distance,
+              description: desc,
+              scrollHeight: best.el.scrollHeight,
+              clientHeight: best.isDocument ? innerHeight : best.el.clientHeight
+            };
+          });
+
+          console.log('Scroll target:', JSON.stringify(target));
+          fs.writeFileSync('output/capture-info.json', JSON.stringify(target, null, 2));
+
+          // Leisurely continuous movement: 80 CSS pixels per second.
+          const speed = 80;
+          const durationMs = Math.max(1000, (target.distance / speed) * 1000);
+          console.log(`Capture duration: ${(durationMs / 1000).toFixed(1)} seconds`);
+
+          await page.evaluate(({ kind }) => {
+            const el = kind === 'document'
+              ? (document.scrollingElement || document.documentElement)
+              : document.querySelector('[data-video-scroll-target="true"]');
+            if (kind === 'document') window.scrollTo(0, 0);
+            else if (el) el.scrollTop = 0;
+          }, { kind: target.kind });
+
+          // Tiny top hold so the first frame is clean, then one uninterrupted scroll.
+          await page.waitForTimeout(350);
+
+          await page.evaluate(async ({ kind, distance, durationMs }) => {
+            const el = kind === 'document'
+              ? (document.scrollingElement || document.documentElement)
+              : document.querySelector('[data-video-scroll-target="true"]');
+
+            await new Promise(resolve => {
+              const start = performance.now();
+              const tick = now => {
+                const p = Math.min(1, (now - start) / durationMs);
+                const y = distance * p;
+                if (kind === 'document') window.scrollTo(0, y);
+                else if (el) el.scrollTop = y;
+
+                if (p < 1) requestAnimationFrame(tick);
+                else resolve();
+              };
+              requestAnimationFrame(tick);
+            });
+          }, { kind: target.kind, distance: target.distance, durationMs });
+
+          const video = page.video();
+          await page.close();
+          await context.close();
+          if (video) await video.saveAs('output/histomap-scroll-raw.webm');
+          await browser.close();
+          EOF
+
+          node capture.mjs
+
+      - name: Upload capture
+        uses: actions/upload-artifact@v4
+        with:
+          name: histomap-scroll-raw
+          path: output/
+          if-no-files-found: error
+          retention-days: 7
