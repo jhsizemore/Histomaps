@@ -10,3 +10,11 @@
 /api/analytics
   X-Robots-Tag: noindex, nofollow, noarchive
   Cache-Control: no-store, max-age=0
+
+/mobile-preview/*
+  Cache-Control: no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow
+
+/mobile-preview-core/*
+  Cache-Control: no-cache, must-revalidate
+  X-Robots-Tag: noindex, nofollow
