@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1.0",
+  "metadata": { "id": "example-histomap", "title": "Example Histomap", "thesis": "State the historical argument this model makes.", "time": { "minYear": 0, "maxYear": 100, "calendar": "Common Era" }, "streamWidthMetric": "State what stream width represents in this model.", "defaultOrientation": "recent-top" },
+  "sources": [{ "id": "example-source", "title": "Add a real source before publication" }],
+  "streams": [{ "id": "example-stream", "label": "Example stream", "sourceIds": ["example-source"], "segments": [{ "year": 0, "center": 50, "width": 10, "locked": true }, { "year": 100, "center": 50, "width": 20, "locked": true }] }],
+  "events": [{ "id": "example-event", "title": "Example event", "year": 50, "streamId": "example-stream", "sourceIds": ["example-source"], "confidence": "high" }],
+  "people": [], "eras": [], "presentation": {}
+}

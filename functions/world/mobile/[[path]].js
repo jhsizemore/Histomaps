@@ -1,5 +1,5 @@
 class InjectRouting{
-  element(element){element.append('<script src="/assets/histomap-routing.js" defer></script>',{html:true})}
+  element(element){element.append('<script src="/assets/histomap-routing.js" defer></script><script type="module" src="/engine/browser/world-share-card.js"></script>',{html:true})}
 }
 
 function sourceUrl(request,parts){
