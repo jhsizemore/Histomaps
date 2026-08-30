@@ -1,4 +1,4 @@
-class InjectRouting{element(element){element.append('<script src="/assets/histomap-routing.js" defer></script>',{html:true})}}
+class InjectRouting{element(element){element.append('<script src="/assets/histomap-routing.js" defer></script><script type="module" src="/engine/browser/world-share-card.js"></script>',{html:true})}}
 export async function onRequestGet({request,env}){
   const source=new URL(request.url);source.pathname='/mobile-preview/';
   const response=await env.ASSETS.fetch(source);
