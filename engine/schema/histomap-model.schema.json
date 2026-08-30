@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://histomaps.org/schema/histomap-model/v1.json",
+  "title": "Histomap model",
+  "type": "object",
+  "required": ["schemaVersion", "metadata", "sources", "streams", "events"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "metadata": {
+      "type": "object",
+      "required": ["id", "title", "thesis", "time", "streamWidthMetric"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string", "minLength": 1 },
+        "thesis": { "type": "string", "minLength": 1 },
+        "time": { "type": "object", "required": ["minYear", "maxYear", "calendar"], "properties": { "minYear": { "type": "integer" }, "maxYear": { "type": "integer" }, "calendar": { "type": "string", "minLength": 1 } } },
+        "streamWidthMetric": { "type": "string", "minLength": 1 },
+        "defaultOrientation": { "enum": ["past-top", "recent-top"] }
+      }
+    },
+    "sources": { "type": "array", "items": { "$ref": "#/$defs/source" } },
+    "streams": { "type": "array", "items": { "$ref": "#/$defs/stream" } },
+    "events": { "type": "array", "items": { "$ref": "#/$defs/event" } },
+    "people": { "type": "array", "items": { "$ref": "#/$defs/person" } },
+    "eras": { "type": "array", "items": { "$ref": "#/$defs/era" } },
+    "presentation": { "type": "object" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "source": { "type": "object", "required": ["id", "title"], "properties": { "id": { "$ref": "#/$defs/id" }, "title": { "type": "string", "minLength": 1 }, "author": { "type": "string" }, "url": { "type": "string", "format": "uri" } } },
+    "stream": { "type": "object", "required": ["id", "label", "sourceIds", "segments"], "properties": { "id": { "$ref": "#/$defs/id" }, "label": { "type": "string", "minLength": 1 }, "sourceIds": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" } }, "parentStreamIds": { "type": "array", "items": { "$ref": "#/$defs/id" } }, "segments": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["year", "center", "width"], "properties": { "year": { "type": "integer" }, "center": { "type": "number" }, "width": { "type": "number", "minimum": 0 }, "locked": { "type": "boolean" } } } } } },
+    "event": { "type": "object", "required": ["id", "title", "year", "sourceIds"], "properties": { "id": { "$ref": "#/$defs/id" }, "title": { "type": "string", "minLength": 1 }, "year": { "type": "integer" }, "endYear": { "type": "integer" }, "streamId": { "$ref": "#/$defs/id" }, "sourceIds": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" } }, "confidence": { "enum": ["high", "medium", "contested", "approximate"] } } },
+    "person": { "type": "object", "required": ["id", "name", "birthYear", "deathYear", "sourceIds"], "properties": { "id": { "$ref": "#/$defs/id" }, "name": { "type": "string", "minLength": 1 }, "birthYear": { "type": "integer" }, "deathYear": { "type": "integer" }, "sourceIds": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" } } } },
+    "era": { "type": "object", "required": ["id", "label", "startYear", "endYear"], "properties": { "id": { "$ref": "#/$defs/id" }, "label": { "type": "string", "minLength": 1 }, "startYear": { "type": "integer" }, "endYear": { "type": "integer" } } }
+  }
+}
