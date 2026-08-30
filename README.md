@@ -16,6 +16,15 @@ Histomaps.org is a publishing project for visual historical arguments. A Histoma
 
 `/world/` is a frozen, static production build. The readable development master and deployment patch scaffolding are intentionally not kept on the current public branch. HTML, CSS and JavaScript are minified for deployment; development should continue from the readable private master rather than from the production artifact.
 
+## Histomap Engine
+
+`engine/` and `models/` provide the beginning of a reusable Histomap engine:
+a versioned model contract, source-aware validation and deterministic stream
+geometry primitives. The current World map remains the reference model; its
+minified public build is not modified by this foundation work. See
+[`engine/README.md`](engine/README.md) and
+[`docs/engine-extraction-brief.md`](docs/engine-extraction-brief.md).
+
 ## Attribution
 
 The project begins with John B. Sparks's 1931 *The Histomap: Four Thousand Years of World History*. Histomaps.org is an independent interactive implementation and extension of the visual format by J. Hunter Sizemore.
