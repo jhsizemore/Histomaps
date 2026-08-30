@@ -40,7 +40,7 @@ function focusedYear() {
 async function snapshotMap() {
   const svg = document.querySelector('#histomap'); if (!(svg instanceof SVGElement)) throw new Error('Map SVG unavailable');
   const box = svg.getBoundingClientRect(); const clone = svg.cloneNode(true); inlineStyles(svg, clone);
-  clone.setAttribute('width', String(Math.round(box.width))); clone.setAttribute('height', String(Math.round(box.height));
+  clone.setAttribute('width', String(Math.round(box.width))); clone.setAttribute('height', String(Math.round(box.height)));
   clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
   const blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml;charset=utf-8' });
   const url = URL.createObjectURL(blob); const image = new Image();
