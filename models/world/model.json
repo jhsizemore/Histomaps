@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1.0",
+  "metadata": { "id": "world", "title": "Histomap: The World", "thesis": "World history can be read as connected, changing streams rather than a single sequence of isolated states and events.", "time": { "minYear": -2000, "maxYear": 2026, "calendar": "BCE/CE" }, "streamWidthMetric": "A model-defined comparative measure of historical prominence, interpreted with the map's sources and methodology.", "defaultOrientation": "recent-top" },
+  "sources": [{ "id": "sparks-1931", "title": "The Histomap: Four Thousand Years of World History", "author": "John B. Sparks" }],
+  "streams": [], "events": [], "people": [], "eras": [],
+  "presentation": { "theme": "world-editorial", "status": "migration-manifest", "note": "The public World build is frozen and minified. Populate these records only from the readable development master." }
+}
