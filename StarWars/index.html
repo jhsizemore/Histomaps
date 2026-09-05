@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <base href="/StarWars/">
+  <link rel="canonical" href="https://histomaps.org/StarWars/">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#11191c">
+  <meta name="description" content="Explore the rise and fall of galactic powers in an interactive Star Wars Histomap, with synchronized film and TV spans and clearly separated Legends extensions.">
+  <title>Star Wars · Histomap</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%2311191c'/%3E%3Ctext x='20' y='29' text-anchor='middle' font-size='29' fill='%23efd493' font-family='serif'%3EH%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="data.js" defer></script>
+  <script src="expanded-data.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="#" aria-label="Star Wars Histomap, beginning of timeline"><span class="brand-mark">H</span><span>HISTOMAP<span class="edition">A GALAXY FAR, FAR AWAY</span></span></a>
+    <h1>STAR WARS</h1>
+    <div class="header-actions"><span class="canon" id="continuity-badge">CANON</span><button id="about" class="quiet">How to read <span aria-hidden="true">↗</span></button></div>
+  </header>
+  <main class="workspace">
+    <aside class="navigation" aria-label="Timeline navigation">
+      <div class="nav-intro"><span class="eyebrow">GALACTIC HISTORY</span><p>Power changes.<br>The story flows.</p><span class="range">500 BBY — 35 ABY</span></div>
+      <nav id="era-nav" aria-label="Jump to an era"></nav>
+      <div class="minimap-wrap"><span class="eyebrow">THE WHOLE SAGA</span><button id="minimap" aria-label="Click to navigate the timeline"><svg id="mini-svg" viewBox="0 0 820 3460" preserveAspectRatio="none" aria-hidden="true"></svg><span id="viewport-indicator"></span></button></div>
+      <button id="method" class="method-link">Sources & interpretation ↗</button>
+      <span class="fan-note">An unofficial fan-made atlas.<br>Contains story spoilers.</span>
+    </aside>
+    <section class="atlas" aria-label="Interactive galactic timeline">
+      <div class="edition-toolbar"><label>Continuity <select id="continuity"><option value="canon">Canon · 500 BBY–35 ABY</option><option value="ancient">Legends · ancient past</option><option value="future">Legends · distant future</option></select></label><label class="screen-switch"><input type="checkbox" id="show-screen" checked> Films & TV</label><button id="find-screen" class="quiet">Screen spans →</button></div>
+      <div id="continuity-note" class="continuity-note">Canon history · Film and TV spans follow the same time scale as the map.</div>
+      <div class="toolbar">
+        <div class="era-current"><span class="live-dot"></span><span id="current-era">The High Republic</span></div>
+        <label class="mobile-era-picker"><span class="sr-only">Jump to a period</span><select id="mobile-era"></select></label>
+        <div class="map-controls"><label class="select-wrap"><span class="sr-only">Event detail</span><select id="detail-level"><option value="1">Landmarks</option><option value="2" selected>Events</option><option value="3">All details</option></select></label><div class="zoom"><button id="zoom-out" aria-label="Zoom out">−</button><output id="zoom-value" aria-label="Zoom level">100%</output><button id="zoom-in" aria-label="Zoom in">+</button></div><button id="reset" class="quiet" aria-label="Reset zoom and return to beginning">↺</button></div>
+      </div>
+      <div class="map-key"><span><i class="swatch" style="--swatch:#d8b76b"></i>Republic</span><span><i class="swatch" style="--swatch:#bd5d59"></i>Empire</span><span><i class="swatch" style="--swatch:#72bfae"></i>Rebellion</span><span class="scale-note">↓ Time · era-spaced scale</span></div>
+      <div id="map-scroll" tabindex="0" aria-label="Scroll the Histomap. Select a stream or event for its story.">
+        <div id="map-content"><div class="chart-pair"><svg id="map" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Star Wars Histomap: political streams and Force traditions"></svg><svg id="screen-map" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Concurrent movie and television time spans"></svg></div><div class="map-end"><span class="eyebrow">35 ABY · EXEGOL</span><p>The next chapter is unwritten here.</p><span>The canon map ends with the galactic uprising. Explore the Legends future using the continuity selector.</span></div></div>
+      </div>
+      <footer class="map-footer"><span>Tap a stream or event to explore</span><span>Widths are interpretive · not measured shares</span></footer>
+    </section>
+    <aside id="inspector" class="inspector" aria-label="Selected story"><div class="inspector-bar"><span class="eyebrow">ARCHIVE RECORD</span><button id="close-inspector" aria-label="Close story">×</button></div><div id="inspector-content"></div></aside>
+  </main>
+  <dialog id="info-dialog" aria-labelledby="info-title"><button id="close-info" aria-label="Close explanation">×</button><span class="eyebrow">A NOTE FROM THE CARTOGRAPHER</span><h2 id="info-title">Read the currents<br>of galactic history.</h2><p>Follow time downward. Colored streams trace political powers as they rise, fracture, transform, and fall. Select any stream or event to open its story.</p><h3>What the widths mean</h3><p>Widths are an editorial, qualitative interpretation of political and military reach. They are not canonical territory, population, percentages, or a quantitative dataset. The independent-worlds band groups many distinct societies for readability.</p><h3>Two different kinds of influence</h3><p>The narrow Jedi and Sith tracks on the left show the continuity and visibility of Force traditions, independently of the political streams. A thin line can represent survival in hiding. It does not count Force users.</p><h3>Time is continuous, spacing is elastic</h3><p>Dates use BBY (before the Battle of Yavin) and ABY (after it). Yavin is the zero point. The scale expands crowded years and compresses quiet centuries; equal distances do not mean equal durations. Events sharing a year are ordered within that year for readability, not dated to an invented month.</p><h3>Scope</h3><p>This first canon atlas covers 500 BBY through 35 ABY. It selects major events from the High Republic, films, and connected series. Navigation chapters use editorial boundaries to keep the map readable; official story eras can overlap. Legends is a separate continuity and is not mixed into this map. Open-ended traditions continue beyond the map; historical starting dates are not implied by the top edge.</p><h3>Film and TV spans</h3><p>The adjacent screen-story column shares the map’s vertical time scale. Lines mark dated story windows; dots mark single-year placements without inventing durations. Dashed spans identify approximate dates or anthology gaps. Labels may move down to remain readable; their leader lines point back to the true date. Same-year placements do not prove scene-by-scene simultaneity.</p><h3>Legends extensions</h3><p>Use the continuity selector for the ancient past and distant future beyond this atlas’s core canon range. Legends has its own timeline. It is not a prequel or sequel appended to Disney canon, and a sparsely covered canon period does not make a Legends account canonical. The chart keeps these stories in separately labeled, hatched sections.</p><h3>Stories without one reliable span</h3><div id="screen-notes"></div><h3>Source shelf</h3><div id="source-list"></div><p class="fine-print">Event records link to supporting sources. Approximate placements are marked. Band geometry and condensed explanations are original interpretations. Star Wars and related properties belong to Lucasfilm. This is an unofficial fan project.</p></dialog>
+  <noscript>This interactive Histomap requires JavaScript to draw the timeline and open its event records.</noscript>
+</body>
+</html>
