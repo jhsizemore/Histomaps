@@ -1,0 +1,30 @@
+/* Canon lives, independent of political stream widths.
+   `endKind: known` is the last appearance included here, never an invented death.
+   Dates are year-level placements; endpoint uncertainty is stored independently. */
+(() => {
+  const D=window.HISTOMAP;
+  const people=[
+    {id:'anakin',name:'Anakin Skywalker / Darth Vader',short:'Anakin / Vader',start:-41,end:4,endKind:'death',color:'#c68783',groups:['skywalker'],wiki:'Anakin_Skywalker',official:'anakin-skywalker',note:'The same person across the Republic and Imperial eras. The line ends with his death at Endor; his later presence as a Force spirit is not an extension of his physical life.'},
+    {id:'padme',name:'Padmé Amidala',short:'Padmé',start:-46,end:-19,endKind:'death',color:'#d9b981',groups:['skywalker'],wiki:'Padm%C3%A9_Amidala_Naberrie',official:'padme-amidala',note:'Queen and then senator of Naboo. She dies after giving birth to Luke and Leia as the Republic becomes the Empire.'},
+    {id:'luke-life',name:'Luke Skywalker',short:'Luke',start:-19,end:34,endKind:'death',color:'#96cbb3',groups:['skywalker'],wiki:'Luke_Skywalker',official:'luke-skywalker',note:'Born at the fall of the Republic. His life ends on Ahch-To after his projection at Crait. Later appearances as a Force spirit fall outside this physical lifeline.'},
+    {id:'leia',name:'Leia Organa',short:'Leia',start:-19,end:35,endKind:'death',color:'#e4c793',groups:['skywalker','rebellion'],wiki:'Leia_Organa',official:'leia-organa',note:'Luke’s twin, a leader of the Rebellion and later the Resistance. She dies on Ajan Kloss after reaching out through the Force to Ben.'},
+    {id:'ben',name:'Ben Solo / Kylo Ren',short:'Ben / Kylo',start:5,end:35,endKind:'death',color:'#bba5cf',groups:['skywalker','resistance'],wiki:'Ben_Solo',official:'kylo-ren',note:'The son of Han and Leia. His changing allegiance does not split his identity into separate lives. He dies after restoring Rey to life on Exegol.'},
+    {id:'rey-life',name:'Rey Skywalker',short:'Rey',start:15,end:35,endKind:'known',color:'#a9d3bd',groups:['skywalker','resistance'],wiki:'Rey_Skywalker',official:'rey',note:'Alive at the end of The Rise of Skywalker. Her temporary death and revival at Exegol occur within the same year. The open endpoint leaves her later life uncharted. “Skywalkers” includes her chosen name, not a claim of biological descent.'},
+    {id:'yoda',name:'Yoda',short:'Yoda',start:-896,startApprox:true,end:4,endKind:'death',color:'#b0c995',groups:['jedi'],wiki:'Yoda',official:'yoda',note:'About 900 years old when he dies on Dagobah in 4 ABY, implying a birth around 896 BBY. His line enters from above the map’s 500 BBY boundary. Force-spirit appearances are excluded.'},
+    {id:'qui-gon',name:'Qui-Gon Jinn',short:'Qui-Gon',start:-80,startApprox:true,end:-32,endKind:'death',color:'#cab78d',groups:['jedi'],wiki:'Qui-Gon_Jinn',official:'qui-gon-jinn',note:'His canon birth is approximately 80 BBY. Maul kills him during the Battle of Naboo. The older Legends birth date is not used.'},
+    {id:'kenobi',name:'Obi-Wan Kenobi',short:'Obi-Wan',start:-57,end:0,endKind:'death',color:'#9cbacf',groups:['jedi'],wiki:'Obi-Wan_Kenobi',official:'obi-wan-kenobi',note:'Mentor to Anakin and Luke. This map uses the familiar Yavin-zero convention for A New Hope. Some newer reference chronologies label its pre-Yavin events 1 BBY. His physical life ends aboard the Death Star.'},
+    {id:'ahsoka',name:'Ahsoka Tano',short:'Ahsoka',start:-36,end:9,endApprox:true,endKind:'known',color:'#d3a482',groups:['jedi'],wiki:'Ahsoka_Tano',official:'ahsoka-tano',note:'The open endpoint marks her New Republic story period, around 9 ABY, rather than a death. Precise dating of the connected series varies. Her temporary death and revival on Mortis do not end this lifeline.'},
+    {id:'grogu',name:'Din Grogu',short:'Grogu',start:-41,startApprox:true,end:9,endApprox:true,endKind:'known',color:'#b1cdaa',groups:['jedi'],wiki:'Din_Grogu',official:'grogu',note:'Approximately 50 years old when The Mandalorian begins, giving an approximate birth around 41 BBY. His open endpoint marks the broad New Republic screen-story period used here; it does not date his final appearance or predict his fate.'},
+    {id:'han',name:'Han Solo',short:'Han',start:-32,end:34,endKind:'death',color:'#d0b18b',groups:['rebellion'],wiki:'Han_Solo',official:'han-solo',note:'A Corellian smuggler who becomes a Rebel general. His line ends at Starkiller Base, where he is killed by his son Ben.'},
+    {id:'chewie',name:'Chewbacca',short:'Chewbacca',start:-200,end:35,endKind:'known',color:'#b89d7e',groups:['rebellion'],wiki:'Chewbacca',official:'chewbacca',note:'A life spanning the late High Republic, the Empire, and the First Order conflict. He is alive after Exegol. His death in the alternate Legends continuity is not imported into this canon line.'},
+    {id:'lando',name:'Lando Calrissian',short:'Lando',start:-43,startApprox:true,end:35,endKind:'known',color:'#92b8cb',groups:['rebellion'],wiki:'Landonis_Balthazar_Calrissian',official:'lando-calrissian',note:'His approximate birth follows the age given in The Rise of Skywalker’s reference material; some earlier sources differ. He survives the Battle of Exegol, so the line ends with an open marker.'},
+    {id:'finn',name:'Finn',short:'Finn',start:11,end:35,endKind:'known',color:'#d0b486',groups:['resistance'],wiki:'Finn',official:'finn',note:'Born during the New Republic and raised by the First Order. He becomes a Resistance general and is alive after the Battle of Exegol.'},
+    {id:'poe',name:'Poe Dameron',short:'Poe',start:2,end:35,endKind:'known',color:'#a0bfdb',groups:['resistance'],wiki:'Poe_Dameron',official:'poe-dameron',note:'Born during the Galactic Civil War. A Resistance pilot and later general, he is alive after the Battle of Exegol.'}
+  ];
+  people.forEach(p=>{
+    D.sources['life-'+p.id]=[p.name+' · canon dates (Wookieepedia)','https://starwars.fandom.com/wiki/'+p.wiki];
+    D.sources['bio-'+p.id]=[p.name+' · official Databank','https://www.starwars.com/databank/'+p.official];
+    p.sources=['bio-'+p.id,'life-'+p.id];
+  });
+  D.lifelines=people;
+})();
