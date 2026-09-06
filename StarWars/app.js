@@ -326,7 +326,7 @@
     $('life-group').hidden=layer!=='life';$('companion-title').textContent='Films & TV';
     $('detail-level').disabled=mode!=='canon';
     document.querySelectorAll('[data-layer]').forEach(b=>{b.disabled=mode!=='canon'&&b.dataset.layer!=='none';b.setAttribute('aria-pressed',String((mode==='canon'?layer:'none')===b.dataset.layer));});
-    $('layer-caption').textContent=layer==='life'&&hasCompanion?'● Born  × Died  ○ Last appearance':layer==='screen'&&hasCompanion?'◇ Film · Bracket = series · Dashed = approximate / gaps':'Select a stream or numbered event';
+    $('layer-caption').textContent=layer==='life'&&hasCompanion?'● Born  × Died  ○ Last appearance':layer==='screen'&&hasCompanion?'◇ Film · span = series · • true anchor · dashed ≈ / gaps':'Select a stream or numbered event';
     renderedHeight=(mode==='canon'?D.height:D.legends[mode].height)*zoom;
     if(mode==='canon'){renderCanon();if(layer==='screen')renderScreen();if(layer==='life')renderLives();}else renderLegend();
     [map,...(hasCompanion?[$('screen-map')]:[])].forEach((pane,i)=>{pane.style.height=`${renderedHeight}px`;pane.setAttribute('viewBox',`0 0 ${i?screenWidth:chartWidth} ${renderedHeight}`);});
@@ -348,39 +348,110 @@
     });
     return rows.sort((a,b)=>(yearY(a.start)+yearY(a.end))-(yearY(b.start)+yearY(b.end)));
   }
+  function wrapLineCount(text,maxChars){
+    const words=text.split(' ');let count=0,row='';
+    words.forEach(word=>{if(row&&(row+' '+word).length>maxChars){count++;row=word;}else row+=(row?' ':'')+word;});
+    return count+(row?1:0);
+  }
+  function packScreenPositions(targets,heights,lo,hi,gap=10){
+    if(!targets.length)return [];
+    const required=heights.reduce((a,b)=>a+b,0)+gap*Math.max(0,heights.length-1);
+    if(required>hi-lo){let top=lo;return heights.map(h=>{const c=top+h/2;top+=h+gap;return c;});}
+    const offsets=[heights[0]/2];
+    for(let i=1;i<targets.length;i++)offsets.push(offsets.at(-1)+(heights[i-1]+heights[i])/2+gap);
+    const blocks=[];
+    targets.forEach((target,i)=>{
+      blocks.push({a:i,b:i,v:target-offsets[i],n:1});
+      while(blocks.length>1&&blocks.at(-2).v>blocks.at(-1).v){
+        const b=blocks.pop(),a=blocks.pop(),n=a.n+b.n;
+        blocks.push({a:a.a,b:b.b,v:(a.v*a.n+b.v*b.n)/n,n});
+      }
+    });
+    const result=Array(targets.length).fill(0),lastLimit=hi-offsets.at(-1)-heights.at(-1)/2;
+    blocks.forEach(block=>{
+      const v=Math.max(lo,Math.min(lastLimit,block.v));
+      for(let i=block.a;i<=block.b;i++)result[i]=v+offsets[i];
+    });
+    return result;
+  }
+  function screenLogoHeight(item,grouped){return item.kind==='film'?(grouped?48:64):(grouped?38:50);}
+  function screenTypeLabel(m,grouped){
+    if(grouped){
+      const kinds=[...new Set(m.items.map(item=>item.kind))];
+      const names=kinds.map(kind=>kind==='film'?'film':kind==='series'?'TV':kind==='animation'?'animation':'anthology');
+      return `${m.items.length} titles · ${names.join(' + ')}`;
+    }
+    if(m.kind==='anthology')return 'Anthology · gaps';
+    if(m.discontinuous)return 'Story with time jump';
+    if(m.kind==='film')return 'Film';
+    if(m.kind==='animation')return 'Animation';
+    return 'TV series';
+  }
+  function screenCardMetrics(m,cardW,grouped){
+    const artItems=m.items.filter(item=>titleArt?.assets[item.id]),maxChars=Math.max(10,Math.floor((cardW-20)/6.3));
+    const cols=grouped&&cardW>=205?2:1;
+    let rowHeights=[],titleH;
+    if(artItems.length===m.items.length){
+      const rows=Math.ceil(artItems.length/cols);rowHeights=Array(rows).fill(0);
+      artItems.forEach((item,i)=>{const row=Math.floor(i/cols);rowHeights[row]=Math.max(rowHeights[row],screenLogoHeight(item,grouped));});
+      titleH=rowHeights.reduce((a,b)=>a+b,0)+Math.max(0,rowHeights.length-1)*8+6;
+    }else{
+      const title=shortTitles[m.id]||m.name;titleH=wrapLineCount(title,Math.max(12,Math.floor((cardW-20)/7.3)))*18+4;
+    }
+    const dateText=screenDate(m),typeText=screenTypeLabel(m,grouped);
+    const dateLines=wrapLineCount(dateText,maxChars),typeLines=wrapLineCount(typeText,maxChars);
+    return {artItems,cols,rowHeights,titleH,dateText,typeText,maxChars,dateLines,typeLines,cardH:14+titleH+dateLines*15+typeLines*15+17};
+  }
   function renderScreen(){
     const pane=$('screen-map'),W=screenWidth;pane.replaceChildren();
-    screenGroups=makeScreenGroups();let bottom=57;const occupied=[];
+    screenGroups=makeScreenGroups();
     pane.append(svg('text',{x:12,y:30,class:'column-title'},'STORY TIME'));
-    pane.append(svg('text',{x:12,y:49,class:'screen-meta'},'◇ Film · ┃ Series'));
-    screenGroups.forEach(m=>{
-      const start=yearY(m.start)*zoom,end=yearY(m.end)*zoom,mid=(start+end)/2,color=mediaColors[m.kind];
+    pane.append(svg('text',{x:12,y:49,class:'screen-meta'},'◇ Film · ┃ Series · • true anchor'));
+    const cardX=W<190?40:58,cardW=Math.max(70,W-cardX-8),occupied=[];
+    const entries=screenGroups.map(m=>{
+      const start=yearY(m.start)*zoom,end=yearY(m.end)*zoom,mid=(start+end)/2,color=mediaColors[m.kind],grouped=m.items.length>1;
       let lane=occupied.findIndex(v=>v<start-10);if(lane<0)lane=occupied.length;occupied[lane]=end+10;
-      const x=12+lane*8,cardX=W<190?12:56,cardW=W-cardX-10,labelY=Math.max(mid,bottom+12),grouped=m.items.length>1;
+      return {m,start,end,mid,color,grouped,lane,metrics:screenCardMetrics(m,cardW,grouped)};
+    });
+    const centers=packScreenPositions(entries.map(e=>e.mid),entries.map(e=>e.metrics.cardH),64,Math.max(120,renderedHeight-18),10);
+    const laneCount=Math.max(1,...entries.map(e=>e.lane+1)),railLeft=8,railRight=Math.max(railLeft,cardX-19),anchorX=cardX-8;
+    entries.forEach((entry,index)=>{
+      const {m,start,end,mid,color,grouped,lane,metrics}=entry,top=centers[index]-metrics.cardH/2;
+      const x=laneCount===1?(railLeft+railRight)/2:railLeft+lane*(railRight-railLeft)/(laneCount-1);
       const g=svg('g',{class:grouped?'screen-cluster':'screen-story',tabindex:0,role:'button','aria-label':`${m.name}, ${screenDate(m)}${grouped?`, ${m.items.length} titles, expand`:''}`});if(!grouped)g.dataset.screen=m.id;
       g.append(svg('title',{},`${m.name} · ${screenDate(m)}`));
       if(start!==end){
         g.append(svg('line',{x1:x,x2:x,y1:start,y2:end,stroke:color,'stroke-width':3,'stroke-dasharray':m.discontinuous?'3 5':m.approx?'6 4':'none',class:'screen-rail'}));
         [start,end].forEach(y=>g.append(svg('path',{d:`M ${x-4} ${y} h 8`,stroke:color,'stroke-width':1.5})));
-      }else if(m.kind==='film')g.append(svg('path',{d:`M ${x} ${start-5} l 5 5 -5 5 -5 -5 Z`,fill:m.approx?'#102025':color,stroke:color}));
-      else g.append(svg('circle',{cx:x,cy:start,r:4,fill:m.approx?'#102025':color,stroke:color,'stroke-width':1.5}));
-      g.append(svg('path',{d:`M ${x} ${mid} H ${Math.max(x,cardX-5)} V ${labelY+12} H ${cardX}`,fill:'none',stroke:color,'stroke-opacity':.55}));
-      const card=svg('g'),title=shortTitles[m.id]||m.name;
-      const artItems=m.items.filter(item=>titleArt?.assets[item.id]);
-      let titleH;
-      if(artItems.length===m.items.length){
-        const cols=grouped&&cardW>=205?2:1,cellW=(cardW-20-(cols-1)*10)/cols,cellH=grouped?48:64;
-        artItems.forEach((item,i)=>mapTitleArt(card,item.id,cardX+10+(i%cols)*(cellW+10),labelY+12+Math.floor(i/cols)*(cellH+10),cellW,cellH));
-        titleH=Math.ceil(artItems.length/cols)*(cellH+10)+6;
-      }else titleH=textLines(card,title,cardX+10,labelY+19,Math.max(12,Math.floor((cardW-20)/7.3)),'screen-name',18)*18;
-      const meta=grouped?`${m.approx?'c. ':''}${formatYear(m.start).replace(' · YAVIN','')} · ${m.items.length} titles`:`${m.approx?'≈ ':''}${m.kind==='anthology'?'Anthology · gaps':m.discontinuous?'Story with gaps':m.kind==='film'?'Film':m.kind==='animation'?'Animation':'TV series'}`;
-      const metaN=textLines(card,meta,cardX+10,labelY+titleH+20,Math.max(14,Math.floor((cardW-20)/6.3)),'screen-meta',15);
-      const cardH=titleH+metaN*15+20;
-      card.prepend(svg('rect',{x:cardX,y:labelY,width:cardW,height:cardH,rx:6,class:'screen-card'}));
-      card.append(svg('line',{x1:cardX,y1:labelY+7,x2:cardX,y2:labelY+cardH-7,stroke:color,'stroke-width':2}));g.append(card);
-      activate(g,{type:grouped?'screen-group':'screen',id:m.id});pane.append(g);bottom=labelY+cardH;
+      }else if(m.kind==='film')g.append(svg('path',{d:`M ${x} ${start-5} l 5 5 -5 5 -5 -5 Z`,fill:m.approx?'#071014':color,stroke:color}));
+      else g.append(svg('circle',{cx:x,cy:start,r:4,fill:m.approx?'#071014':color,stroke:color,'stroke-width':1.5}));
+      // Every card gets one explicit marker at its true timeline position. Cards may move; this dot never does.
+      g.append(svg('path',{d:`M ${x+5} ${mid} H ${anchorX-4}`,fill:'none',stroke:color,'stroke-width':1.2,'stroke-opacity':.78}));
+      g.append(svg('circle',{cx:anchorX,cy:mid,r:grouped?4:3,fill:'#071014',stroke:color,'stroke-width':1.6}));
+      if(grouped)g.append(svg('circle',{cx:anchorX,cy:mid,r:1.5,fill:color}));
+      const bottom=top+metrics.cardH,targetY=mid<top?top+11:mid>bottom?bottom-11:mid;
+      g.append(svg('path',{d:`M ${anchorX+3} ${mid} C ${anchorX+8} ${mid},${cardX-7} ${targetY},${cardX} ${targetY}`,fill:'none',stroke:color,'stroke-width':1.15,'stroke-opacity':.66}));
+      const card=svg('g');
+      card.append(svg('rect',{x:cardX,y:top,width:cardW,height:metrics.cardH,rx:6,class:'screen-card'}));
+      card.append(svg('line',{x1:cardX,y1:top+7,x2:cardX,y2:top+metrics.cardH-7,stroke:color,'stroke-width':2}));
+      if(metrics.artItems.length===m.items.length){
+        const cellW=(cardW-20-(metrics.cols-1)*8)/metrics.cols,contentY=top+10;
+        const rowTops=[];let cursor=contentY;
+        metrics.rowHeights.forEach(h=>{rowTops.push(cursor);cursor+=h+8;});
+        metrics.artItems.forEach((item,i)=>{
+          const row=Math.floor(i/metrics.cols),h=screenLogoHeight(item,grouped),y=rowTops[row]+(metrics.rowHeights[row]-h)/2;
+          mapTitleArt(card,item.id,cardX+10+(i%metrics.cols)*(cellW+8),y,cellW,h);
+        });
+      }else{
+        const title=shortTitles[m.id]||m.name;textLines(card,title,cardX+10,top+21,Math.max(12,Math.floor((cardW-20)/7.3)),'screen-name',18);
+      }
+      const metaY=top+14+metrics.titleH;
+      const dateN=textLines(card,metrics.dateText,cardX+10,metaY,metrics.maxChars,'screen-meta',15);
+      const dateNode=card.lastChild;dateNode.setAttribute('style',`fill:${color};font-weight:600`);
+      textLines(card,metrics.typeText,cardX+10,metaY+dateN*15+3,metrics.maxChars,'screen-meta',15);
+      g.append(card);activate(g,{type:grouped?'screen-group':'screen',id:m.id});pane.append(g);
+      renderedHeight=Math.max(renderedHeight,bottom+24);
     });
-    renderedHeight=Math.max(renderedHeight,bottom+35);
   }
   function lifeDate(p,start){return `${(start?p.startApprox:p.endApprox)?'c. ':''}${formatYear(start?p.start:p.end)}`;}
   function renderLives(){

@@ -272,12 +272,19 @@ for i,(e,h,cy) in enumerate(zip(events,heights,centers)):
     text(date,EX,ty+4,17,GOLD)
 
 # Screen stories: actual spans, individual titles, and uncertainty that remains visible.
+# Film lockups retain their established size; series, animation, and anthologies step down slightly.
 colors={'film':GOLD,'series':'#91bade','animation':'#86c7ad','anthology':'#b798d0'}
 media=sorted(D['screen'],key=lambda m:(Y(m['start'])+Y(m['end']))/2)
 labelX=MX+87; labelW=MW-102
-mheights=[min(85,labelW*ART[m['id']]['height']/ART[m['id']]['width'])+58 for m in media]
+
+def media_logo_height(m):
+    base=min(85,labelW*ART[m['id']]['height']/ART[m['id']]['width'])
+    return base if m['kind']=='film' else max(38,base*.82)
+
+mheights=[media_logo_height(m)+58 for m in media]
 mcenters=positions([(Y(m['start'])+Y(m['end']))/2 for m in media],mheights,TOP+90,END-5,12)
 occupied=[]
+anchorX=labelX-18
 for m,h,cy in zip(media,mheights,mcenters):
     a,b=Y(m['start']),Y(m['end']);mid=(a+b)/2;col=colors[m['kind']]
     lane=next((i for i,v in enumerate(occupied) if v<a-10),len(occupied))
@@ -289,11 +296,15 @@ for m,h,cy in zip(media,mheights,mcenters):
       line([(x-5,a),(x+5,a)],col,2);line([(x-5,b),(x+5,b)],col,2)
     elif m['kind']=='film':poly([(x,a-6),(x+6,a),(x,a+6),(x-6,a)],PANEL if m.get('approx') else col,col)
     else:circle(x,a,5,PANEL if m.get('approx') else col,col,2)
-    line([(x+6,mid),(labelX-14,mid),(labelX-5,cy)],'#5c7178',1)
+    # A fixed dot marks the exact temporal anchor. The short connector then fans to the displaced label.
+    line([(x+6,mid),(anchorX-6,mid)],col,1.2)
+    circle(anchorX,mid,3.3,PANEL,col,1.6)
     ty=cy-h/2
-    # Solid label backing prevents long leaders from passing through titles.
+    attach=ty+10 if mid<ty else ty+h-10 if mid>ty+h else mid
+    line([(anchorX+4,mid),(anchorX+10,mid),(labelX-8,attach),(labelX-2,attach)],'#667b82',1)
+    # Solid label backing prevents leaders from passing through title artwork.
     rect(labelX-4,ty-5,labelW+8,h+5,PANEL)
-    logoH=h-58
+    logoH=media_logo_height(m)
     lockup(m['id'],labelX,ty,labelW,logoH)
     ty+=logoH+12
     date=('c. ' if m.get('approx') else '')+(yr(m['start']) if m['start']==m['end'] else yr(m['start'])+' – '+yr(m['end']))
