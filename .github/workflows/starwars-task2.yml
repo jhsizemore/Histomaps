@@ -1,0 +1,47 @@
+name: Star Wars Films and TV lane redesign
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-task2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply source redesign
+        run: python StarWars/tools/task2_films_tv_patch.py
+      - name: Validate JavaScript and Python
+        run: |
+          node --check StarWars/app.js
+          python -m py_compile StarWars/tools/poster/render.py
+      - name: Install poster dependency
+        run: python -m pip install --disable-pip-version-check pillow
+      - name: Render full-resolution poster
+        run: python StarWars/tools/poster/render.py
+      - name: Verify poster export
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          p=Path('StarWars/downloads/Star-Wars-Histomap-Poster.png')
+          im=Image.open(p)
+          assert im.size == (5200, 18220), im.size
+          print('poster', im.size, p.stat().st_size)
+          PY
+      - name: Commit redesign and regenerated poster
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add StarWars/app.js StarWars/index.html StarWars/tools/poster/render.py StarWars/downloads/Star-Wars-Histomap-Poster.png
+          git commit -m "Redesign Star Wars Films and TV timeline lane"
+          git push
