@@ -1,0 +1,5 @@
+Star Jedi by Boba Fonts / Davide Canavero (1998). Freeware. Source: https://www.dafont.com/star-jedi.font
+Original distribution and author guide: star-jedi-original.zip (intact).
+News Cycle by Nathan Willis: SIL Open Font License 1.1; see newscycle-OFL.txt. https://github.com/google/fonts/tree/main/ofl/newscycle
+Pathway Gothic One by Eduardo Tunni: SIL Open Font License 1.1; see pathwaygothicone-OFL.txt. https://github.com/google/fonts/tree/main/ofl/pathwaygothicone
+WOFF copies preserve font outlines and metadata.

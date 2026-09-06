@@ -6,6 +6,7 @@
   let mode='canon', layer=matchMedia('(min-width: 1000px) and (min-height: 600px)').matches?'screen':'none', lifeGroup='skywalker', chartWidth=620, screenWidth=250, renderedHeight=D.height, screenGroups=[];
   const factions=Object.fromEntries(D.factions.map(f=>[f.id,f]));
   const insignia=D.insignia;
+  const titleArt=D.titleArt;
   const formatYear=y=>y<0?`${Math.abs(y)} BBY`:y===0?'0 · YAVIN':`${y} ABY`;
   const date=e=>e.date||`${e.approx?'c. ':''}${formatYear(e.year)}`;
   function yearY(t){
@@ -25,6 +26,19 @@
     return el;
   }
   function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
+  function titleImage(key,cls='record-title-art'){
+    const a=titleArt?.assets[key];if(!a)return null;
+    const image=el('img',cls);image.src=a.src;image.alt='';image.width=a.width;image.height=a.height;image.setAttribute('aria-hidden','true');return image;
+  }
+  function recordTitleArt(target,key){const image=titleImage(key);if(image)target.append(image);}
+  function mapTitleArt(target,key,x,y,width,height){
+    const a=titleArt?.assets[key];if(!a)return false;
+    const image=svg('image',{x,y,width,height,href:a.src,preserveAspectRatio:'xMidYMid meet',class:'screen-title-art','aria-hidden':'true','pointer-events':'none'});image.dataset.titleArt=key;target.append(image);return true;
+  }
+  function addTitleArtCredits(){
+    const box=$('title-art-credits');if(!box||!titleArt)return;
+    Object.values(titleArt.assets).forEach(a=>{const p=el('p','insignia-credit'),link=el('a','',a.title);link.href=a.source;link.target='_blank';link.rel='noopener noreferrer';p.append(link,document.createTextNode(' — '+a.credit));box.append(p);});
+  }
   function symbolImage(key,size=44){
     const image=el('img','insignia-image');image.src=insignia.assets[key].light;image.alt='';image.width=size;image.height=size;image.setAttribute('aria-hidden','true');return image;
   }
@@ -352,10 +366,16 @@
       else g.append(svg('circle',{cx:x,cy:start,r:4,fill:m.approx?'#102025':color,stroke:color,'stroke-width':1.5}));
       g.append(svg('path',{d:`M ${x} ${mid} H ${Math.max(x,cardX-5)} V ${labelY+12} H ${cardX}`,fill:'none',stroke:color,'stroke-opacity':.55}));
       const card=svg('g'),title=shortTitles[m.id]||m.name;
-      const n=textLines(card,title,cardX+10,labelY+19,Math.max(12,Math.floor((cardW-20)/7.3)),'screen-name',18);
+      const artItems=m.items.filter(item=>titleArt?.assets[item.id]);
+      let titleH;
+      if(artItems.length===m.items.length){
+        const cols=grouped&&cardW>=205?2:1,cellW=(cardW-20-(cols-1)*10)/cols,cellH=grouped?48:64;
+        artItems.forEach((item,i)=>mapTitleArt(card,item.id,cardX+10+(i%cols)*(cellW+10),labelY+12+Math.floor(i/cols)*(cellH+10),cellW,cellH));
+        titleH=Math.ceil(artItems.length/cols)*(cellH+10)+6;
+      }else titleH=textLines(card,title,cardX+10,labelY+19,Math.max(12,Math.floor((cardW-20)/7.3)),'screen-name',18)*18;
       const meta=grouped?`${m.approx?'c. ':''}${formatYear(m.start).replace(' · YAVIN','')} · ${m.items.length} titles`:`${m.approx?'≈ ':''}${m.kind==='anthology'?'Anthology · gaps':m.discontinuous?'Story with gaps':m.kind==='film'?'Film':m.kind==='animation'?'Animation':'TV series'}`;
-      const metaN=textLines(card,meta,cardX+10,labelY+n*18+20,Math.max(14,Math.floor((cardW-20)/6.3)),'screen-meta',15);
-      const cardH=n*18+metaN*15+20;
+      const metaN=textLines(card,meta,cardX+10,labelY+titleH+20,Math.max(14,Math.floor((cardW-20)/6.3)),'screen-meta',15);
+      const cardH=titleH+metaN*15+20;
       card.prepend(svg('rect',{x:cardX,y:labelY,width:cardW,height:cardH,rx:6,class:'screen-card'}));
       card.append(svg('line',{x1:cardX,y1:labelY+7,x2:cardX,y2:labelY+cardH-7,stroke:color,'stroke-width':2}));g.append(card);
       activate(g,{type:grouped?'screen-group':'screen',id:m.id});pane.append(g);bottom=labelY+cardH;
@@ -479,20 +499,22 @@
     }else if(record.type==='screen-group'){
       const group=screenGroups.find(g=>g.id===record.id);heading=el('h2','',group.name);
       box.append(el('div','record-date',screenDate(group)),heading,el('p','','Select a title to see its full story window, overlaps, and dating notes.'));
-      group.items.forEach(m=>{const button=el('button','overlap-story',m.name);button.append(el('small','',screenDate(m)));button.addEventListener('click',()=>openRecord({type:'screen',id:m.id}));box.append(button);});
+      group.items.forEach(m=>{const button=el('button','overlap-story');recordTitleArt(button,m.id);button.append(el('span','',m.name),el('small','',screenDate(m)));button.addEventListener('click',()=>openRecord({type:'screen',id:m.id}));box.append(button);});
       box.append(el('p','hint','Shared-year and approximate-era markers do not establish scene-by-scene simultaneity.'));
     }else if(record.type==='screen'){
       const m=D.screen.find(s=>s.id===record.id);heading=el('h2','',m.name);
+      recordTitleArt(box,m.id);
       box.append(el('div','record-date',screenDate(m)),heading,el('div','record-label',`${m.kind} · canon`),el('p','',m.note||'The principal story takes place in this dated window. A point marks a year; it does not imply a year-long runtime.'));
       const others=D.screen.filter(s=>s.id!==m.id&&s.start<=m.end&&s.end>=m.start);
       box.append(el('div','record-divider'),el('div','record-label','Overlapping story windows'));
       if(!others.length)box.append(el('p','','No other mapped screen story overlaps this date window.'));
-      others.forEach(o=>{const b=el('button','overlap-story',o.name);b.addEventListener('click',()=>openRecord({type:'screen',id:o.id}));box.append(b);});
+      others.forEach(o=>{const b=el('button','overlap-story');recordTitleArt(b,o.id);b.append(el('span','',o.name));b.addEventListener('click',()=>openRecord({type:'screen',id:o.id}));box.append(b);});
       box.append(el('p','hint','Same-year and approximate-era placements do not prove that individual scenes happen simultaneously. Dashed anthology spans include time jumps.'));
       m.sources.forEach(s=>box.append(sourceLink(s)));
       const jump=el('button','start-event','Show this span on the map →');jump.addEventListener('click',()=>{setLayer('screen');scroller.focus({preventScroll:true});goYear(m.start);});box.append(jump);
     }else if(record.type==='legend'){
       const e=D.legends[mode].events.find(e=>e.id===record.id);heading=el('h2','',e.title);
+      recordTitleArt(box,titleArt?.legends[e.id]);
       box.append(el('div','record-date',`${formatYear(e.year)} · LEGENDS`),heading,el('p','',e.text),el('div','record-label','Reading the map'),el('p','',e.effect));
       const tags=el('div','record-tags');e.media.forEach(m=>tags.append(el('span','',m)));box.append(tags);e.sources.forEach(s=>box.append(sourceLink(s)));box.append(sourceLink('legendsPolicy'));
     }else{
@@ -532,9 +554,9 @@
   $('era-nav').addEventListener('click',e=>{if(e.target.closest('button'))toggleNav(false);});
   document.addEventListener('click',e=>{if(!$('view-options').contains(e.target))$('view-options').open=false;if(!$('navigation').hidden&&!$('navigation').contains(e.target)&&!$('toggle-nav').contains(e.target))toggleNav(false);});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('navigation').hidden){toggleNav(false);$('toggle-nav').focus();}$('view-options').open=false;}});
-  const notes=$('screen-notes');D.undatedScreen.forEach(n=>{const item=el('div','screen-notes-item');item.append(el('strong','',n.name),el('p','',n.note),sourceLink(n.source));notes.append(item);});
+  const notes=$('screen-notes');D.undatedScreen.forEach(n=>{const item=el('div','screen-notes-item');recordTitleArt(item,titleArt?.undated[n.name]);item.append(el('strong','',n.name),el('p','',n.note),sourceLink(n.source));notes.append(item);});
   ['viewing','tvDates','legendsPolicy','legendsBooks','legendsComics'].forEach(k=>$('source-list').append(sourceLink(k)));
-  buildInsigniaGuide();
+  buildInsigniaGuide();addTitleArtCredits();
   document.fonts?.ready.then(()=>render());
   buildNavigation();overview();renderMini();render();
 })();
