@@ -1,5 +1,6 @@
 name: Star Wars Films and TV visual QA
 
+# Re-run after grouping same-date poster titles.
 on:
   push:
     paths:
