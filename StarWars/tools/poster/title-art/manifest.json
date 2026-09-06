@@ -1,0 +1,362 @@
+{
+  "ep1": {
+    "key": "ep1",
+    "title": "I \u00b7 The Phantom Menace",
+    "source_page": "https://www.starwars.com/films/star-wars-episode-i-the-phantom-menace",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/the-phantom-menace-dplus-logtitle-800_3995f8db_ab4b28e7.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 434,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "ep2": {
+    "key": "ep2",
+    "title": "II \u00b7 Attack of the Clones",
+    "source_page": "https://www.starwars.com/films/star-wars-episode-ii-attack-of-the-clones",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/attack-of-the-clones-dplus-logotitle-800_703636e1.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 419,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "ep3": {
+    "key": "ep3",
+    "title": "III \u00b7 Revenge of the Sith",
+    "source_page": "https://www.starwars.com/films/star-wars-episode-iii-revenge-of-the-sith",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/revenge-of-the-sith-dplus-logotitle-800_53d94418.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 493,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "ep4": {
+    "key": "ep4",
+    "title": "IV \u00b7 A New Hope",
+    "source_page": "https://www.starwars.com/films/star-wars-episode-iv-a-new-hope",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/a-new-hope-logo_88b7ec98_03d5f833.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 218,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "ep5": {
+    "key": "ep5",
+    "title": "V \u00b7 The Empire Strikes Back",
+    "source_page": "https://www.starwars.com/films/star-wars-episode-v-the-empire-strikes-back",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/the-empire-strikes-back-logo_dcd5716c.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 381,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "ep6": {
+    "key": "ep6",
+    "title": "VI \u00b7 Return of the Jedi",
+    "source_page": "https://www.starwars.com/films/star-wars-episode-vi-return-of-the-jedi",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/return-of-the-jedi-logo_4651f88e.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 497,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "ep7": {
+    "key": "ep7",
+    "title": "VII \u00b7 The Force Awakens",
+    "source_page": "https://www.starwars.com/films/star-wars-episode-vii-the-force-awakens",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/the-force-awakens-logo_d622ebb8.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 464,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "ep8": {
+    "key": "ep8",
+    "title": "VIII \u00b7 The Last Jedi",
+    "source_page": "https://www.starwars.com/films/star-wars-episode-viii-the-last-jedi",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/the-last-jedi-logo_7cabc9c4.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 213,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "ep9": {
+    "key": "ep9",
+    "title": "IX \u00b7 The Rise of Skywalker",
+    "source_page": "https://www.starwars.com/films/star-wars-episode-ix-the-rise-of-skywalker",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/the-rise-of-skywalker-logo_3314d2cd_8b02dbcd.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 402,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "solo-film": {
+    "key": "solo-film",
+    "title": "Solo",
+    "source_page": "https://www.starwars.com/films/solo",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/sw_solo_table_logo-10-mobile_d3ca3cac.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 406,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "rogue-one": {
+    "key": "rogue-one",
+    "title": "Rogue One",
+    "source_page": "https://www.starwars.com/films/rogue-one",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/rogue-one-logotitle-2024-1000_575dbbe8.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 1000,
+    "height": 183,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "mando-film": {
+    "key": "mando-film",
+    "title": "The Mandalorian and Grogu",
+    "source_page": "https://www.starwars.com/films/star-wars-the-mandalorian-and-grogu",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/the-mandalorian-and-grogu-logotitle-700_b569ce82.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 700,
+    "height": 355,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "clone-film": {
+    "key": "clone-film",
+    "title": "The Clone Wars \u00b7 film",
+    "source_page": "https://www.starwars.com/films/star-wars-the-clone-wars",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/p_star_wars-the_clone_wars_logo-800_c5addae5.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 519,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "main": {
+    "key": "main",
+    "title": "Star Wars",
+    "source_page": "https://www.starwars.com/",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/sw_logo_stacked_2x-52b4f6d33087_7ef430af.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 586,
+    "height": 254,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "young-jedi": {
+    "key": "young-jedi",
+    "title": "Young Jedi Adventures",
+    "source_page": "https://www.starwars.com/series/star-wars-young-jedi-adventures",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/young-jedi-adventures-season-3-logo-600_261c3800.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 570,
+    "height": 600,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "acolyte-tv": {
+    "key": "acolyte-tv",
+    "title": "The Acolyte",
+    "source_page": "https://www.starwars.com/series/the-acolyte",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/the-acolyte-logo-white-800_dd86e075.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 221,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "clone-tv": {
+    "key": "clone-tv",
+    "title": "The Clone Wars",
+    "source_page": "https://www.starwars.com/series/star-wars-the-clone-wars",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/the-clone-wars-logotitle-yellow-800_3270fb86.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 484,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "bad-batch": {
+    "key": "bad-batch",
+    "title": "The Bad Batch",
+    "source_page": "https://www.starwars.com/series/star-wars-the-bad-batch",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/the-bad-batch-logotitle-color-800_050d9320.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 514,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "maul-tv": {
+    "key": "maul-tv",
+    "title": "Maul \u2013 Shadow Lord",
+    "source_page": "https://www.starwars.com/series/star-wars-maul-shadow-lord",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/metal-logotitle-pyro-550_59dfe360.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 549,
+    "height": 246,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "obi-wan": {
+    "key": "obi-wan",
+    "title": "Obi-Wan Kenobi",
+    "source_page": "https://www.starwars.com/series/obi-wan-kenobi",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/owk-series-section-logo_1681cb09.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 798,
+    "height": 275,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "andor-tv": {
+    "key": "andor-tv",
+    "title": "Andor \u00b7 seasons 1\u20132",
+    "source_page": "https://www.starwars.com/series/andor",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/andor-logotitle2-800_158a1aec.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 339,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "rebels-tv": {
+    "key": "rebels-tv",
+    "title": "Rebels",
+    "source_page": "https://www.starwars.com/series/star-wars-rebels",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/rebels--series-section-logo_c9327796.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 469,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "mando-tv": {
+    "key": "mando-tv",
+    "title": "The Mandalorian",
+    "source_page": "https://www.starwars.com/series/the-mandalorian",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/the-mandalorian-s3-logotitle-tph-600_904dacfb.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 517,
+    "height": 151,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "boba-tv": {
+    "key": "boba-tv",
+    "title": "The Book of Boba Fett",
+    "source_page": "https://www.starwars.com/series/the-book-of-boba-fett",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/bobf-logotitle-white-1200_cbffa066.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 974,
+    "height": 600,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "ahsoka-tv": {
+    "key": "ahsoka-tv",
+    "title": "Ahsoka",
+    "source_page": "https://www.starwars.com/series/star-wars-ahsoka",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/star-wars-ahsoka-season-2-logo-800_9d83f38e.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 799,
+    "height": 240,
+    "treatment": "Wordmark isolated; separate Season Two caption excluded."
+  },
+  "skeleton-tv": {
+    "key": "skeleton-tv",
+    "title": "Skeleton Crew",
+    "source_page": "https://www.starwars.com/series/star-wars-skeleton-crew",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/skeleton-crew-logotitle-white-aswa-v2-800_34769a08.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 392,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "resistance-tv": {
+    "key": "resistance-tv",
+    "title": "Resistance",
+    "source_page": "https://www.starwars.com/series/star-wars-resistance",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/sw-resistance-series-section-logo_87c2e0f0.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 781,
+    "height": 418,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "tales-jedi": {
+    "key": "tales-jedi",
+    "title": "Tales of the Jedi",
+    "source_page": "https://www.starwars.com/series/tales-of-the-jedi",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/tales-of-the-jedi-series-section-logo-800_745249ed.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 799,
+    "height": 440,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "tales-empire": {
+    "key": "tales-empire",
+    "title": "Tales of the Empire",
+    "source_page": "https://www.starwars.com/series/tales-of-the-empire",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/tales-of-the-empire-logo-800_69d368a4.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 300,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "tales-underworld": {
+    "key": "tales-underworld",
+    "title": "Tales of the Underworld",
+    "source_page": "https://www.starwars.com/series/tales-of-the-underworld",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/tales-of-the-underworld-logo-800_d6a7ba23.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 800,
+    "height": 236,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "visions": {
+    "key": "visions",
+    "title": "Star Wars: Visions",
+    "source_page": "https://www.starwars.com/series/star-wars-visions",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/star-wars-visions-volume-3-logo-white-1000_cd25864e.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 1000,
+    "height": 396,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "high-republic": {
+    "key": "high-republic",
+    "title": "The High Republic",
+    "source_page": "https://www.starwars.com/the-high-republic",
+    "image_url": "https://lumiere-a.akamaihd.net/v1/images/thr-logos-1200_751b9626.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 1200,
+    "height": 338,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "kotor": {
+    "key": "kotor",
+    "title": "Knights of the Old Republic",
+    "source_page": "https://en.wikipedia.org/wiki/File:Star_Wars_Knights_of_the_Old_Republic_logo.png",
+    "image_url": "https://upload.wikimedia.org/wikipedia/en/9/94/Star_Wars_Knights_of_the_Old_Republic_logo.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 476,
+    "height": 209,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "kotor2": {
+    "key": "kotor2",
+    "title": "Knights of the Old Republic II: The Sith Lords",
+    "source_page": "https://www.aspyr.com/games/star-wars-knights-of-the-old-republic-ii-the-sith-lords",
+    "image_url": "https://d250f2ux8pmbq4.cloudfront.net/uploads/game/logo/80/KotorII-Aspyr-Logo.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 348,
+    "height": 201,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "forces-destiny": {
+    "key": "forces-destiny",
+    "title": "Forces of Destiny",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Forces_of_Destiny_Opening_Logo.png",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Forces_of_Destiny_Opening_Logo.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 400,
+    "height": 225,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  },
+  "swtor": {
+    "key": "swtor",
+    "title": "The Old Republic",
+    "source_page": "https://www.swtor.com/",
+    "image_url": "https://www.swtor.com/sites/all/files/en/coruscant/main/swtor_logo.png",
+    "credit": "Title artwork \u00a9 & TM Lucasfilm Ltd. / Disney. Used to identify the corresponding work.",
+    "width": 682,
+    "height": 186,
+    "treatment": "Transparent margins cropped; proportionally resized."
+  }
+}

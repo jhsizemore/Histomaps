@@ -1,0 +1,99 @@
+[
+  {
+    "key": "republic",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/f/f4/Emblem_of_the_Galactic_Republic.svg",
+    "downloaded": true,
+    "source_page": "https://commons.wikimedia.org/wiki/File:Emblem_of_the_Galactic_Republic.svg"
+  },
+  {
+    "key": "empire",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/75/Emblem_of_the_First_Galactic_Empire.svg",
+    "downloaded": true,
+    "source_page": "https://commons.wikimedia.org/wiki/File:Emblem_of_the_First_Galactic_Empire.svg"
+  },
+  {
+    "key": "first-order",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Emblem_of_the_First_Order.svg",
+    "downloaded": true,
+    "source_page": "https://commons.wikimedia.org/wiki/File:Emblem_of_the_First_Order.svg"
+  },
+  {
+    "key": "rebel",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/20/Emblem_of_the_Rebel_Alliance.svg",
+    "downloaded": true,
+    "source_page": "https://commons.wikimedia.org/wiki/File:Emblem_of_the_Rebel_Alliance.svg"
+  },
+  {
+    "key": "separatists",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/b2/Confederacy_of_Independent_Systems.svg",
+    "downloaded": true,
+    "source_page": "https://commons.wikimedia.org/wiki/File:Confederacy_of_Independent_Systems.svg"
+  },
+  {
+    "key": "new-republic-flag",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/6/63/New_Republic_flag_from_The_Mandalorian_%282023%29.svg",
+    "downloaded": true,
+    "source_page": "https://commons.wikimedia.org/wiki/File:New_Republic_flag_from_The_Mandalorian_%282023%29.svg"
+  },
+  {
+    "key": "sith",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/3/39/Sith_Emblem_%28Star_Wars%29.svg",
+    "downloaded": true,
+    "source_page": "https://commons.wikimedia.org/wiki/File:Sith_Emblem_%28Star_Wars%29.svg"
+  },
+  {
+    "key": "fel",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/0/0c/Emblem_of_the_Second_Galactic_Empire.png",
+    "downloaded": true,
+    "source_page": "https://commons.wikimedia.org/wiki/File:Emblem_of_the_Second_Galactic_Empire.png"
+  },
+  {
+    "key": "jedi",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/8/85/Font_Awesome_5_solid_jedi.svg",
+    "downloaded": true,
+    "source_page": "https://commons.wikimedia.org/wiki/File:Font_Awesome_5_solid_jedi.svg"
+  },
+  {
+    "key": "old-sith-empire",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/4/46/Logo-sith-empire.svg",
+    "downloaded": true,
+    "source_page": "https://commons.wikimedia.org/wiki/File:Logo-sith-empire.svg"
+  },
+  {
+    "key": "sith-eternal",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Sith_Eternal_insignia.png",
+    "author": "Lucasfilm / uploaded by Eclipse1012",
+    "license": "CC BY-SA 4.0 as listed on Commons"
+  },
+  {
+    "key": "nihil",
+    "source_page": "https://ie.pinterest.com/pin/the-nihil-symbol--466192998933928593/",
+    "verification": "https://www.starwars.com/databank/the-nihil",
+    "credit": "Lucasfilm insignia; source pin by jynstardust"
+  },
+  {
+    "key": "alliance",
+    "source_page": "https://star-wars-extended-universe.fandom.com/wiki/Galactic_Alliance",
+    "asset": "https://vignette.wikia.nocookie.net/star-wars-extended-universe/images/a/ab/RAIS.png/revision/latest?cb=20180310233425",
+    "credit": "Lucasfilm / Legends insignia"
+  },
+  {
+    "key": "old-republic",
+    "source_page": "https://www.flickr.com/photos/buechners/6521566489",
+    "author": "Patrick Buechner",
+    "credit": "SWTOR Republic logo; Lucasfilm / BioWare"
+  },
+  {
+    "verification": "https://www.starwars.com/news/5-symbols-in-the-star-wars-universe"
+  },
+  {
+    "changes": "All insignia cropped, rescaled, and recolored. New Republic emblem extracted from flag. No invented emblem for aggregate bands. The Jedi and Sith marks identify traditions, including in the Legends panels."
+  },
+  {
+    "key": "old-republic-rendering",
+    "asset": "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/brands/old-republic.svg",
+    "author": "Font Awesome",
+    "license": "CC BY 4.0",
+    "verification": "https://www.flickr.com/photos/buechners/6521566489"
+  }
+]

@@ -18,6 +18,10 @@ Sources are linked in the map. Story spoilers are included. Star Wars belongs to
 
 Created by **J. Hunter Sizemore / Kliawota Disaen** — [kliawota.design](https://kliawota.design). Discover [more Histomaps](https://histomaps.org/) or [support the project on Patreon](https://patreon.com/histomaps).
 
-The header and Guide link to `downloads/Star-Wars-Histomap-Poster.png`, the full-resolution 5,200 × 16,180 PNG. This static edition includes the creator credit, interactive atlas URL, promotional links, and all faction insignia. The download is a same-origin static file, with no sign-in required on histomaps.org. The image is downloaded on request and is not loaded with the map.
+The header and Guide link to `downloads/Star-Wars-Histomap-Poster.png`, the full-resolution 5,200 × 18,220 PNG. This static edition includes the creator credit, interactive atlas URL, promotional links, and all faction insignia. The download is a same-origin static file, with no sign-in required on histomaps.org. The image is downloaded on request and is not loaded with the map.
 
 Original atlas design and editorial work © 2026 J. Hunter Sizemore. Star Wars belongs to Lucasfilm; insignia retain their source credits and licenses.
+
+## Starfield edition
+
+The map and full-resolution poster share `assets/starfield.webp`, an original cinematic starfield. Stars remain stationary behind the map; controls and text cards retain dark reading surfaces. The native poster renderer and its inputs are retained in `tools/poster/`.
