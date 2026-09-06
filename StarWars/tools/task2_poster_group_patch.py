@@ -96,5 +96,10 @@ new = 'Film and TV markers show principal story windows, not release dates or ru
 if text.count(old) != 1:
     raise RuntimeError(f'poster reading note: expected one match, found {text.count(old)}')
 text = text.replace(old, new, 1)
+old_assert = 'assert len(events)==30 and len(media)==28 and len(lives)==16'
+new_assert = 'assert len(events)==30 and len(raw_media)==28 and len(lives)==16'
+if text.count(old_assert) != 1:
+    raise RuntimeError(f'poster media assertion: expected one match, found {text.count(old_assert)}')
+text = text.replace(old_assert, new_assert, 1)
 path.write_text(text)
 print('Grouped shared-date screen titles in the static poster.')
