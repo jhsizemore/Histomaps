@@ -2,7 +2,7 @@
 
 Public route: `/StarWars/` (Cloudflare Pages static directory).
 
-`index.html`, `styles.css`, and `app.js` provide the interactive map. `data.js` contains the core canon model; `expanded-data.js` contains synchronized screen-story spans and the separately labeled ancient and future Legends sections. `lifelines.js` contains 16 canon character lifelines, source links, uncertainty flags, and character groups. No package installation or build step is required.
+`index.html`, `styles.css`, and `app.js` provide the interactive map. `data.js` contains the core canon model; `expanded-data.js` contains synchronized screen-story spans and the separately labeled ancient and future Legends sections. `lifelines.js` contains 16 canon character lifelines, source links, uncertainty flags, and character groups. `insignia.js` embeds the 14 sourced faction symbols used in the streams, faction records, and Guide; `insignia-credits.json` retains the original asset attributions. No package installation or build step is required.
 
 The responsive map fits its viewport and uses on-demand navigation and record drawers. Streams, Films & TV, and Lifelines select a companion track; Focus reduces interface chrome. Numbered event markers retain the full event records and three detail levels.
 

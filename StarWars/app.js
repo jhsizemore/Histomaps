@@ -5,6 +5,7 @@
   let zoom=1, level=2, selected=null, history=[], lastFocus=null, resizeWidth=0;
   let mode='canon', layer=matchMedia('(min-width: 1000px) and (min-height: 600px)').matches?'screen':'none', lifeGroup='skywalker', chartWidth=620, screenWidth=250, renderedHeight=D.height, screenGroups=[];
   const factions=Object.fromEntries(D.factions.map(f=>[f.id,f]));
+  const insignia=D.insignia;
   const formatYear=y=>y<0?`${Math.abs(y)} BBY`:y===0?'0 · YAVIN':`${y} ABY`;
   const date=e=>e.date||`${e.approx?'c. ':''}${formatYear(e.year)}`;
   function yearY(t){
@@ -24,6 +25,74 @@
     return el;
   }
   function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
+  function symbolImage(key,size=44){
+    const image=el('img','insignia-image');image.src=insignia.assets[key].light;image.alt='';image.width=size;image.height=size;image.setAttribute('aria-hidden','true');return image;
+  }
+  function mapSymbol(target,key,x,y,size,faction,tone='dark'){
+    const image=svg('image',{x:x-size/2,y:y-size/2,width:size,height:size,href:insignia.assets[key][tone],class:'faction-insignia','aria-hidden':'true','pointer-events':'none'});
+    image.dataset.faction=faction;image.dataset.symbol=key;target.append(image);return image;
+  }
+  function recordSymbols(target,id){
+    const keys=insignia.factions[id];if(!keys)return;
+    const row=el('div','record-insignia');keys.forEach(key=>row.append(symbolImage(key,48)));target.append(row);
+  }
+  function buildInsigniaGuide(){
+    const key=$('insignia-key');
+    for(const continuity of ['canon','legends']){
+      key.append(el('h3','',continuity==='canon'?'Canon':'Legends · non-canon'));
+      const grid=el('div','insignia-grid');
+      insignia.key.filter(entry=>(entry[0]==='canon')===(continuity==='canon')).forEach(([section,id,name,note,year])=>{
+        const button=el('button','insignia-entry'),icons=el('span','insignia-entry-images');
+        insignia.factions[id].forEach(symbol=>icons.append(symbolImage(symbol,36)));
+        const caption=el('span','insignia-entry-caption');caption.append(el('strong','',name),el('small','',note));button.append(icons,caption);
+        button.addEventListener('click',()=>{$('info-dialog').close();if(mode!==section)changeContinuity(section);goYear(year);openRecord({type:section==='canon'?'faction':'legend-faction',id});});
+        grid.append(button);
+      });key.append(grid);
+    }
+    const credits=$('insignia-credit-list');
+    credits.append(el('p','','Lucasfilm faction insignia, cropped, rescaled, and recolored for the atlas. Source reproductions are credited below.'));
+    insignia.credits.forEach(({label,author,url,license})=>{
+      const item=el('p','insignia-credit'),a=el('a','',label);a.href=url;a.target='_blank';a.rel='noopener noreferrer';
+      item.append(a,document.createTextNode(` — ${author}${license?' · '+license:''}`));credits.append(item);
+    });
+    for(const [label,url] of [['Adapted CC BY-SA 4.0 insignia retain this license','https://creativecommons.org/licenses/by-sa/4.0/'],['Font Awesome icons: CC BY 4.0','https://creativecommons.org/licenses/by/4.0/']]){
+      const a=el('a','source-link',label);a.href=url;a.target='_blank';a.rel='noopener noreferrer';credits.append(a);
+    }
+  }
+  function labelBounds(node,x,y,rotated,text,lines=1){
+    // Actual font metrics when available; conservative bounds before fonts load.
+    if(node.getBBox){const b=node.getBBox();if(b.width&&b.height)return rotated?{l:x-(b.y+b.height-y),r:x-(b.y-y),t:y+b.x-x,b:y+b.x+b.width-x}:{l:b.x,r:b.x+b.width,t:b.y,b:b.y+b.height};}
+    const width=(rotated?text.length:Math.max(...text.split(' ').map(w=>w.length)))*(rotated?8:11);
+    return rotated?{l:x-9,r:x+9,t:y-width/2,b:y+width/2}:{l:x-width/2,r:x+width/2,t:y-19,b:y+(lines-1)*22+5};
+  }
+  const overlaps=(a,b)=>a.l<b.r&&a.r>b.l&&a.t<b.b&&a.b>b.t;
+  function decorateStreams(labels,boundsAt){
+    const occupied=labels.map(l=>l.box),marks=[];
+    labels.forEach(label=>{
+      const {id,key,box,base,tone='dark',rotate=false}=label;if(!key)return;
+      let placed=false;
+      for(const size of [36,28,22,16]){
+        const cy=(box.t+box.b)/2;
+        const candidates=[...(!rotate?[{x:box.l-size/2-12,y:cy}]:[]),...[
+          box.b+size/2+12,box.t-size/2-12,box.b+size/2+36,box.t-size/2-36,box.b+size/2+64,box.t-size/2-64
+        ].map(y=>({y}))];
+        for(const candidate of candidates){
+          const y=candidate.y;if(y-size/2<90||y+size/2>renderedHeight-10)continue;
+          const [a,b]=boundsAt(id,y/zoom),x=candidate.x??(a+b)/2;
+          const area={l:x-size/2-4,r:x+size/2+4,t:y-size/2-6,b:y+size/2+6};
+          // Check both ends of the glyph against the curving stream as well.
+          const spans=[boundsAt(id,area.t/zoom),[a,b],boundsAt(id,area.b/zoom)];
+          if(spans.some(([left,right])=>area.l<left||area.r>right))continue;
+          if(occupied.some(other=>overlaps(area,other)))continue;
+          if(marks.some(mark=>mark.id===id&&Math.abs(mark.y-y)<150))continue;
+          mapSymbol(map,key,x,y,size,id,tone);occupied.push(area);marks.push({id,y});placed=true;break;
+        }
+        if(placed)break;
+      }
+      // Very thin mobile streams retain their names; their full emblems remain
+      // available in the faction record and Guide without covering adjacent bands.
+    });
+  }
   function sourceLink(key){
     const [label,url]=D.sources[key];const a=el('a','source-link',`${label} ↗`);
     a.href=url;a.target='_blank';a.rel='noopener noreferrer';return a;
@@ -124,20 +193,29 @@
     map.append(svg('text',{x:8,y:30,class:'column-title'},'DATE'));
     map.append(svg('text',{x:mapX(100),y:49,'text-anchor':'middle',class:'column-title'},'J'));
     map.append(svg('text',{x:mapX(139),y:49,'text-anchor':'middle',class:'column-title'},'S'));
+    mapSymbol(map,'jedi',mapX(100),75,16,'jedi','light');mapSymbol(map,'sith',mapX(139),75,16,'sith','light');
     map.append(svg('text',{x:mapX(166),y:30,class:'column-title'},'POWERS'));
     map.append(svg('text',{x:chartWidth-17,y:30,'text-anchor':'middle',class:'column-title'},'#'));
     drawTicks([-500,-382,-232,-230,-132,-100,-32,-24,-22,-20,-19,-10,-9,-5,-2,0,3,4,5,9,28,34,35].map(t=>[t,yearY(t)]));
     D.eras.forEach(era=>map.append(svg('line',{x1:mapX(166),x2:mapX(600),y1:era.y*zoom,y2:era.y*zoom,class:'era-line'})));
+    const labels=[];
     D.factions.slice(0,11).forEach((f,i)=>(f.labels||[]).forEach(([year,direction])=>{
       const y=yearY(year),[a,b]=limits(weightsAt(y),i),cx=(mapX(a)+mapX(b))/2,wide=mapX(b)-mapX(a);
       if(wide<14)return;
       const rotate=direction===1||wide<150||f.id==='independent',cls=`ribbon-label ${['empire','remnant','nihil'].includes(f.id)?'light':''}`;
-      if(rotate)map.append(svg('text',{x:cx,y:y*zoom,'text-anchor':'middle',class:cls,transform:`rotate(90 ${cx} ${y*zoom})`,style:'font-size:14px;letter-spacing:.6px'},f.label));
+      let n;
+      if(rotate){n=svg('text',{x:cx,y:y*zoom,'text-anchor':'middle',class:cls,transform:`rotate(90 ${cx} ${y*zoom})`,style:'font-size:14px;letter-spacing:.6px'},f.label);map.append(n);}
       else{
-        const n=svg('text',{x:cx,y:y*zoom,'text-anchor':'middle',class:cls});
+        n=svg('text',{x:cx,y:y*zoom,'text-anchor':'middle',class:cls});
         f.label.split(' ').forEach((word,j)=>n.append(svg('tspan',{x:cx,dy:j===0?0:22},word)));map.append(n);
       }
+      labels.push({id:f.id,key:insignia.factions[f.id]?.[0],base:y,rotate,tone:['empire','remnant','nihil'].includes(f.id)?'light':'dark',box:labelBounds(n,cx,y*zoom,rotate,f.label,f.label.split(' ').length)});
     }));
+    const canonBounds=(id,y)=>limits(weightsAt(y),D.factions.findIndex(f=>f.id===id)).map(mapX);
+    decorateStreams(labels,canonBounds);
+    // The short Exegol wedge has no text label in the source model.
+    const fleetY=3354,fleet=canonBounds('eternal',fleetY),fleetSize=Math.min(32,fleet[1]-fleet[0]-8);
+    if(fleetSize>=16)mapSymbol(map,'sith-eternal',(fleet[0]+fleet[1])/2,fleetY*zoom,fleetSize,'eternal');
     [['JEDI',100,240],['SITH',139,540],['SURVIVORS',100,1620],['SIDIOUS & VADER',139,1680],['LUKE’S JEDI',100,2780]].forEach(([name,x,y])=>map.append(svg('text',{x:mapX(x),y:y*zoom,class:'force-caption','text-anchor':'middle',transform:`rotate(90 ${mapX(x)} ${y*zoom})`},name)));
     drawEvents(sortedEvents,eventY,'event');
   }
@@ -146,6 +224,8 @@
     map.querySelector('.selected-year')?.remove();map.querySelector('.screen-highlight')?.remove();
     const activeFaction=selected?.type==='faction'?selected.id:null;
     map.querySelectorAll('.stream').forEach(p=>{p.classList.toggle('dim',!!activeFaction&&p.dataset.faction!==activeFaction);p.classList.toggle('selected',p.dataset.faction===activeFaction);p.setAttribute('aria-pressed',String(p.dataset.faction===activeFaction));});
+    const symbolFaction=selected?.type==='legend-faction'?selected.id:activeFaction;
+    map.querySelectorAll('.faction-insignia').forEach(p=>p.classList.toggle('dim',!!symbolFaction&&p.dataset.faction!==symbolFaction));
     map.querySelectorAll('.event').forEach(p=>p.classList.toggle('active',['event','legend'].includes(selected?.type)&&p.dataset.event===selected.id));
     $('screen-map').querySelectorAll('[data-screen]').forEach(p=>p.classList.toggle('active',selected?.type==='screen'&&p.dataset.screen===selected.id));
     $('screen-map').querySelectorAll('[data-life]').forEach(p=>{p.classList.toggle('active',selected?.type==='life'&&p.dataset.life===selected.id);p.classList.toggle('dim',selected?.type==='life'&&p.dataset.life!==selected.id);});
@@ -176,6 +256,7 @@
     const isEvent=record.type==='event',data=isEvent?D.events.find(e=>e.id===record.id):factions[record.id];
     const index=isEvent?sortedEvents.findIndex(e=>e.id===data.id):D.factions.findIndex(f=>f.id===data.id);
     box.append(el('div','record-number',String(index+1).padStart(2,'0')),el('div','record-date',isEvent?date(data):(['jedi','sith'].includes(data.id)?'FORCE TRADITION':'POLITICAL STREAM')));
+    recordSymbols(box,isEvent?data.faction:data.id);
     const heading=el('h2','',isEvent?data.title:data.name);heading.tabIndex=-1;box.append(heading,el('p','',data.text));
     box.append(el('div','record-divider'),el('div','record-label',isEvent?'Why the stream changes':'Reading this stream'),el('p','',isEvent?data.effect:data.reading));
     const tags=el('div','record-tags');(isEvent?data.media:data.tags).forEach(t=>tags.append(el('span','',t)));box.append(tags);
@@ -315,8 +396,17 @@
     D.legends[mode].knots.forEach(([year,w])=>{const x=166+w.slice(0,i).reduce((a,b)=>a+b,0)*4.34;left.push([x,legendY(year)]);right.push([x+w[i]*4.34,legendY(year)]);});
     return ribbon(left,right,xs,ys);
   }
+  function legendBoundsAt(id,y){
+    const L=D.legends[mode],i=L.factions.findIndex(f=>f.id===id);
+    let weights=L.knots.at(-1)[1];
+    for(let j=1;j<L.knots.length;j++){
+      const [a,wa]=L.knots[j-1],[b,wb]=L.knots[j],ya=legendY(a),yb=legendY(b);
+      if(y<=yb){const t=Math.max(0,(y-ya)/(yb-ya));weights=wa.map((v,k)=>v+(wb[k]-v)*t);break;}
+    }
+    return limits(weights,i).map(mapX);
+  }
   function renderLegend(){
-    const L=D.legends[mode];map.replaceChildren();
+    const L=D.legends[mode],labelBoxes=[];map.replaceChildren();
     const defs=svg('defs'),pattern=svg('pattern',{id:'legends-hatch',width:10,height:10,patternUnits:'userSpaceOnUse'});
     pattern.append(svg('path',{d:'M 0 10 L 10 0',stroke:'#e5c9fa','stroke-opacity':.15}));defs.append(pattern);map.append(defs);
     map.append(svg('text',{x:12,y:32,class:'era-title'},'LEGENDS · NON-CANON'));
@@ -325,11 +415,24 @@
       const g=svg('g',{tabindex:0,role:'button',class:'legend-stream','aria-label':`${f.name}, Legends`});
       g.append(svg('path',{d:legendGeometry(i,mapX,zoom),fill:f.color,stroke:'#142025','stroke-width':1.5}));
       g.append(svg('path',{d:legendGeometry(i,mapX,zoom),fill:'url(#legends-hatch)','pointer-events':'none'}));
-      const at=L.knots[Math.floor(L.knots.length/2)],w=at[1],x=mapX(166+(w.slice(0,i).reduce((a,b)=>a+b,0)+w[i]/2)*4.34),y=legendY(at[0])*zoom;
-      g.append(svg('text',{x,y,transform:`rotate(90 ${x} ${y})`,'text-anchor':'middle',class:'ribbon-label light',style:'font-size:14px'},f.name.toUpperCase()));
-      activate(g,{type:'legend-faction',id:f.id});map.append(g);
+      let at=L.knots[Math.floor(L.knots.length/2)];
+      if(limits(at[1],i).map(mapX).reduce((a,b)=>b-a)<28)at=L.knots.reduce((best,row)=>row[1][i]>best[1][i]?row:best);
+      const w=at[1],x=mapX(166+(w.slice(0,i).reduce((a,b)=>a+b,0)+w[i]/2)*4.34),y=legendY(at[0])*zoom;
+      const label=svg('text',{x,y,transform:`rotate(90 ${x} ${y})`,'text-anchor':'middle',class:'ribbon-label light',style:'font-size:14px'},f.name.toUpperCase());g.append(label);
+      activate(g,{type:'legend-faction',id:f.id});map.append(g);labelBoxes.push(labelBounds(label,x,y,true,f.name.toUpperCase()));
     });
     drawTicks(L.anchors);drawEvents(L.events,e=>legendY(e.year),'legend');
+    const marks=mode==='ancient'?[
+      ['leg-republic',-3643,'old-republic'],['leg-jedi',-5000,'jedi'],['leg-sith',-3643,'old-sith-empire']
+    ]:[['leg-alliance',40,'alliance'],['leg-new-jedi',40,'jedi'],['leg-fel',40,'empire'],['leg-fel',130,'fel'],['leg-one-sith',138,'sith']];
+    marks.forEach(([id,year,key])=>{
+      const y=legendY(year)*zoom;
+      for(const size of [36,28,22,16]){
+        const [a,b]=legendBoundsAt(id,y/zoom),x=(a+b)/2,box={l:x-size/2-4,r:x+size/2+4,t:y-size/2-6,b:y+size/2+6};
+        if([box.t,y,box.b].some(v=>{const [l,r]=legendBoundsAt(id,v/zoom);return box.l<l||box.r>r;})||labelBoxes.some(other=>overlaps(box,other)))continue;
+        mapSymbol(map,key,x,y,size,id);labelBoxes.push(box);break;
+      }
+    });
   }
   function renderLegendMini(){const L=D.legends[mode],m=$('mini-svg');m.replaceChildren();m.setAttribute('viewBox',`0 0 820 ${L.height}`);L.factions.forEach((f,i)=>m.append(svg('path',{d:legendGeometry(i),fill:f.color})));}
   function updateLegendViewport(){
@@ -393,7 +496,9 @@
       box.append(el('div','record-date',`${formatYear(e.year)} · LEGENDS`),heading,el('p','',e.text),el('div','record-label','Reading the map'),el('p','',e.effect));
       const tags=el('div','record-tags');e.media.forEach(m=>tags.append(el('span','',m)));box.append(tags);e.sources.forEach(s=>box.append(sourceLink(s)));box.append(sourceLink('legendsPolicy'));
     }else{
-      const f=D.legends[mode].factions.find(f=>f.id===record.id);heading=el('h2','',f.name);box.append(el('div','record-date','LEGENDS · INTERPRETIVE STREAM'),heading,el('p','','This stream groups related institutions or rival powers across selected Legends stories. Its width shows an editorial interpretation of influence, not measured territory. Jedi traditions and political institutions can overlap.'),el('p','',D.legends[mode].intro),sourceLink('legendsPolicy'));
+      const f=D.legends[mode].factions.find(f=>f.id===record.id);heading=el('h2','',f.name);box.append(el('div','record-date','LEGENDS · INTERPRETIVE STREAM'));recordSymbols(box,f.id);box.append(heading,el('p','','This stream groups related institutions or rival powers across selected Legends stories. Its width shows an editorial interpretation of influence, not measured territory. Jedi traditions and political institutions can overlap.'));
+      const keyEntry=insignia.key.find(entry=>entry[1]===f.id);if(keyEntry)box.append(el('p','hint',keyEntry[3]+'. Symbols identify traditions and selected institutions; they do not imply that every group in the band used one emblem.'));
+      box.append(el('p','',D.legends[mode].intro),sourceLink('legendsPolicy'));
     }
     $('inspector').hidden=false;$('inspector').classList.add('open');$('inspector').scrollTop=0;heading.tabIndex=-1;applySelection();heading.focus({preventScroll:true});
   }
@@ -429,5 +534,7 @@
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('navigation').hidden){toggleNav(false);$('toggle-nav').focus();}$('view-options').open=false;}});
   const notes=$('screen-notes');D.undatedScreen.forEach(n=>{const item=el('div','screen-notes-item');item.append(el('strong','',n.name),el('p','',n.note),sourceLink(n.source));notes.append(item);});
   ['viewing','tvDates','legendsPolicy','legendsBooks','legendsComics'].forEach(k=>$('source-list').append(sourceLink(k)));
+  buildInsigniaGuide();
+  document.fonts?.ready.then(()=>render());
   buildNavigation();overview();renderMini();render();
 })();
