@@ -13,3 +13,11 @@ Lifelines use the same time scale. Filled circles mean birth, crosses mean confi
 Legends is an alternate continuity. Its maps cover selected periods outside the core canon atlas (500 BBY–35 ABY), without claiming that canon contains no history in those periods. Legends streams never connect to canon streams. All band widths are qualitative editorial interpretations, not territory or population statistics.
 
 Sources are linked in the map. Story spoilers are included. Star Wars belongs to Lucasfilm; this is an unofficial fan atlas.
+
+## Creator and poster
+
+Created by **J. Hunter Sizemore / Kliawota Disaen** — [kliawota.design](https://kliawota.design). Discover [more Histomaps](https://histomaps.org/) or [support the project on Patreon](https://patreon.com/histomaps).
+
+The header and Guide link to `downloads/Star-Wars-Histomap-Poster.png`, the full-resolution 5,200 × 16,180 PNG. This static edition includes the creator credit, interactive atlas URL, promotional links, and all faction insignia. The download is a same-origin static file, with no sign-in required on histomaps.org. The image is downloaded on request and is not loaded with the map.
+
+Original atlas design and editorial work © 2026 J. Hunter Sizemore. Star Wars belongs to Lucasfilm; insignia retain their source credits and licenses.
