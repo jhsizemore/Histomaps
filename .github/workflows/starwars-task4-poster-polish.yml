@@ -1,0 +1,51 @@
+name: Star Wars poster final polish
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-task4-poster-polish.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  polish-render-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply poster polish
+        run: python StarWars/tools/task4_poster_polish.py
+      - name: Validate renderer
+        run: python -m py_compile StarWars/tools/poster/render.py
+      - name: Install Pillow
+        run: python -m pip install --disable-pip-version-check pillow
+      - name: Render poster and QA previews
+        run: python StarWars/tools/poster/render.py --preview-dir qa
+      - name: Verify export
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          p='StarWars/downloads/Star-Wars-Histomap-Poster.png'
+          im=Image.open(p)
+          assert im.size == (5200,18220), im.size
+          assert '2026-09-07' in im.info.get('Description','')
+          assert 'histomaps.org/StarWars' in im.info.get('Description','')
+          print(im.size, im.info.get('Description'))
+          PY
+      - name: Commit polished renderer and poster
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add StarWars/tools/poster/render.py StarWars/downloads/Star-Wars-Histomap-Poster.png
+          git commit -m "Polish Star Wars poster for launch"
+          git push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: starwars-task4-poster-qa
+          path: qa
+          retention-days: 1
