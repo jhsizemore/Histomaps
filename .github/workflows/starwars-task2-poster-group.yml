@@ -1,5 +1,6 @@
 name: Star Wars poster shared-date grouping
 
+# Retry after updating the media-count validation for grouped cards.
 on:
   push:
     paths:
