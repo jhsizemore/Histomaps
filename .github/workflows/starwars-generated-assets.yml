@@ -76,7 +76,7 @@ jobs:
       - name: Render full poster
         run: python StarWars/tools/poster/render.py
 
-      - name: Render social preview
+      - name: Render sharing and launch outputs
         run: python StarWars/tools/social/render_social_card.py
 
       - name: Validate generated assets
@@ -84,23 +84,37 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           from PIL import Image
+          Image.MAX_IMAGE_PIXELS=None
 
           poster_path=Path('StarWars/downloads/Star-Wars-Histomap-Poster.png')
+          reddit_path=Path('StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.png')
           social_path=Path('StarWars/assets/star-wars-histomap-social-card.png')
-          assert poster_path.is_file(), poster_path
-          assert social_path.is_file(), social_path
+          preview_path=Path('StarWars/assets/star-wars-histomap-poster-preview.webp')
+          for path in (poster_path, reddit_path, social_path, preview_path):
+              assert path.is_file(), path
 
           poster=Image.open(poster_path)
           assert poster.size==(5200,18220), poster.size
           assert poster.info.get('Website')=='https://histomaps.org/starwars/'
           assert 'https://histomaps.org/starwars/' in poster.info.get('Description','')
 
+          reddit=Image.open(reddit_path)
+          assert reddit.size==(2400,3000), reddit.size
+          assert reddit.format=='PNG', reddit.format
+          assert reddit_path.stat().st_size < 20 * 1024 * 1024, reddit_path.stat().st_size
+
           social=Image.open(social_path)
           assert social.size==(1200,630), social.size
           assert social.format=='PNG', social.format
 
-          print('poster', poster.size, poster.info.get('Website'))
-          print('social', social.size, social.format)
+          preview=Image.open(preview_path)
+          assert preview.size==(900,3153), preview.size
+          assert preview.format=='WEBP', preview.format
+
+          print('poster', poster.size, poster_path.stat().st_size)
+          print('reddit', reddit.size, reddit_path.stat().st_size)
+          print('social', social.size, social_path.stat().st_size)
+          print('web preview', preview.size, preview_path.stat().st_size)
           PY
           git diff --check
 
@@ -111,18 +125,26 @@ jobs:
           name: starwars-generated-assets-${{ github.sha }}
           path: |
             StarWars/downloads/Star-Wars-Histomap-Poster.png
+            StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.png
             StarWars/assets/star-wars-histomap-social-card.png
+            StarWars/assets/star-wars-histomap-poster-preview.webp
           retention-days: 7
 
       - name: Commit changed generated assets on main
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          if git diff --quiet -- StarWars/downloads/Star-Wars-Histomap-Poster.png StarWars/assets/star-wars-histomap-social-card.png; then
+          paths=(
+            StarWars/downloads/Star-Wars-Histomap-Poster.png
+            StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.png
+            StarWars/assets/star-wars-histomap-social-card.png
+            StarWars/assets/star-wars-histomap-poster-preview.webp
+          )
+          if git diff --quiet -- "${paths[@]}" && git ls-files --error-unmatch StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.png StarWars/assets/star-wars-histomap-poster-preview.webp >/dev/null 2>&1; then
             echo 'Generated assets already match source.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add StarWars/downloads/Star-Wars-Histomap-Poster.png StarWars/assets/star-wars-histomap-social-card.png
-          git commit -m 'Regenerate Star Wars poster and social preview'
+          git add "${paths[@]}"
+          git commit -m 'Regenerate Star Wars launch assets'
           git push
