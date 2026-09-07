@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
     paths:
+      - 'StarWars/index.html'
+      - 'StarWars/app.js'
       - 'StarWars/data.js'
       - 'StarWars/expanded-data.js'
       - 'StarWars/lifelines.js'
@@ -23,6 +25,8 @@ on:
       - '.github/workflows/starwars-generated-assets.yml'
   pull_request:
     paths:
+      - 'StarWars/index.html'
+      - 'StarWars/app.js'
       - 'StarWars/data.js'
       - 'StarWars/expanded-data.js'
       - 'StarWars/lifelines.js'
