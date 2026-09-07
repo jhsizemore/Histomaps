@@ -1,0 +1,69 @@
+name: Star Wars canonical route update
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-task8-route.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  route:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply canonical route update
+        run: python StarWars/tools/task8_route_patch.py
+      - name: Validate redirects and canonical references
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          r=Path('_redirects').read_text()
+          h=Path('_headers').read_text()
+          i=Path('StarWars/index.html').read_text()
+          p=Path('StarWars/tools/poster/render.py').read_text()
+          m=Path('StarWars/README.md').read_text()
+          assert '/starwars /starwars/ 301' in r
+          assert '/StarWars/* /starwars/:splat 301' in r
+          assert '/starwars/ /StarWars/index.html 200' in r
+          assert '/starwars/* /StarWars/:splat 200' in r
+          assert r.index('/StarWars/* /starwars/:splat 301') < r.index('/starwars/* /StarWars/:splat 200')
+          assert '<https://histomaps.org/starwars/>; rel="canonical"' in h
+          assert 'rel="canonical" href="https://histomaps.org/starwars/"' in i
+          assert 'histomaps.org/StarWars' not in p
+          assert 'histomaps.org/starwars' in p
+          assert 'https://histomaps.org/starwars/' in m
+          assert 'v=route-20260907' in i
+          print('canonical route source checks OK')
+          PY
+          node --check StarWars/app.js
+          node StarWars/tools/poster/audit-data-sync.js
+      - name: Install poster renderer dependency
+        run: python -m pip install --disable-pip-version-check pillow
+      - name: Regenerate canonical-url poster
+        run: python StarWars/tools/poster/render.py
+      - name: Validate rendered PNG metadata
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          p=Path('StarWars/downloads/Star-Wars-Histomap-Poster.png')
+          im=Image.open(p)
+          assert im.size==(5200,18220),im.size
+          assert im.info.get('Website')=='https://histomaps.org/starwars/'
+          assert 'https://histomaps.org/starwars/' in im.info.get('Description','')
+          print('poster',im.size,im.info.get('Website'))
+          PY
+      - name: Commit canonical route and poster
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add _redirects _headers StarWars/index.html StarWars/README.md StarWars/tools/poster/render.py StarWars/downloads/Star-Wars-Histomap-Poster.png
+          git commit -m "Canonicalize Star Wars at lowercase route"
+          git push
