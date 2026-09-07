@@ -9,6 +9,7 @@ on:
       - 'StarWars/data.js'
       - 'StarWars/expanded-data.js'
       - 'StarWars/lifelines.js'
+      - 'StarWars/synopses.js'
       - 'StarWars/insignia.js'
       - 'StarWars/insignia-credits.json'
       - 'StarWars/title-art.js'
@@ -30,6 +31,7 @@ on:
       - 'StarWars/data.js'
       - 'StarWars/expanded-data.js'
       - 'StarWars/lifelines.js'
+      - 'StarWars/synopses.js'
       - 'StarWars/insignia.js'
       - 'StarWars/insignia-credits.json'
       - 'StarWars/title-art.js'
@@ -72,6 +74,7 @@ jobs:
       - name: Validate interactive source and website-poster data sync
         run: |
           node --check StarWars/app.js
+          node --check StarWars/synopses.js
           node StarWars/tools/poster/audit-data-sync.js
 
       - name: Install image renderer
