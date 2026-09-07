@@ -1,0 +1,58 @@
+name: Star Wars recurring lifeline factual correction
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-recurring-factual-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  correct:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply property corrections
+        run: python StarWars/tools/fix_recurring_lifeline_properties.py
+      - name: Validate recurring data
+        run: |
+          node --check StarWars/recurring-lifelines.js
+          node StarWars/tools/poster/audit-data-sync.js
+          node - <<'JS'
+          const fs=require('fs'),vm=require('vm');global.window={};
+          for(const f of ['data.js','expanded-data.js','lifelines.js','recurring-lifelines.js'])vm.runInThisContext(fs.readFileSync('StarWars/'+f,'utf8'),{filename:f});
+          const D=window.HISTOMAP, by=id=>D.lifelines.find(p=>p.id===id);
+          if(D.lifelines.length!==94||D.recurringLifelineCount!==78)throw new Error('lifeline count drift');
+          const expected={
+            maz:['ep7','ep8','ep9'],
+            depa:['ep1','ep2','bad-batch'],
+            passel:['ep1','ep2','ep3'],
+            ponudo:['ep1','ep2','ep3'],
+            hera:['bad-batch','rebels-tv','ahsoka-tv'],
+            zeb:['rebels-tv','mando-tv','mando-film'],
+            huyang:['young-jedi','clone-tv','ahsoka-tv'],
+            thrawn:['rebels-tv','tales-empire','ahsoka-tv']
+          };
+          for(const [id,list] of Object.entries(expected)){
+            const p=by(id);if(JSON.stringify(p.appearances)!==JSON.stringify(list))throw new Error(id+' appearances '+JSON.stringify(p.appearances));
+          }
+          if(by('huyang').start!==-232||by('huyang').end!==9)throw new Error('Huyang range');
+          if(by('thrawn').start!==-9||by('thrawn').end!==9)throw new Error('Thrawn range');
+          for(const p of D.lifelines.filter(p=>p.startKind==='appearance'))if(p.appearances.length<3)throw new Error(p.id+' below threshold');
+          console.log('Validated 94 lifelines / 78 recurring tracks and corrected property evidence.');
+          JS
+          git diff --check
+      - name: Commit corrected recurring data
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add StarWars/recurring-lifelines.js
+          git commit -m 'Correct recurring Star Wars lifeline property evidence'
+          git pull --rebase origin main
+          git push
