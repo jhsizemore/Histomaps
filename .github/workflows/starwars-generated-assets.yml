@@ -118,8 +118,7 @@ jobs:
           PY
           git diff --check
 
-      - name: Upload generated outputs for review
-        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+      - name: Upload generated outputs for QA
         uses: actions/upload-artifact@v4
         with:
           name: starwars-generated-assets-${{ github.sha }}
@@ -128,7 +127,7 @@ jobs:
             StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.png
             StarWars/assets/star-wars-histomap-social-card.png
             StarWars/assets/star-wars-histomap-poster-preview.webp
-          retention-days: 7
+          retention-days: 3
 
       - name: Commit changed generated assets on main
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
