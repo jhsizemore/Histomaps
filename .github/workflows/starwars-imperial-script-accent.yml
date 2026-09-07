@@ -1,0 +1,47 @@
+name: Star Wars Imperial Script accent QA
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-imperial-script-accent.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  accent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply accent patch
+        run: python StarWars/tools/imperial_script_accent_patch.py
+      - name: Validate source
+        run: |
+          node --check StarWars/app.js
+          grep -Fq 'Imperial+Script' StarWars/index.html
+          grep -Fq 'imperial-script-accents-20260907' StarWars/styles.css
+          git diff --check
+      - name: Install Playwright
+        run: python -m pip install --disable-pip-version-check playwright
+      - name: Visual and font QA
+        run: |
+          python -m http.server 8000 --directory . >/tmp/starwars-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          python StarWars/tools/imperial_script_accent_qa.py
+      - name: Upload QA
+        uses: actions/upload-artifact@v4
+        with:
+          name: starwars-imperial-script-accent-qa
+          path: /tmp/imperial-script-qa/*.png
+          retention-days: 3
+      - name: Commit production accents
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add StarWars/index.html StarWars/app.js StarWars/styles.css
+          git commit -m 'Add restrained Imperial Script accents'
+          git pull --rebase origin main
+          git push
