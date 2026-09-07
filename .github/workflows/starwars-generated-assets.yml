@@ -9,6 +9,7 @@ on:
       - 'StarWars/data.js'
       - 'StarWars/expanded-data.js'
       - 'StarWars/lifelines.js'
+      - 'StarWars/recurring-lifelines.js'
       - 'StarWars/synopses.js'
       - 'StarWars/insignia.js'
       - 'StarWars/insignia-credits.json'
@@ -31,6 +32,7 @@ on:
       - 'StarWars/data.js'
       - 'StarWars/expanded-data.js'
       - 'StarWars/lifelines.js'
+      - 'StarWars/recurring-lifelines.js'
       - 'StarWars/synopses.js'
       - 'StarWars/insignia.js'
       - 'StarWars/insignia-credits.json'
@@ -74,6 +76,7 @@ jobs:
       - name: Validate interactive source and website-poster data sync
         run: |
           node --check StarWars/app.js
+          node --check StarWars/recurring-lifelines.js
           node --check StarWars/synopses.js
           node StarWars/tools/poster/audit-data-sync.js
 
