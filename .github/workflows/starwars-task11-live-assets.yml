@@ -1,0 +1,44 @@
+name: Star Wars launch assets live QA
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-task11-live-assets.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  live-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify live launch asset set
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://histomaps.org/starwars'
+          check_asset() {
+            local path="$1" expected="$2"
+            local ok=0
+            for i in $(seq 1 24); do
+              h=$(curl -sS -I "$base/$path" || true)
+              code=$(printf '%s' "$h" | awk 'toupper($1) ~ /^HTTP\// {c=$2} END{print c}')
+              type=$(printf '%s' "$h" | awk 'BEGIN{IGNORECASE=1} /^content-type:/ {gsub("\r",""); print $2}' | tail -1)
+              if [[ "$code" == '200' && "$type" == "$expected"* ]]; then
+                echo "$path -> $code $type"
+                ok=1
+                break
+              fi
+              sleep 5
+            done
+            [[ "$ok" == '1' ]]
+          }
+
+          page=$(curl -sS -o /dev/null -w '%{http_code}' "$base/")
+          echo "canonical page -> $page"
+          [[ "$page" == '200' ]]
+
+          check_asset 'downloads/Star-Wars-Histomap-Poster.png' 'image/png'
+          check_asset 'downloads/Star-Wars-Histomap-Reddit-Launch.png' 'image/png'
+          check_asset 'assets/star-wars-histomap-social-card.png' 'image/png'
+          check_asset 'assets/star-wars-histomap-poster-preview.webp' 'image/webp'
