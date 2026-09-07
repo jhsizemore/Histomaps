@@ -1,0 +1,65 @@
+name: Star Wars recurring lifeline expansion QA
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-recurring-lifelines.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  expand:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply recurring lifeline UI and CI patch
+        run: python StarWars/tools/expand_lifelines_patch.py
+      - name: Validate source and data model
+        run: |
+          node --check StarWars/app.js
+          node --check StarWars/recurring-lifelines.js
+          node --check StarWars/synopses.js
+          node StarWars/tools/poster/audit-data-sync.js
+          node - <<'JS'
+          const fs=require('fs'),vm=require('vm');global.window={};
+          for(const f of ['data.js','expanded-data.js','lifelines.js','recurring-lifelines.js'])vm.runInThisContext(fs.readFileSync('StarWars/'+f,'utf8'),{filename:f});
+          const D=window.HISTOMAP;
+          if(D.lifelines.length!==94)throw new Error('Expected 94 lifelines, got '+D.lifelines.length);
+          if(D.recurringLifelineCount!==78)throw new Error('Expected 78 recurring additions');
+          const expanded=D.lifelines.filter(p=>p.startKind==='appearance');
+          if(expanded.length!==78)throw new Error('Expected 78 appearance-span tracks');
+          for(const p of expanded){if(!p.appearances||p.appearances.length<3)throw new Error(p.name+' lacks 3 qualifying properties');}
+          console.log('lifelines',D.lifelines.length,'expanded',expanded.length);
+          JS
+          git diff --check
+      - name: Install Playwright
+        run: python -m pip install --disable-pip-version-check playwright
+      - name: Browser and responsive QA
+        run: |
+          python -m http.server 8000 --directory . >/tmp/starwars-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          python StarWars/tools/expand_lifelines_qa.py
+      - name: Upload visual QA
+        uses: actions/upload-artifact@v4
+        with:
+          name: starwars-recurring-lifelines-qa
+          path: /tmp/lifeline-qa/*.png
+          retention-days: 3
+      - name: Commit production expansion
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add StarWars/index.html StarWars/app.js StarWars/synopses.js StarWars/README.md StarWars/tools/poster/audit-data-sync.js .github/workflows/starwars-generated-assets.yml
+          git commit -m 'Expand interactive Star Wars lifelines to recurring cast'
+          git pull --rebase origin main
+          git push
