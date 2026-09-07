@@ -1,0 +1,22 @@
+# Star Wars canonical public route.
+# Redirect legacy and common case variants; lowercase is the only public URL.
+/StarWars /starwars/ 301
+/StarWars/ /starwars/ 301
+/StarWars/index.html /starwars/ 301
+/StarWars/* /starwars/:splat 301
+/STARWARS /starwars/ 301
+/STARWARS/ /starwars/ 301
+/STARWARS/* /starwars/:splat 301
+/Starwars /starwars/ 301
+/Starwars/ /starwars/ 301
+/Starwars/* /starwars/:splat 301
+/starWars /starwars/ 301
+/starWars/ /starwars/ 301
+/starWars/* /starwars/:splat 301
+/starwars /starwars/ 301
+
+# Serve the existing static tree behind the lowercase browser URL.
+# Cloudflare Pages applies only the first matching rule, so this proxy does not loop
+# back through the uppercase redirect above.
+/starwars/ /StarWars/index.html 200
+/starwars/* /StarWars/:splat 200

@@ -136,7 +136,7 @@ text('UNOFFICIAL FAN ATLAS  /  STATIC EDITION  /  STORY SPOILERS',2540,56,18,MUT
 lockup('main',60,99,330,143)
 text('HISTOMAP',435,131,66,GOLD,'display')
 text('Created by J. Hunter Sizemore / kliawota.design',2540,119,25,INK,align='right')
-text('INTERACTIVE: histomaps.org/StarWars',2540,164,42,GOLD,'cond',align='right')
+text('INTERACTIVE: histomaps.org/starwars',2540,164,42,GOLD,'cond',align='right')
 line([(60,246),(2540,246)],GOLD,2)
 text('CANON  /  500 BBY — 35 ABY',60,275,31,GOLD,'bold')
 text('THE HISTORY OF THE STAR WARS GALAXY',2540,270,30,GOLD,'bold',align='right')
@@ -502,7 +502,7 @@ paragraph('Star Jedi by Boba Fonts / Davide Canavero (freeware). News Cycle by N
 PROMO=KEY+1060
 line([(60,PROMO),(2540,PROMO)],GOLD,2)
 text('EXPLORE THE INTERACTIVE ATLAS',60,PROMO+38,21,GOLD,'bold')
-text('histomaps.org/StarWars',60,PROMO+85,61,INK,'cond')
+text('histomaps.org/starwars',60,PROMO+85,61,INK,'cond')
 paragraph('Interactive timeline, source notes, and high-resolution download. Find more maps at histomaps.org.',60,PROMO+169,1000,23)
 text('CREATED BY',1160,PROMO+38,21,GOLD,'bold')
 text('J. Hunter Sizemore',1160,PROMO+92,43,INK,'cond')
@@ -517,10 +517,10 @@ text('Unofficial fan atlas. Star Wars and related marks belong to Lucasfilm Ltd.
 text('STATIC EDITION / 07 SEPTEMBER 2026',2540,H-80,19,MUTED,align='right')
 # Every source text item is accounted for before export.
 assert len(events)==30 and len(raw_media)==28 and len(lives)==16
-meta=PngImagePlugin.PngInfo();meta.add_text('Title','Star Wars Histomap — canon, screen stories, lifelines and Legends');meta.add_text('Description','Static fan atlas by J. Hunter Sizemore / kliawota.design. Editorial stream widths; elastic chronology. Explore and find sources: https://histomaps.org/StarWars/. Support: https://patreon.com/histomaps. Edition 2026-09-07.');meta.add_text('Software','Deterministic chart rendering from the Histomaps data model')
+meta=PngImagePlugin.PngInfo();meta.add_text('Title','Star Wars Histomap — canon, screen stories, lifelines and Legends');meta.add_text('Description','Static fan atlas by J. Hunter Sizemore / kliawota.design. Editorial stream widths; elastic chronology. Explore and find sources: https://histomaps.org/starwars/. Support: https://patreon.com/histomaps. Edition 2026-09-07.');meta.add_text('Software','Deterministic chart rendering from the Histomaps data model')
 meta.add_text('Author','J. Hunter Sizemore / Kliawota Disaen')
 meta.add_text('Copyright','Original atlas design and editorial work © 2026 J. Hunter Sizemore. Star Wars belongs to Lucasfilm. Insignia retain their separate credits and licenses.')
-meta.add_text('Website','https://histomaps.org/StarWars/')
+meta.add_text('Website','https://histomaps.org/starwars/')
 meta.add_text('Creator website','https://kliawota.design')
 meta.add_text('Support','https://patreon.com/histomaps')
 meta.add_text('Background','Original AI-generated cinematic starfield; integrated beneath the native chart, labels and artwork. Starfield edition 2026-09-07.')
