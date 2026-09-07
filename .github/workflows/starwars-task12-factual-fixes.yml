@@ -1,0 +1,95 @@
+name: Star Wars Task 12 factual fixes
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-task12-factual-fixes.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply factual corrections
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          root=Path('.')
+          expanded=root/'StarWars/expanded-data.js'
+          s=expanded.read_text()
+          replacements={
+          "  mandoFilm:['The Mandalorian and Grogu · Lucasfilm','https://www.starwars.com/films/star-wars-the-mandalorian-and-grogu']\n":
+          "  mandoFilm:['The Mandalorian and Grogu · Lucasfilm','https://www.starwars.com/films/star-wars-the-mandalorian-and-grogu'],\n  youngJediTiming:['Young Jedi Adventures Season 3 chronology · Wookieepedia','https://starwars.fandom.com/wiki/Young_Jedi_Adventures_Season_Three'],\n  maulTiming:['Maul – Shadow Lord timeline context · StarWars.com','https://www.starwars.com/news/star-wars-maul-shadow-lord-first-trailer-poster-art'],\n  mandoFilmTiming:['The Mandalorian and Grogu chronology · Wookieepedia','https://starwars.fandom.com/wiki/Star_Wars%3A_The_Mandalorian_and_Grogu']\n",
+          "  {id:'young-jedi',name:'Young Jedi Adventures',kind:'animation',start:-232,end:-232,approx:true,note:'High Republic placement, around 232 BBY. The marker does not claim every season occupies a single year.',sources:['tvDates','viewing']},":
+          "  {id:'young-jedi',name:'Young Jedi Adventures',kind:'animation',start:-233,end:-222,approx:true,discontinuous:true,note:'The series begins around 233 BBY. Season 3 continues between 232 and 230 BBY, then its final epilogue jumps several more years to between 227 and about 222 BBY. This is a discontinuous envelope, not eleven years of continuous action.',sources:['youngJediTiming','tvDates','viewing']},",
+          "  {id:'maul-tv',name:'Maul – Shadow Lord',kind:'animation',start:-18,end:-18,approx:true,note:'Early Imperial era, approximately 18 BBY. Sources differ on the exact placement; this is an approximate marker, not a precise duration.',sources:['maulShow','tvDates']},":
+          "  {id:'maul-tv',name:'Maul – Shadow Lord',kind:'animation',start:-17,end:-17,approx:true,note:'Official 2026 material places the series a few short years after Order 66, without giving an exact year. It is shown near 17 BBY as a conservative schematic anchor; the marker is approximate, not a claimed precise date.',sources:['maulShow','maulTiming','tvDates']},",
+          "  {id:'mando-film',name:'The Mandalorian and Grogu',kind:'film',start:9,end:9,approx:true,note:'After the Mandalorian series, within the New Republic era. This shared-era anchor is approximate; the exact in-universe year and duration are not asserted.',sources:['mandoFilm','viewing']},":
+          "  {id:'mando-film',name:'The Mandalorian and Grogu',kind:'film',start:11,end:11,approx:true,note:'After The Mandalorian, in the New Republic era. Current chronology places the released film during or after 11 ABY; 11 ABY is shown as the earliest defensible anchor, not an exact asserted year.',sources:['mandoFilm','mandoFilmTiming','viewing']},"
+          }
+          for old,new in replacements.items():
+              if old not in s:
+                  raise SystemExit('expanded-data replacement target missing: '+old[:100])
+              s=s.replace(old,new,1)
+          expanded.write_text(s)
+
+          lives=root/'StarWars/lifelines.js'
+          s=lives.read_text()
+          old="    {id:'grogu',name:'Din Grogu',short:'Grogu',start:-41,startApprox:true,end:9,endApprox:true,endKind:'known',color:'#b1cdaa',groups:['jedi'],wiki:'Din_Grogu',official:'grogu',note:'Approximately 50 years old when The Mandalorian begins, giving an approximate birth around 41 BBY. His open endpoint marks the broad New Republic screen-story period used here; it does not date his final appearance or predict his fate.'},"
+          new="    {id:'grogu',name:'Din Grogu',short:'Grogu',start:-41,startApprox:true,end:11,endApprox:true,endKind:'known',color:'#b1cdaa',groups:['jedi'],wiki:'Din_Grogu',official:'grogu',note:'Approximately 50 years old when The Mandalorian begins, giving an approximate birth around 41 BBY. His open endpoint now includes The Mandalorian and Grogu, placed during or after 11 ABY; the dashed endpoint is a minimum-era anchor, not a dated final appearance or prediction of his fate.'},"
+          if old not in s: raise SystemExit('Grogu replacement target missing')
+          lives.write_text(s.replace(old,new,1))
+
+          app=root/'StarWars/app.js'
+          s=app.read_text()
+          old="    if(m.id==='mando-film')return 'New Republic era · approximate';"
+          new="    if(m.id==='mando-film')return '11 ABY or later · approximate';"
+          if old not in s: raise SystemExit('screenDate target missing')
+          app.write_text(s.replace(old,new,1))
+
+          index=root/'StarWars/index.html'
+          s=index.read_text()
+          old='<p class="fine-print">Event records link to supporting sources. Approximate placements are marked. Band geometry and condensed explanations are original interpretations. Star Wars and related properties belong to Lucasfilm. This is an unofficial fan project.</p>'
+          new='<p class="fine-print">Event records link to supporting sources. Approximate placements are marked. Band geometry and condensed explanations are original interpretations. Found a date or source that needs correction? <a href="https://github.com/jhsizemore/Histomaps/issues/new" target="_blank" rel="noopener noreferrer">Report it on GitHub ↗</a>. Star Wars and related properties belong to Lucasfilm. This is an unofficial fan project.</p>'
+          if old not in s: raise SystemExit('fine-print target missing')
+          index.write_text(s.replace(old,new,1))
+
+          pdata=root/'StarWars/tools/poster/star-wars-poster-data.json'
+          d=json.loads(pdata.read_text())
+          d['sources']['youngJediTiming']=['Young Jedi Adventures Season 3 chronology · Wookieepedia','https://starwars.fandom.com/wiki/Young_Jedi_Adventures_Season_Three']
+          d['sources']['maulTiming']=['Maul – Shadow Lord timeline context · StarWars.com','https://www.starwars.com/news/star-wars-maul-shadow-lord-first-trailer-poster-art']
+          d['sources']['mandoFilmTiming']=['The Mandalorian and Grogu chronology · Wookieepedia','https://starwars.fandom.com/wiki/Star_Wars%3A_The_Mandalorian_and_Grogu']
+          screen={x['id']:x for x in d['screen']}
+          screen['young-jedi'].update(start=-233,end=-222,approx=True,discontinuous=True,note='The series begins around 233 BBY. Season 3 continues between 232 and 230 BBY, then its final epilogue jumps several more years to between 227 and about 222 BBY. This is a discontinuous envelope, not eleven years of continuous action.',sources=['youngJediTiming','tvDates','viewing'])
+          screen['maul-tv'].update(start=-17,end=-17,approx=True,note='Official 2026 material places the series a few short years after Order 66, without giving an exact year. It is shown near 17 BBY as a conservative schematic anchor; the marker is approximate, not a claimed precise date.',sources=['maulShow','maulTiming','tvDates'])
+          screen['mando-film'].update(start=11,end=11,approx=True,note='After The Mandalorian, in the New Republic era. Current chronology places the released film during or after 11 ABY; 11 ABY is shown as the earliest defensible anchor, not an exact asserted year.',sources=['mandoFilm','mandoFilmTiming','viewing'])
+          grogu=next(x for x in d['lifelines'] if x['id']=='grogu')
+          grogu.update(end=11,endApprox=True,note='Approximately 50 years old when The Mandalorian begins, giving an approximate birth around 41 BBY. His open endpoint now includes The Mandalorian and Grogu, placed during or after 11 ABY; the dashed endpoint is a minimum-era anchor, not a dated final appearance or prediction of his fate.')
+          pdata.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          PY
+      - name: Validate corrected source
+        run: |
+          node --check StarWars/app.js
+          node StarWars/tools/poster/audit-data-sync.js
+          git diff --check
+      - name: Commit factual QA corrections
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add StarWars/expanded-data.js StarWars/lifelines.js StarWars/app.js StarWars/index.html StarWars/tools/poster/star-wars-poster-data.json
+          git commit -m 'Correct final Star Wars timeline placements'
+          git push
