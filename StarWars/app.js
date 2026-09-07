@@ -113,7 +113,7 @@
     a.href=url;a.target='_blank';a.rel='noopener noreferrer';return a;
   }
   function appendSynopsis(target,data){if(data?.synopsis)target.append(el('p','record-synopsis',data.synopsis));}
-  function appendImperialActive(target){const date=target.querySelector('.record-date');if(!date)return;const mark=el('span','imperial-active-mark','active record');mark.setAttribute('aria-hidden','true');date.append(mark);}
+  function appendAurebeshActive(target){const date=target.querySelector('.record-date');if(!date)return;const mark=el('span','aurebesh-active-mark','active record');mark.setAttribute('aria-hidden','true');date.append(mark);}
   function weightsAt(y){
     for(let i=1;i<D.states.length;i++){
       const [a,wa]=D.states[i-1],[b,wb]=D.states[i];
@@ -325,7 +325,7 @@
       const next=el('button','','Later →');next.disabled=index===sortedEvents.length-1;next.addEventListener('click',()=>selectEvent(sortedEvents[index+1].id,true));bar.append(prev,next);box.append(bar);
       const f=el('button','method-link',`Follow ${factions[data.faction].name} ↗`);f.addEventListener('click',()=>openRecord({type:'faction',id:data.faction}));box.append(f);
     }
-    appendImperialActive(box);$('inspector').hidden=false;$('inspector').classList.add('open');$('inspector').scrollTop=0;applySelection();heading.focus({preventScroll:true});
+    appendAurebeshActive(box);$('inspector').hidden=false;$('inspector').classList.add('open');$('inspector').scrollTop=0;applySelection();heading.focus({preventScroll:true});
   }
   function selectEvent(id,go=false){
     const e=D.events.find(e=>e.id===id);
@@ -650,7 +650,7 @@
       const keyEntry=insignia.key.find(entry=>entry[1]===f.id);if(keyEntry)box.append(el('p','hint',keyEntry[3]+'. Symbols identify traditions and selected institutions; they do not imply that every group in the band used one emblem.'));
       box.append(el('p','',D.legends[mode].intro),sourceLink('legendsPolicy'));
     }
-    appendImperialActive(box);$('inspector').hidden=false;$('inspector').classList.add('open');$('inspector').scrollTop=0;heading.tabIndex=-1;applySelection();heading.focus({preventScroll:true});
+    appendAurebeshActive(box);$('inspector').hidden=false;$('inspector').classList.add('open');$('inspector').scrollTop=0;heading.tabIndex=-1;applySelection();heading.focus({preventScroll:true});
   }
   ['eras','high','dates','chronology','republic','empire','newRepublic','firstOrder','jedi','sith'].forEach(k=>$('source-list').append(sourceLink(k)));
   $('zoom-in').addEventListener('click',()=>changeZoom(.2));$('zoom-out').addEventListener('click',()=>changeZoom(-.2));

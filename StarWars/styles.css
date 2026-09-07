@@ -119,16 +119,16 @@ body{background-color:#000;background-image:linear-gradient(#0002,#0002),url('as
 .legends-mode .inspector .record-synopsis{border-left-color:#d8b4eb99}
 @media(max-width:620px){.inspector .record-synopsis{font-size:16px;line-height:1.56;margin-bottom:20px;padding-left:12px}}
 
-
-/* imperial-script-accents-20260907
-   Imperial Script is decorative only: readable UI labels remain in News Cycle / Pathway. */
-.inspector-archive-label{display:grid;align-content:center;gap:0;min-width:0;padding:3px 0 2px}
-.imperial-archive-mark,.imperial-active-mark,.launch-script-flourish{font-family:'Imperial Script','Brush Script MT','Segoe Script',cursive;font-weight:400;font-synthesis:none;letter-spacing:0;text-transform:none}
-.imperial-archive-mark{display:block;margin-top:-2px;font-size:20px;line-height:1;color:#d8c38dbd;text-shadow:0 0 9px #e3c17c16;transform:rotate(-1deg);transform-origin:left center;white-space:nowrap}
-.imperial-active-mark{display:inline-block;margin-left:10px;font-size:17px;line-height:1;color:#67d9efaa;text-shadow:0 0 9px #4bd5ee1c;vertical-align:-2px;transform:rotate(-1.5deg);transform-origin:left center;white-space:nowrap}
-.launch-script-flourish{font-size:23px;line-height:1;color:#d7c28bb5;text-shadow:0 0 9px #ffe81f14;transform:rotate(-1.5deg);white-space:nowrap;text-align:center;align-self:center}
+/* aurebesh-accents-20260907
+   FT Aurebesh is decorative only: readable UI labels remain in News Cycle / Pathway. */
+@font-face{font-family:'FT Aurebesh';src:url('fonts/ft-aurebesh.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+.inspector-archive-label{display:grid;align-content:center;gap:1px;min-width:0;padding:3px 0 2px}
+.aurebesh-archive-mark,.aurebesh-active-mark,.launch-aurebesh-flourish{font-family:'FT Aurebesh',monospace;font-style:normal;font-synthesis:none;text-transform:none;white-space:nowrap}
+.aurebesh-archive-mark{display:block;margin-top:1px;font-size:11px;line-height:1.05;font-weight:560;letter-spacing:.12em;color:#d8c38da8;text-shadow:0 0 7px #e3c17c12}
+.aurebesh-active-mark{display:inline-block;margin-left:10px;font-size:9px;line-height:1;font-weight:580;letter-spacing:.1em;color:#69d9efb8;text-shadow:0 0 7px #4bd5ee20;vertical-align:1px}
+.launch-aurebesh-flourish{font-size:11px;line-height:1;font-weight:520;letter-spacing:.14em;color:#d7c28b9b;text-shadow:0 0 7px #ffe81f12;text-align:center;align-self:center}
 @media(max-width:700px){
-  .imperial-archive-mark{font-size:18px}.imperial-active-mark{font-size:15px;margin-left:7px}.launch-script-flourish{font-size:20px}
-  .launch-foot{grid-template-columns:1fr}.launch-script-flourish{grid-row:2}.launch-foot>span:last-child{grid-row:3}
+  .aurebesh-archive-mark{font-size:10px;letter-spacing:.1em}.aurebesh-active-mark{font-size:8px;margin-left:7px}.launch-aurebesh-flourish{font-size:10px;letter-spacing:.12em}
+  .launch-foot{grid-template-columns:1fr}.launch-aurebesh-flourish{grid-row:2}.launch-foot>span:last-child{grid-row:3}
 }
-@media(max-height:500px) and (orientation:landscape){.imperial-archive-mark{font-size:16px}.imperial-active-mark{font-size:14px}}
+@media(max-height:500px) and (orientation:landscape){.aurebesh-archive-mark{font-size:9px}.aurebesh-active-mark{font-size:8px}}
