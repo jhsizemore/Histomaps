@@ -1,0 +1,51 @@
+name: Star Wars selection refinement
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-selection-refinement.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply selection refinement
+        run: python StarWars/tools/selection_refine.py
+      - name: Validate source
+        run: |
+          node --check StarWars/app.js
+          grep -Fq 'selection-focus-20260907' StarWars/styles.css
+          grep -Fq 'data-screen-group' StarWars/app.js
+          grep -Fq 'styles.css?v=selection-20260907' StarWars/index.html
+          grep -Fq 'app.js?v=selection-20260907' StarWars/index.html
+          git diff --check
+      - name: Install Playwright
+        run: python -m pip install --disable-pip-version-check playwright
+      - name: Visual and behavior QA
+        run: |
+          python -m http.server 8000 --directory . >/tmp/starwars-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          python StarWars/tools/selection_qa.py
+      - name: Upload QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: starwars-selection-refinement-qa
+          path: /tmp/selection-qa/*.png
+          if-no-files-found: ignore
+          retention-days: 3
+      - name: Commit refinement
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add StarWars/app.js StarWars/styles.css StarWars/index.html
+          git commit -m 'Strengthen Star Wars selection highlights'
+          git pull --rebase origin main
+          git push
