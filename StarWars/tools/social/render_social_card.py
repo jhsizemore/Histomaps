@@ -112,10 +112,11 @@ def render_reddit_launch(poster):
     d.text((130, 605), 'CANON 500 BBY—35 ABY   ·   FILMS & TV   ·   CHARACTER LIFELINES   ·   LEGENDS KEPT SEPARATE', font=font('NewsCycle-Bold.ttf', 27), fill='#c6d0cf')
 
     # Three magnified real-poster windows chosen to survive Reddit's feed compression.
+    # Each crop is visually QA'd against the full poster so its label and era agree.
     strips = [
-        ('FALL OF THE JEDI', (90, 3750, 5110, 5400)),
-        ('AGE OF REBELLION', (90, 7900, 5110, 9550)),
-        ('NEW REPUBLIC + FIRST ORDER', (90, 11250, 5110, 12900)),
+        ('FALL OF THE JEDI → REIGN OF EMPIRE', (90, 3500, 5110, 5500)),
+        ('AGE OF REBELLION', (90, 5600, 5110, 7600)),
+        ('NEW REPUBLIC → FIRST ORDER', (90, 7300, 5110, 9300)),
     ]
     y = 735
     strip_w, strip_h = 2200, 575
