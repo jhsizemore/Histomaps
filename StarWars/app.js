@@ -342,7 +342,7 @@
     applySelection();updateViewport();
   }
   function screenDate(m){
-    if(m.id==='mando-film')return 'New Republic era · approximate';
+    if(m.id==='mando-film')return '11 ABY or later · approximate';
     const span=m.start===m.end?formatYear(m.start):`${formatYear(m.start)} – ${formatYear(m.end)}`;
     return `${m.approx?'c. ':''}${span}`;
   }

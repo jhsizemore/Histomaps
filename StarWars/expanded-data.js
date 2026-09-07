@@ -16,10 +16,13 @@ Object.assign(window.HISTOMAP.sources,{
   legendsComics:['Legends comic chronology · Wookieepedia','https://starwars.fandom.com/wiki/Timeline_of_Legends_comics'],
   legacy:['Legacy era · Legends','https://starwars.fandom.com/wiki/Legacy_era'],
   maulShow:['Maul – Shadow Lord · Lucasfilm','https://www.starwars.com/series/star-wars-maul-shadow-lord'],
-  mandoFilm:['The Mandalorian and Grogu · Lucasfilm','https://www.starwars.com/films/star-wars-the-mandalorian-and-grogu']
+  mandoFilm:['The Mandalorian and Grogu · Lucasfilm','https://www.starwars.com/films/star-wars-the-mandalorian-and-grogu'],
+  youngJediTiming:['Young Jedi Adventures Season 3 chronology · Wookieepedia','https://starwars.fandom.com/wiki/Young_Jedi_Adventures_Season_Three'],
+  maulTiming:['Maul – Shadow Lord timeline context · StarWars.com','https://www.starwars.com/news/star-wars-maul-shadow-lord-first-trailer-poster-art'],
+  mandoFilmTiming:['The Mandalorian and Grogu chronology · Wookieepedia','https://starwars.fandom.com/wiki/Star_Wars%3A_The_Mandalorian_and_Grogu']
 });
 window.HISTOMAP.screen=[
-  {id:'young-jedi',name:'Young Jedi Adventures',kind:'animation',start:-232,end:-232,approx:true,note:'High Republic placement, around 232 BBY. The marker does not claim every season occupies a single year.',sources:['tvDates','viewing']},
+  {id:'young-jedi',name:'Young Jedi Adventures',kind:'animation',start:-233,end:-222,approx:true,discontinuous:true,note:'The series begins around 233 BBY. Season 3 continues between 232 and 230 BBY, then its final epilogue jumps several more years to between 227 and about 222 BBY. This is a discontinuous envelope, not eleven years of continuous action.',sources:['youngJediTiming','tvDates','viewing']},
   {id:'acolyte-tv',name:'The Acolyte',kind:'series',start:-132,end:-132,note:'Main investigation. The Brendok flashback is earlier, around 148 BBY.',sources:['tvDates']},
   {id:'ep1',name:'I · The Phantom Menace',kind:'film',start:-32,end:-32,sources:['dates']},
   {id:'ep2',name:'II · Attack of the Clones',kind:'film',start:-22,end:-22,sources:['dates']},
@@ -27,7 +30,7 @@ window.HISTOMAP.screen=[
   {id:'clone-tv',name:'The Clone Wars',kind:'animation',start:-22,end:-19,note:'The main wartime narrative. The final arc overlaps Revenge of the Sith; the closing Imperial-era coda is outside this span.',sources:['tvDates','viewing']},
   {id:'ep3',name:'III · Revenge of the Sith',kind:'film',start:-19,end:-19,sources:['dates']},
   {id:'bad-batch',name:'The Bad Batch',kind:'animation',start:-19,end:-18,approx:true,note:'Main story in the early Imperial period. The later Omega epilogue is not treated as continuous screen time.',sources:['tvDates']},
-  {id:'maul-tv',name:'Maul – Shadow Lord',kind:'animation',start:-18,end:-18,approx:true,note:'Early Imperial era, approximately 18 BBY. Sources differ on the exact placement; this is an approximate marker, not a precise duration.',sources:['maulShow','tvDates']},
+  {id:'maul-tv',name:'Maul – Shadow Lord',kind:'animation',start:-17,end:-17,approx:true,note:'Official 2026 material places the series a few short years after Order 66, without giving an exact year. It is shown near 17 BBY as a conservative schematic anchor; the marker is approximate, not a claimed precise date.',sources:['maulShow','maulTiming','tvDates']},
   {id:'solo-film',name:'Solo',kind:'film',start:-13,end:-10,note:'Includes the Corellia opening and the three-year jump to the principal adventure. The bracket includes the intervening gap.',discontinuous:true,sources:['dates']},
   {id:'obi-wan',name:'Obi-Wan Kenobi',kind:'series',start:-9,end:-9,note:'Main story, excluding the prequel-era opening and flashbacks.',sources:['tvDates']},
   {id:'andor-tv',name:'Andor · seasons 1–2',kind:'series',start:-5,end:0,note:'Main story across the two seasons. Season 2 advances in year-separated arcs and ends immediately before Rogue One. Childhood flashbacks sit outside this span.',sources:['viewing','tvDates']},
@@ -40,7 +43,7 @@ window.HISTOMAP.screen=[
   {id:'boba-tv',name:'The Book of Boba Fett',kind:'series',start:9,end:9,approx:true,note:'Main present-day story in the Mandalorian period. Flashbacks begin after Return of the Jedi, around 4 ABY.',sources:['tvDates','viewing']},
   {id:'ahsoka-tv',name:'Ahsoka · season 1',kind:'series',start:9,end:9,approx:true,note:'Placed in the shared New Republic period, conventionally around 9 ABY. The precise ordering and elapsed time among related series are not implied by the stacked labels.',sources:['tvDates','viewing']},
   {id:'skeleton-tv',name:'Skeleton Crew',kind:'series',start:9,end:9,approx:true,note:'Around 9 ABY, in the same broad New Republic period as the Mandalorian stories. Same-year placement does not prove scene-by-scene simultaneity.',sources:['tvDates','viewing']},
-  {id:'mando-film',name:'The Mandalorian and Grogu',kind:'film',start:9,end:9,approx:true,note:'After the Mandalorian series, within the New Republic era. This shared-era anchor is approximate; the exact in-universe year and duration are not asserted.',sources:['mandoFilm','viewing']},
+  {id:'mando-film',name:'The Mandalorian and Grogu',kind:'film',start:11,end:11,approx:true,note:'After The Mandalorian, in the New Republic era. Current chronology places the released film during or after 11 ABY; 11 ABY is shown as the earliest defensible anchor, not an exact asserted year.',sources:['mandoFilm','mandoFilmTiming','viewing']},
   {id:'resistance-tv',name:'Resistance',kind:'animation',start:34,end:35,note:'Begins before The Force Awakens and continues beyond it. The show overlaps the sequel conflict.',sources:['viewing','tvDates']},
   {id:'ep7',name:'VII · The Force Awakens',kind:'film',start:34,end:34,sources:['dates']},
   {id:'ep8',name:'VIII · The Last Jedi',kind:'film',start:34,end:34,note:'Begins immediately after The Force Awakens.',sources:['dates']},
