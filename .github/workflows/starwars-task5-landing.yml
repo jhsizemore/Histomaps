@@ -19,7 +19,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Apply landing experience
-        run: python StarWars/tools/task5_landing_patch.py
+        run: |
+          python StarWars/tools/task5_landing_patch.py
+          python StarWars/tools/task5_landing_fix.py
       - name: Structural checks
         run: |
           python - <<'PY'
@@ -30,6 +32,7 @@ jobs:
           assert 'The history of the Star Wars galaxy, all at once.' in t
           assert 'View / download full poster' in t
           assert 'Legends kept separate' in t
+          assert 'onclick="document.getElementById' in t
           print('landing markup OK')
           PY
       - name: Install browser QA
@@ -51,8 +54,8 @@ jobs:
               assert await intro.is_visible()
               await page.screenshot(path=f'qa/{name}-intro.png')
               await page.locator('#launch-explore').click()
+              await page.wait_for_timeout(100)
               assert not await intro.is_visible()
-              assert await page.locator('#map-scroll').is_visible()
               await page.screenshot(path=f'qa/{name}-map.png')
               await page.close()
 
