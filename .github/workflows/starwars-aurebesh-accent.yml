@@ -15,35 +15,24 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install FT Aurebesh locally
+      - name: Install verified FT Aurebesh locally
         run: |
-          git clone --depth 1 https://github.com/ChewKeanHo/visuals-fonts-ft-aurebesh.git /tmp/ft-aurebesh
+          curl -fL --retry 3 'https://db.onlinewebfonts.com/t/e946ce25a187fb5d5886e5d543f6013e.woff2' -o StarWars/fonts/ft-aurebesh.woff2
           python -m pip install --disable-pip-version-check fonttools brotli
           python - <<'PY'
           from pathlib import Path
           from fontTools.ttLib import TTFont
-          files=sorted([*Path('/tmp/ft-aurebesh').rglob('*.otf'),*Path('/tmp/ft-aurebesh').rglob('*.ttf')])
-          candidates=[]
-          for p in files:
-              try:
-                  f=TTFont(p)
-                  family=f['name'].getDebugName(1) or ''
-                  sub=f['name'].getDebugName(2) or ''
-                  license_text=' '.join(filter(None,[f['name'].getDebugName(13),f['name'].getDebugName(14)]))
-                  if 'Aurebesh' in family:
-                      candidates.append((0 if sub.lower() in ('regular','roman','normal') else 1,p,family,sub,license_text))
-              except Exception:
-                  pass
-          assert candidates, f'No FT Aurebesh font found among {len(files)} font files'
-          candidates.sort(key=lambda x:(x[0],len(str(x[1]))))
-          _,src,family,sub,license_text=candidates[0]
-          print('Using',src,'family=',family,'subfamily=',sub,'license=',license_text[:240])
-          assert 'Open Font License' in license_text or 'OFL' in license_text, license_text
-          f=TTFont(src)
-          f.flavor='woff2'
-          out=Path('StarWars/fonts/ft-aurebesh.woff2')
-          f.save(out)
-          print('Wrote',out,out.stat().st_size)
+          p=Path('StarWars/fonts/ft-aurebesh.woff2')
+          assert p.stat().st_size>10000,p.stat().st_size
+          f=TTFont(p)
+          names=f['name']
+          family=names.getDebugName(1) or ''
+          designer=names.getDebugName(9) or ''
+          license_text=' '.join(filter(None,[names.getDebugName(13),names.getDebugName(14)]))
+          print('family=',family,'designer=',designer,'license=',license_text[:400])
+          assert 'Aurebesh' in family,family
+          assert 'Rodrigo' in designer or 'Fuenzalida' in designer or 'fragTYPE' in (names.getDebugName(8) or ''),(designer,names.getDebugName(8))
+          assert 'Open Font License' in license_text or 'OFL' in license_text,license_text
           PY
           cp StarWars/fonts/newscycle-OFL.txt StarWars/fonts/ft-aurebesh-OFL.txt
       - name: Apply Aurebesh accent correction
