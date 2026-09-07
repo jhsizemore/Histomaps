@@ -320,7 +320,11 @@
     else if(width<620){
       const share=layer==='screen'?.39:.34,min=layer==='screen'?148:128,max=layer==='screen'?166:148;
       screenWidth=Math.round(Math.min(max,Math.max(min,width*share)));
-    }else screenWidth=Math.round(Math.min(310,Math.max(220,width*.27)));
+    }else if(width<1400)screenWidth=Math.round(Math.min(310,Math.max(220,width*.27)));
+    else{
+      const share=layer==='screen'?.23:.18,min=layer==='screen'?340:280,max=layer==='screen'?560:420;
+      screenWidth=Math.round(Math.min(max,Math.max(min,width*share)));
+    }
     chartWidth=Math.max(1,width-screenWidth);
     document.documentElement.style.setProperty('--companion-width',`${screenWidth}px`);
     document.body.classList.toggle('has-companion',hasCompanion);document.body.classList.toggle('life-mode',hasCompanion&&layer==='life');
@@ -406,8 +410,14 @@
     const dateLines=wrapLineCount(dateText,maxChars),typeLines=wrapLineCount(typeText,maxChars);
     return {artItems,cols,rowHeights,titleH,dateText,typeText,maxChars,dateLines,typeLines,cardH:14+titleH+dateLines*15+typeLines*15+17};
   }
+  function renderCompanionGuides(pane,W){
+    D.eras.slice(1).forEach(era=>pane.append(svg('line',{x1:0,x2:W,y1:era.y*zoom,y2:era.y*zoom,class:'companion-era-guide','pointer-events':'none'})));
+    const yavin=yearY(0)*zoom;
+    pane.append(svg('line',{x1:0,x2:W,y1:yavin,y2:yavin,class:'companion-yavin-guide','pointer-events':'none'}));
+  }
   function renderScreen(){
     const pane=$('screen-map'),W=screenWidth;pane.replaceChildren();
+    renderCompanionGuides(pane,W);
     screenGroups=makeScreenGroups();
     pane.append(svg('text',{x:12,y:30,class:'column-title'},'STORY TIME'));
     pane.append(svg('text',{x:12,y:49,class:'screen-meta'},W<190?'◇ Film · ┃ TV · • date':'◇ Film · ┃ Series · • true anchor'));
@@ -460,6 +470,7 @@
   function lifeDate(p,start){return `${(start?p.startApprox:p.endApprox)?'c. ':''}${formatYear(start?p.start:p.end)}`;}
   function renderLives(){
     const pane=$('screen-map'),W=screenWidth,people=D.lifelines.filter(p=>p.groups.includes(lifeGroup));pane.replaceChildren();
+    renderCompanionGuides(pane,W);
     pane.append(svg('text',{x:10,y:29,class:'screen-meta'},'● Birth   × Death'));
     pane.append(svg('text',{x:10,y:48,class:'screen-meta'},'○ Last seen here'));
     const step=(W-14)/people.length;
