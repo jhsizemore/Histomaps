@@ -70,3 +70,12 @@ body{background-color:#000;background-image:linear-gradient(#0002,#0002),url('as
   .inspector{width:min(480px,24vw);padding-left:38px;padding-right:38px}
   .screen-meta{font-size:13px}.screen-name{font-size:15px}.column-title{font-size:11px}
 }
+
+@media(min-width:1800px){
+  .ribbon-label{font-size:20px}.minor-label{font-size:13px}.axis-year{font-size:13px}.era-title{font-size:19px}
+  .event .event-title{font-size:15px}.event .event-date{font-size:12px}.force-caption{font-size:12px}
+}
+@media(min-width:2800px){
+  .ribbon-label{font-size:22px}.minor-label{font-size:14px}.axis-year{font-size:14px}.era-title{font-size:21px}
+  .event .event-title{font-size:16px}.event .event-date{font-size:13px}.force-caption{font-size:13px}
+}

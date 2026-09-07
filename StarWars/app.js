@@ -85,7 +85,8 @@
     labels.forEach(label=>{
       const {id,key,box,base,tone='dark',rotate=false}=label;if(!key)return;
       let placed=false;
-      for(const size of [36,28,22,16]){
+      const symbolSizes=chartWidth>=2200?[50,40,30,22]:chartWidth>=1500?[44,34,26,18]:[36,28,22,16];
+      for(const size of symbolSizes){
         const cy=(box.t+box.b)/2;
         const candidates=[...(!rotate?[{x:box.l-size/2-12,y:cy}]:[]),...[
           box.b+size/2+12,box.t-size/2-12,box.b+size/2+36,box.t-size/2-36,box.b+size/2+64,box.t-size/2-64
