@@ -30,7 +30,8 @@ jobs:
           assert '\\n    .launch-intro' not in t
           assert '.launch-intro{position:absolute' in t
           assert 'The history of the Star Wars galaxy, all at once.' in t
-          print('landing markup + CSS serialization OK')
+          assert '.launch-features{display:none}' in t
+          print('landing markup + responsive CSS OK')
           PY
       - name: Install Playwright Python package
         run: python -m pip install --disable-pip-version-check playwright
@@ -50,6 +51,7 @@ jobs:
               assert await intro.is_visible()
               box=await card.bounding_box()
               assert box and box['width'] < width*.96, (name,box)
+              if name=='landscape': assert box['height'] < 305, (name,box)
               await page.screenshot(path=f'qa/{name}-intro.png')
               await page.locator('#launch-explore').click()
               await page.wait_for_timeout(100)
