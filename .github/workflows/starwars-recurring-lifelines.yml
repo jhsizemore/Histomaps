@@ -22,7 +22,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Apply recurring lifeline UI and CI patch
-        run: python StarWars/tools/expand_lifelines_patch.py
+        run: |
+          python StarWars/tools/expand_lifelines_patch.py
+          python StarWars/tools/fix_lifeline_audit.py
       - name: Validate source and data model
         run: |
           node --check StarWars/app.js
