@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/starwars-enrich-recurring-blurbs.yml'
+      - 'StarWars/tools/enrich_recurring_blurbs.py'
 
 permissions:
   contents: write
