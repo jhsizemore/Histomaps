@@ -107,3 +107,8 @@ body{background-color:#000;background-image:linear-gradient(#0002,#0002),url('as
 .legend-stream.dim{opacity:.16;filter:saturate(.55) brightness(.68)}
 .legend-stream.selected{opacity:1;filter:brightness(1.28) saturate(1.18) drop-shadow(0 0 2px rgba(255,255,255,.75)) drop-shadow(0 0 6px rgba(218,185,237,.34))}
 @media(max-width:620px){.stream.selected{stroke-width:2.8}.event.active .event-dot{stroke-width:2}.screen-story.active,.screen-cluster.active,.lifeline.active{filter:brightness(1.2) saturate(1.2) drop-shadow(0 0 2px rgba(255,255,255,.72))}}
+
+
+/* selection-saber-20260907 */
+.selection-saber{stroke-width:4;stroke-linecap:round;opacity:.82;filter:drop-shadow(0 0 2px rgba(255,255,255,.64)) drop-shadow(0 0 7px rgba(255,232,31,.26))}
+.selection-saber-core{stroke-width:1.15;stroke-linecap:round;opacity:.92;filter:drop-shadow(0 0 2px rgba(255,255,255,.72))}

@@ -236,7 +236,7 @@
   }
   function renderMini(){if(mode!=='canon'){renderLegendMini();return;}const m=$('mini-svg');m.replaceChildren();D.factions.slice(0,11).forEach((f,i)=>addStream(m,f,politicalPath(i),false));['jedi','sith'].forEach(id=>addStream(m,factions[id],forcePath(id,1,1),false));}
   function applySelection(){
-    map.querySelector('.selected-year')?.remove();map.querySelector('.screen-highlight')?.remove();
+    map.querySelector('.selected-year')?.remove();map.querySelector('.screen-highlight')?.remove();map.querySelectorAll('.selection-saber,.selection-saber-core').forEach(n=>n.remove());
     const directFaction=selected?.type==='faction'?selected.id:null;
     const selectedEvent=selected?.type==='event'?D.events.find(v=>v.id===selected.id):null;
     const contextualFaction=directFaction||selectedEvent?.faction||null;
@@ -282,7 +282,13 @@
       map.append(svg('line',{x1:mapX(84),x2:chartWidth-34,y1:y,y2:y,class:'selected-year'}));
     }
     const span=selected?.type==='screen'?D.screen.find(m=>m.id===selected.id):selected?.type==='screen-group'?screenGroups.find(m=>m.id===selected.id):selected?.type==='life'?D.lifelines.find(m=>m.id===selected.id):null;
-    if(span){const y=yearY(span.start)*zoom,h=Math.max(2,(yearY(span.end)-yearY(span.start))*zoom);map.append(svg('rect',{x:mapX(84),y,width:chartWidth-mapX(84)-34,height:h,fill:span.color||'#e3c17c','fill-opacity':.075,class:'screen-highlight','pointer-events':'none'}));}
+    if(span){
+      const y=yearY(span.start)*zoom,h=Math.max(2,(yearY(span.end)-yearY(span.start))*zoom),color=span.color||'#e3c17c';
+      map.append(svg('rect',{x:mapX(84),y,width:chartWidth-mapX(84)-34,height:h,fill:color,'fill-opacity':.075,class:'screen-highlight','pointer-events':'none'}));
+      const minBlade=12,y1=h<minBlade?y-(minBlade-h)/2:y,y2=h<minBlade?y+(minBlade+h)/2:y+h,sx=Math.max(mapX(84)+8,chartWidth-(chartWidth<700?52:72));
+      map.append(svg('line',{x1:sx,x2:sx,y1,y2,stroke:color,class:'selection-saber','pointer-events':'none'}));
+      map.append(svg('line',{x1:sx,x2:sx,y1:y1+1,y2:y2-1,stroke:'#fffef1',class:'selection-saber-core','pointer-events':'none'}));
+    }
   }
   function overview(){
     if(mode!=='canon'){legendOverview();return;}
