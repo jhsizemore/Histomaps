@@ -1,0 +1,52 @@
+name: Star Wars live social metadata QA
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-task9-live-qa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  live-social:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify deployed social metadata and image
+        shell: bash
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in $(seq 1 18); do
+            curl -sS -A 'facebookexternalhit/1.1' https://histomaps.org/starwars/ -o /tmp/page || true
+            if grep -q 'Star Wars Histomap — The History of the Galaxy, All at Once' /tmp/page \
+              && grep -q 'property="og:image" content="https://histomaps.org/starwars/assets/star-wars-histomap-social-card.png?v=20260907"' /tmp/page \
+              && grep -q 'name="twitter:card" content="summary_large_image"' /tmp/page; then
+              ok=1; break
+            fi
+            sleep 5
+          done
+          [[ "$ok" == "1" ]]
+          grep -q 'property="og:url" content="https://histomaps.org/starwars/"' /tmp/page
+          grep -q 'property="og:image:width" content="1200"' /tmp/page
+          grep -q 'property="og:image:height" content="630"' /tmp/page
+          grep -q 'property="og:image:alt"' /tmp/page
+          grep -q 'name="twitter:image:alt"' /tmp/page
+          grep -q 'name="robots" content="index,follow,max-image-preview:large"' /tmp/page
+
+          headers=$(curl -sS -I 'https://histomaps.org/starwars/assets/star-wars-histomap-social-card.png?v=20260907')
+          code=$(printf '%s' "$headers" | awk 'toupper($1) ~ /^HTTP\// {c=$2} END{print c}')
+          type=$(printf '%s' "$headers" | awk 'BEGIN{IGNORECASE=1} /^content-type:/ {gsub("\r",""); print $2}' | tail -1)
+          echo "social card -> $code $type"
+          [[ "$code" == "200" ]]
+          [[ "$type" == image/png* ]]
+
+          curl -sS 'https://histomaps.org/starwars/assets/star-wars-histomap-social-card.png?v=20260907' -o /tmp/card.png
+          python - <<'PY'
+          import struct
+          p=open('/tmp/card.png','rb').read(24)
+          assert p[:8]==b'\x89PNG\r\n\x1a\n'
+          w,h=struct.unpack('>II',p[16:24])
+          assert (w,h)==(1200,630),(w,h)
+          print('live social image dimensions',w,h)
+          PY
