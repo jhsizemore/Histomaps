@@ -316,7 +316,11 @@
   function showInfo(){if(!$('info-dialog').open)$('info-dialog').showModal();}
   function render(){
     const width=scroller.clientWidth,hasCompanion=layer!=='none'&&mode==='canon';
-    screenWidth=hasCompanion?Math.round(width<620?Math.max(128,width*.34):Math.min(310,Math.max(220,width*.27))):0;
+    if(!hasCompanion)screenWidth=0;
+    else if(width<620){
+      const share=layer==='screen'?.39:.34,min=layer==='screen'?148:128,max=layer==='screen'?166:148;
+      screenWidth=Math.round(Math.min(max,Math.max(min,width*share)));
+    }else screenWidth=Math.round(Math.min(310,Math.max(220,width*.27)));
     chartWidth=Math.max(1,width-screenWidth);
     document.documentElement.style.setProperty('--companion-width',`${screenWidth}px`);
     document.body.classList.toggle('has-companion',hasCompanion);document.body.classList.toggle('life-mode',hasCompanion&&layer==='life');
