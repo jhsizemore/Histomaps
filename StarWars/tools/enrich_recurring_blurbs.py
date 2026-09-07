@@ -38,7 +38,7 @@ blurbs={
 }
 
 for ident, blurb in blurbs.items():
-    pattern=re.compile(r"^(\s*\['"+re.escape(ident)+r"'.*?,)'[^']*'(\s*(?:,\{.*\})?\],\s*)$",re.M)
+    pattern=re.compile(r"^(\s*\['"+re.escape(ident)+r"'.*?,)'[^']*'(\s*(?:,\{.*\})?\],?\s*)$",re.M)
     s2,n=pattern.subn(lambda m:m.group(1)+repr(blurb)+m.group(2),s,count=1)
     if n!=1:
         raise SystemExit(f'Could not replace blurb for {ident}: {n}')
