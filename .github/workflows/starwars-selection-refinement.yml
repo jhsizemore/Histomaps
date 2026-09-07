@@ -15,15 +15,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Apply selection refinement
-        run: python StarWars/tools/selection_refine.py
+      - name: Add selected-span blade
+        run: python StarWars/tools/selection_saber_refine.py
       - name: Validate source
         run: |
           node --check StarWars/app.js
           grep -Fq 'selection-focus-20260907' StarWars/styles.css
+          grep -Fq 'selection-saber-20260907' StarWars/styles.css
+          grep -Fq 'selection-saber-core' StarWars/app.js
           grep -Fq 'data-screen-group' StarWars/app.js
-          grep -Fq 'styles.css?v=selection-20260907' StarWars/index.html
-          grep -Fq 'app.js?v=selection-20260907' StarWars/index.html
           git diff --check
       - name: Install Playwright
         run: python -m pip install --disable-pip-version-check playwright
@@ -37,7 +37,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: starwars-selection-refinement-qa
+          name: starwars-selection-refinement-qa-final
           path: /tmp/selection-qa/*.png
           if-no-files-found: ignore
           retention-days: 3
@@ -45,7 +45,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add StarWars/app.js StarWars/styles.css StarWars/index.html
-          git commit -m 'Strengthen Star Wars selection highlights'
+          git add StarWars/app.js StarWars/styles.css
+          git commit -m 'Keep selected story spans visible beside inspector'
           git pull --rebase origin main
           git push
