@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - '.github/workflows/starwars-recurring-lifelines.yml'
-      - 'StarWars/tools/expand_lifelines_qa.py'
 
 permissions:
   contents: write
@@ -22,7 +21,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Apply recurring lifeline UI and CI patch
+      - name: Apply recurring lifeline UI and audit patch
         run: |
           python StarWars/tools/expand_lifelines_patch.py
           python StarWars/tools/fix_lifeline_audit.py
@@ -41,7 +40,6 @@ jobs:
           const expanded=D.lifelines.filter(p=>p.startKind==='appearance');
           if(expanded.length!==78)throw new Error('Expected 78 appearance-span tracks');
           for(const p of expanded){if(!p.appearances||p.appearances.length<3)throw new Error(p.name+' lacks 3 qualifying properties');}
-          console.log('lifelines',D.lifelines.length,'expanded',expanded.length);
           JS
           git diff --check
       - name: Install Playwright
@@ -52,17 +50,14 @@ jobs:
           SERVER_PID=$!
           trap 'kill $SERVER_PID || true' EXIT
           python StarWars/tools/expand_lifelines_qa.py
-      - name: Upload visual QA
-        uses: actions/upload-artifact@v4
-        with:
-          name: starwars-recurring-lifelines-qa
-          path: /tmp/lifeline-qa/*.png
-          retention-days: 3
-      - name: Commit production expansion
+      - name: Commit tested product changes
         run: |
+          # The temporary Actions token cannot modify permanent workflow files.
+          # Revert that one working-tree file; it is updated separately via the connected GitHub account.
+          git checkout -- .github/workflows/starwars-generated-assets.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add StarWars/index.html StarWars/app.js StarWars/synopses.js StarWars/README.md StarWars/tools/poster/audit-data-sync.js .github/workflows/starwars-generated-assets.yml
+          git add StarWars/index.html StarWars/app.js StarWars/synopses.js StarWars/README.md StarWars/tools/poster/audit-data-sync.js
           git commit -m 'Expand interactive Star Wars lifelines to recurring cast'
           git pull --rebase origin main
           git push
