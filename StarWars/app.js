@@ -375,7 +375,7 @@
     $('life-group').hidden=layer!=='life';$('companion-title').textContent='Films & TV';
     $('detail-level').disabled=mode!=='canon';
     document.querySelectorAll('[data-layer]').forEach(b=>{b.disabled=mode!=='canon'&&b.dataset.layer!=='none';b.setAttribute('aria-pressed',String((mode==='canon'?layer:'none')===b.dataset.layer));});
-    $('layer-caption').textContent=layer==='life'&&hasCompanion?'● Born  × Died  ○ Last appearance':layer==='screen'&&hasCompanion?'◇ Film · span = series · • true anchor · dashed ≈ / gaps':'Select a stream or numbered event';
+    $('layer-caption').textContent=layer==='life'&&hasCompanion?'● Birth · ◇ First mapped · × Death · ○ Last mapped':layer==='screen'&&hasCompanion?'◇ Film · span = series · • true anchor · dashed ≈ / gaps':'Select a stream or numbered event';
     renderedHeight=(mode==='canon'?D.height:D.legends[mode].height)*zoom;
     if(mode==='canon'){renderCanon();if(layer==='screen')renderScreen();if(layer==='life')renderLives();}else renderLegend();
     [map,...(hasCompanion?[$('screen-map')]:[])].forEach((pane,i)=>{pane.style.height=`${renderedHeight}px`;pane.setAttribute('viewBox',`0 0 ${i?screenWidth:chartWidth} ${renderedHeight}`);});
@@ -513,20 +513,22 @@
   function renderLives(){
     const pane=$('screen-map'),W=screenWidth,people=D.lifelines.filter(p=>p.groups.includes(lifeGroup));pane.replaceChildren();
     renderCompanionGuides(pane,W);
-    pane.append(svg('text',{x:10,y:29,class:'screen-meta'},'● Birth   × Death'));
-    pane.append(svg('text',{x:10,y:48,class:'screen-meta'},'○ Last seen here'));
+    pane.append(svg('text',{x:10,y:29,class:'screen-meta'},'● Birth · ◇ First mapped'));
+    pane.append(svg('text',{x:10,y:48,class:'screen-meta'},'× Death · ○ Last mapped'));
     const step=(W-14)/people.length;
     people.forEach((p,i)=>{
       const x=7+step*(i+.5),start=yearY(p.start)*zoom,end=yearY(p.end)*zoom;
-      const g=svg('g',{class:'lifeline',tabindex:0,role:'button','aria-label':`${p.name}, born ${lifeDate(p,true)}, ${p.endKind==='death'?'died':'alive at last mapped appearance'} ${lifeDate(p,false)}`});g.dataset.life=p.id;
+      const startLabel=p.startKind==='appearance'?'first mapped appearance':'born',endLabel=p.endKind==='death'?'died':'last mapped appearance';
+      const g=svg('g',{class:'lifeline',tabindex:0,role:'button','aria-label':`${p.name}, ${startLabel} ${lifeDate(p,true)}, ${endLabel} ${lifeDate(p,false)}`});g.dataset.life=p.id;
       g.append(svg('title',{},`${p.name} · ${lifeDate(p,true)} — ${lifeDate(p,false)}${p.endKind==='known'?' (later fate uncharted)':''}`));
       g.append(svg('rect',{x:x-step/2+1,y:start-12,width:step-2,height:end-start+24,fill:'transparent'}));
       g.append(svg('line',{x1:x,x2:x,y1:start,y2:end,stroke:p.color,class:'life-stroke'}));
-      if(p.start<-500)g.append(svg('path',{d:`M ${x-5} ${start+5} L ${x} ${start-2} L ${x+5} ${start+5}`,fill:'none',stroke:p.color,'stroke-width':2}));
+      if(p.startKind==='appearance')g.append(svg('path',{d:`M ${x} ${start-5} l 5 5 -5 5 -5 -5 Z`,fill:'#102025',stroke:p.color,'stroke-width':1.8}));
+      else if(p.start<-500)g.append(svg('path',{d:`M ${x-5} ${start+5} L ${x} ${start-2} L ${x+5} ${start+5}`,fill:'none',stroke:p.color,'stroke-width':2}));
       else g.append(svg('circle',{cx:x,cy:start,r:4,fill:p.startApprox?'#102025':p.color,stroke:p.color,'stroke-width':2,'stroke-dasharray':p.startApprox?'2 2':'none'}));
       if(p.endKind==='death')g.append(svg('path',{d:`M ${x-4} ${end-4} l 8 8 M ${x+4} ${end-4} l -8 8`,stroke:p.color,'stroke-width':2}));
       else g.append(svg('circle',{cx:x,cy:end,r:5,fill:'#102025',stroke:p.color,'stroke-width':2,'stroke-dasharray':p.endApprox?'2 2':'none'}));
-      if(p.startApprox)g.append(svg('line',{x1:x,x2:x,y1:start+6,y2:Math.min(end,start+32),stroke:'#102025','stroke-width':4,'stroke-dasharray':'3 4'}));
+      if(p.startApprox&&p.startKind!=='appearance')g.append(svg('line',{x1:x,x2:x,y1:start+6,y2:Math.min(end,start+32),stroke:'#102025','stroke-width':4,'stroke-dasharray':'3 4'}));
       if(p.endApprox)g.append(svg('line',{x1:x,x2:x,y1:Math.max(start,end-32),y2:end-7,stroke:'#102025','stroke-width':4,'stroke-dasharray':'3 4'}));
       const textHeight=p.short.length*8,first=Math.min(start+42+(i%2)*30,end-textHeight-15);
       for(let y=Math.max(start+18,first);y+textHeight<end-12;y+=370){g.append(svg('text',{x,y,transform:`rotate(90 ${x} ${y})`,class:'life-label'},p.short));}
@@ -620,8 +622,9 @@
       const p=D.lifelines.find(p=>p.id===record.id);heading=el('h2','',p.name);
       box.append(el('div','record-date','CANON · CHARACTER LIFELINE'),heading);appendSynopsis(box,p);
       const dates=el('div','life-dates');
-      [[p.startApprox?'Born · approximate':'Born',lifeDate(p,true)],[p.endKind==='death'?'Died':'Alive · last mapped era',lifeDate(p,false)]].forEach(([label,value])=>{const item=el('div');item.append(el('small','',label),el('strong','',value));dates.append(item);});box.append(dates,el('p','',p.note));
-      box.append(el('p','hint','The line follows physical life, independently of political affiliation. Spacing uses the same elastic dates as the streams. An open endpoint leaves later life uncharted.'));
+      [[p.startKind==='appearance'?'First mapped appearance':p.startApprox?'Born · approximate':'Born',lifeDate(p,true)],[p.endKind==='death'?'Died':'Last mapped appearance',lifeDate(p,false)]].forEach(([label,value])=>{const item=el('div');item.append(el('small','',label),el('strong','',value));dates.append(item);});box.append(dates,el('p','',p.note));
+      if(p.appearances?.length){const tags=el('div','record-tags');p.appearances.forEach(id=>{const m=D.screen.find(v=>v.id===id);if(m)tags.append(el('span','',m.name));});box.append(el('div','record-label',`Mapped screen properties · ${p.appearances.length}`),tags);}
+      box.append(el('p','hint',p.startKind==='appearance'?'This is an appearance-span track: it connects the first and last dated screen properties represented in this atlas and does not claim to show the character’s birth, death, or every off-screen year.':'The line follows physical life, independently of political affiliation. Spacing uses the same elastic dates as the streams. An open endpoint leaves later life uncharted.'));
       p.sources.forEach(k=>box.append(sourceLink(k)));
       const jump=el('button','start-event','Follow this life on the map →');jump.addEventListener('click',()=>{if(!p.groups.includes(lifeGroup)){lifeGroup=p.groups[0];$('life-group').value=lifeGroup;}setLayer('life');scroller.focus({preventScroll:true});goYear(Math.max(-500,p.start));});box.append(jump);
     }else if(record.type==='screen-group'){

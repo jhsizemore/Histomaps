@@ -75,7 +75,7 @@
     poe:'Poe Dameron is a gifted pilot and Resistance officer raised in a family shaped by the Rebel victory over the Empire. His arc moves from daring individual action toward broader command responsibility as he helps lead the Resistance through the war with the First Order.'
   };
   D.lifelines.forEach(p=>{
-    p.synopsis=lives[p.id]||lead(p.note,`The atlas follows ${p.name} as one physical life across the political changes surrounding them.`);
+    p.synopsis=p.synopsis||lives[p.id]||lead(p.note,`The atlas follows ${p.name} across the political changes surrounding them.`);
   });
 
   Object.values(D.legends).forEach(L=>{

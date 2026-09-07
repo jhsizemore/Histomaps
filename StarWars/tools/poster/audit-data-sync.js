@@ -7,7 +7,7 @@ const vm = require('vm');
 
 const starWars = path.resolve(__dirname, '..', '..');
 global.window = {};
-for (const file of ['data.js', 'expanded-data.js', 'lifelines.js', 'insignia.js', 'title-art.js']) {
+for (const file of ['data.js', 'expanded-data.js', 'lifelines.js', 'recurring-lifelines.js', 'insignia.js', 'title-art.js']) {
   const full = path.join(starWars, file);
   vm.runInThisContext(fs.readFileSync(full, 'utf8'), { filename: full });
 }
@@ -20,7 +20,7 @@ const artManifest = JSON.parse(fs.readFileSync(artManifestPath, 'utf8'));
 const symbolDir = path.join(__dirname, 'faction-symbols');
 const renderPath = path.join(__dirname, 'render.py');
 const renderText = fs.readFileSync(renderPath, 'utf8');
-const syncKeys = ['height', 'anchors', 'eras', 'sources', 'factions', 'states', 'events', 'screen', 'undatedScreen', 'legends', 'lifelines'];
+const syncKeys = ['height', 'anchors', 'eras', 'factions', 'states', 'events', 'screen', 'undatedScreen', 'legends'];
 
 function samePrimitive(a, b) {
   return Object.is(a, b);
@@ -61,6 +61,21 @@ for (const key of syncKeys) {
   if (!(key in web)) differences.push(`${key}: missing on web`);
   else if (!(key in poster)) differences.push(`${key}: missing on poster`);
   else diff(web[key], poster[key], key, differences);
+}
+// The interactive atlas deliberately carries a much larger recurring-character layer.
+// The static poster retains the original featured lives for legibility; each poster life
+// must still exist unchanged in the website data.
+const webLifeById = new Map((web.lifelines || []).map(x => [x.id, x]));
+for (const life of poster.lifelines || []) {
+  const live = webLifeById.get(life.id);
+  if (!live) differences.push(`lifelines.${life.id}: featured poster life missing on web`);
+  else diff(live, life, `lifelines.${life.id}`, differences);
+}
+// Website-only recurring characters also add source links. The poster source shelf is
+// likewise a curated subset, but every source it does carry must stay byte-for-byte synced.
+for (const [key, value] of Object.entries(poster.sources || {})) {
+  if (!(key in (web.sources || {}))) differences.push(`sources.${key}: poster source missing on web`);
+  else diff(web.sources[key], value, `sources.${key}`, differences);
 }
 
 const webScreenIds = new Set((web.screen || []).map(x => x.id));
@@ -133,7 +148,7 @@ console.log(`poster: ${path.relative(process.cwd(), posterPath)}`);
 console.log('');
 console.log(`Events:     ${webEventIds.size} web / ${posterEventIds.size} poster`);
 console.log(`Screen:     ${webScreenIds.size} web / ${posterScreenIds.size} poster`);
-console.log(`Lifelines:  ${webLifeIds.size} web / ${posterLifeIds.size} poster`);
+console.log(`Lifelines:  ${webLifeIds.size} web / ${posterLifeIds.size} featured poster`);
 console.log(`Factions:   ${(web.factions || []).length} web / ${(poster.factions || []).length} poster`);
 console.log(`Title art:  ${Object.keys(titleArt.assets || {}).length} website assets / ${Object.keys(artManifest).length} poster assets`);
 console.log(`Insignia:   ${Object.keys(insignia.assets || {}).length} website assets / ${fs.readdirSync(symbolDir).filter(x => x.endsWith('-mask.png')).length} poster masks`);
@@ -162,5 +177,5 @@ if (differences.length || visualIssues.length) {
   }
   process.exitCode = 1;
 } else {
-  console.log('\nPASS: timeline data, title-art identity, and faction-symbol identity are synchronized.');
+  console.log('\nPASS: synchronized timeline/visual data; poster lifelines are a verified featured subset of the expanded interactive layer.');
 }
