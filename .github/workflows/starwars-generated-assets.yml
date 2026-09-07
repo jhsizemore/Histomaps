@@ -1,0 +1,128 @@
+name: Star Wars generated assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'StarWars/data.js'
+      - 'StarWars/expanded-data.js'
+      - 'StarWars/lifelines.js'
+      - 'StarWars/insignia.js'
+      - 'StarWars/insignia-credits.json'
+      - 'StarWars/title-art.js'
+      - 'StarWars/title-art-credits.json'
+      - 'StarWars/assets/starfield.webp'
+      - 'StarWars/title-art/**'
+      - 'StarWars/tools/poster/render.py'
+      - 'StarWars/tools/poster/star-wars-poster-data.json'
+      - 'StarWars/tools/poster/audit-data-sync.js'
+      - 'StarWars/tools/poster/faction-symbols/**'
+      - 'StarWars/tools/poster/title-art/**'
+      - 'StarWars/tools/poster/star-wars-type/**'
+      - 'StarWars/tools/social/render_social_card.py'
+      - '.github/workflows/starwars-generated-assets.yml'
+  pull_request:
+    paths:
+      - 'StarWars/data.js'
+      - 'StarWars/expanded-data.js'
+      - 'StarWars/lifelines.js'
+      - 'StarWars/insignia.js'
+      - 'StarWars/insignia-credits.json'
+      - 'StarWars/title-art.js'
+      - 'StarWars/title-art-credits.json'
+      - 'StarWars/assets/starfield.webp'
+      - 'StarWars/title-art/**'
+      - 'StarWars/tools/poster/render.py'
+      - 'StarWars/tools/poster/star-wars-poster-data.json'
+      - 'StarWars/tools/poster/audit-data-sync.js'
+      - 'StarWars/tools/poster/faction-symbols/**'
+      - 'StarWars/tools/poster/title-art/**'
+      - 'StarWars/tools/poster/star-wars-type/**'
+      - 'StarWars/tools/social/render_social_card.py'
+      - '.github/workflows/starwars-generated-assets.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: starwars-generated-assets-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate interactive source and website-poster data sync
+        run: |
+          node --check StarWars/app.js
+          node StarWars/tools/poster/audit-data-sync.js
+
+      - name: Install image renderer
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Render full poster
+        run: python StarWars/tools/poster/render.py
+
+      - name: Render social preview
+        run: python StarWars/tools/social/render_social_card.py
+
+      - name: Validate generated assets
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+
+          poster_path=Path('StarWars/downloads/Star-Wars-Histomap-Poster.png')
+          social_path=Path('StarWars/assets/star-wars-histomap-social-card.png')
+          assert poster_path.is_file(), poster_path
+          assert social_path.is_file(), social_path
+
+          poster=Image.open(poster_path)
+          assert poster.size==(5200,18220), poster.size
+          assert poster.info.get('Website')=='https://histomaps.org/starwars/'
+          assert 'https://histomaps.org/starwars/' in poster.info.get('Description','')
+
+          social=Image.open(social_path)
+          assert social.size==(1200,630), social.size
+          assert social.format=='PNG', social.format
+
+          print('poster', poster.size, poster.info.get('Website'))
+          print('social', social.size, social.format)
+          PY
+          git diff --check
+
+      - name: Upload generated outputs for review
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: starwars-generated-assets-${{ github.sha }}
+          path: |
+            StarWars/downloads/Star-Wars-Histomap-Poster.png
+            StarWars/assets/star-wars-histomap-social-card.png
+          retention-days: 7
+
+      - name: Commit changed generated assets on main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          if git diff --quiet -- StarWars/downloads/Star-Wars-Histomap-Poster.png StarWars/assets/star-wars-histomap-social-card.png; then
+            echo 'Generated assets already match source.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add StarWars/downloads/Star-Wars-Histomap-Poster.png StarWars/assets/star-wars-histomap-social-card.png
+          git commit -m 'Regenerate Star Wars poster and social preview'
+          git push
