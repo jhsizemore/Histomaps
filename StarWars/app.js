@@ -112,6 +112,7 @@
     const [label,url]=D.sources[key];const a=el('a','source-link',`${label} ↗`);
     a.href=url;a.target='_blank';a.rel='noopener noreferrer';return a;
   }
+  function appendSynopsis(target,data){if(data?.synopsis)target.append(el('p','record-synopsis',data.synopsis));}
   function weightsAt(y){
     for(let i=1;i<D.states.length;i++){
       const [a,wa]=D.states[i-1],[b,wb]=D.states[i];
@@ -310,7 +311,7 @@
     const index=isEvent?sortedEvents.findIndex(e=>e.id===data.id):D.factions.findIndex(f=>f.id===data.id);
     box.append(el('div','record-number',String(index+1).padStart(2,'0')),el('div','record-date',isEvent?date(data):(['jedi','sith'].includes(data.id)?'FORCE TRADITION':'POLITICAL STREAM')));
     recordSymbols(box,isEvent?data.faction:data.id);
-    const heading=el('h2','',isEvent?data.title:data.name);heading.tabIndex=-1;box.append(heading,el('p','',data.text));
+    const heading=el('h2','',isEvent?data.title:data.name);heading.tabIndex=-1;box.append(heading);appendSynopsis(box,data);
     box.append(el('div','record-divider'),el('div','record-label',isEvent?'Why the stream changes':'Reading this stream'),el('p','',isEvent?data.effect:data.reading));
     const tags=el('div','record-tags');(isEvent?data.media:data.tags).forEach(t=>tags.append(el('span','',t)));box.append(tags);
     if(data.note)box.append(el('p','hint',data.note));
@@ -391,7 +392,8 @@
     D.screen.forEach(m=>{if(m.start!==m.end){rows.push({...m,items:[m]});return;}const key=m.start;if(!points.has(key))points.set(key,[]);points.get(key).push(m);});
     points.forEach((items,t)=>{
       if(items.length===1){rows.push({...items[0],items});return;}
-      rows.push({id:`year-${t}`,start:t,end:t,items,approx:items.some(m=>m.approx),kind:items.every(m=>m.kind==='film')?'film':'series',name:t===9?'New Republic stories':t===0?'Rogue One / IV':t===34?'Episodes VII / VIII':t===-22?'Attack of the Clones / The Clone Wars':`${items.length} screen stories`});
+      const group={id:`year-${t}`,start:t,end:t,items,approx:items.some(m=>m.approx),kind:items.every(m=>m.kind==='film')?'film':'series',name:t===9?'New Republic stories':t===0?'Rogue One / IV':t===34?'Episodes VII / VIII':t===-22?'Attack of the Clones / The Clone Wars':`${items.length} screen stories`};
+      const names=items.map(m=>m.name).join(', ');group.synopsis=`This shared-date record groups ${names} at ${formatYear(t)} on the atlas. Each title remains a separate story with its own chronology; the combined card simply prevents same-date labels from colliding.`;rows.push(group);
     });
     return rows.sort((a,b)=>(yearY(a.start)+yearY(a.end))-(yearY(b.start)+yearY(b.end)));
   }
@@ -607,7 +609,7 @@
     $('mini-svg').setAttribute('viewBox',`0 0 820 ${D.height}`);
     buildNavigation();overview();renderMini();render();scroller.scrollTo({top:0,left:0});
   }
-  function legendOverview(){const L=D.legends[mode],box=$('inspector-content');box.replaceChildren();box.append(el('div','record-date','LEGENDS · NOT DISNEY CANON'),el('h2','',L.name.replace('Legends · ','')),el('p','',L.intro),el('div','record-divider'),el('p','','Hatching and purple labels identify this separate continuity. Stream widths are qualitative; this is a selective overview, not a comprehensive chronology.'),sourceLink('legendsPolicy'));}
+  function legendOverview(){const L=D.legends[mode],box=$('inspector-content');box.replaceChildren();box.append(el('div','record-date','LEGENDS · NOT DISNEY CANON'),el('h2','',L.name.replace('Legends · ','')));appendSynopsis(box,L);box.append(el('div','record-divider'),el('p','','Hatching and purple labels identify this separate continuity. Stream widths are qualitative; this is a selective overview, not a comprehensive chronology.'),sourceLink('legendsPolicy'));}
   function openExtendedRecord(record,remember=true){
     lastFocus=document.activeElement;if(remember&&selected&&(selected.id!==record.id||selected.type!==record.type))history.push(selected);selected=record;
     const box=$('inspector-content');box.replaceChildren();
@@ -615,7 +617,7 @@
     let heading;
     if(record.type==='life'){
       const p=D.lifelines.find(p=>p.id===record.id);heading=el('h2','',p.name);
-      box.append(el('div','record-date','CANON · CHARACTER LIFELINE'),heading);
+      box.append(el('div','record-date','CANON · CHARACTER LIFELINE'),heading);appendSynopsis(box,p);
       const dates=el('div','life-dates');
       [[p.startApprox?'Born · approximate':'Born',lifeDate(p,true)],[p.endKind==='death'?'Died':'Alive · last mapped era',lifeDate(p,false)]].forEach(([label,value])=>{const item=el('div');item.append(el('small','',label),el('strong','',value));dates.append(item);});box.append(dates,el('p','',p.note));
       box.append(el('p','hint','The line follows physical life, independently of political affiliation. Spacing uses the same elastic dates as the streams. An open endpoint leaves later life uncharted.'));
@@ -623,13 +625,13 @@
       const jump=el('button','start-event','Follow this life on the map →');jump.addEventListener('click',()=>{if(!p.groups.includes(lifeGroup)){lifeGroup=p.groups[0];$('life-group').value=lifeGroup;}setLayer('life');scroller.focus({preventScroll:true});goYear(Math.max(-500,p.start));});box.append(jump);
     }else if(record.type==='screen-group'){
       const group=screenGroups.find(g=>g.id===record.id);heading=el('h2','',group.name);
-      box.append(el('div','record-date',screenDate(group)),heading,el('p','','Select a title to see its full story window, overlaps, and dating notes.'));
+      box.append(el('div','record-date',screenDate(group)),heading);appendSynopsis(box,group);box.append(el('p','hint','Select a title to see its full story window, overlaps, and dating notes.'));
       group.items.forEach(m=>{const button=el('button','overlap-story');recordTitleArt(button,m.id);button.append(el('span','',m.name),el('small','',screenDate(m)));button.addEventListener('click',()=>openRecord({type:'screen',id:m.id}));box.append(button);});
       box.append(el('p','hint','Shared-year and approximate-era markers do not establish scene-by-scene simultaneity.'));
     }else if(record.type==='screen'){
       const m=D.screen.find(s=>s.id===record.id);heading=el('h2','',m.name);
       recordTitleArt(box,m.id);
-      box.append(el('div','record-date',screenDate(m)),heading,el('div','record-label',`${m.kind} · canon`),el('p','',m.note||'The principal story takes place in this dated window. A point marks a year; it does not imply a year-long runtime.'));
+      box.append(el('div','record-date',screenDate(m)),heading);appendSynopsis(box,m);box.append(el('div','record-label',`${m.kind} · canon`),el('p','',m.note||'The principal story takes place in this dated window. A point marks a year; it does not imply a year-long runtime.'));
       const others=D.screen.filter(s=>s.id!==m.id&&s.start<=m.end&&s.end>=m.start);
       box.append(el('div','record-divider'),el('div','record-label','Overlapping story windows'));
       if(!others.length)box.append(el('p','','No other mapped screen story overlaps this date window.'));
@@ -640,10 +642,10 @@
     }else if(record.type==='legend'){
       const e=D.legends[mode].events.find(e=>e.id===record.id);heading=el('h2','',e.title);
       recordTitleArt(box,titleArt?.legends[e.id]);
-      box.append(el('div','record-date',`${formatYear(e.year)} · LEGENDS`),heading,el('p','',e.text),el('div','record-label','Reading the map'),el('p','',e.effect));
+      box.append(el('div','record-date',`${formatYear(e.year)} · LEGENDS`),heading);appendSynopsis(box,e);box.append(el('div','record-label','Reading the map'),el('p','',e.effect));
       const tags=el('div','record-tags');e.media.forEach(m=>tags.append(el('span','',m)));box.append(tags);e.sources.forEach(s=>box.append(sourceLink(s)));box.append(sourceLink('legendsPolicy'));
     }else{
-      const f=D.legends[mode].factions.find(f=>f.id===record.id);heading=el('h2','',f.name);box.append(el('div','record-date','LEGENDS · INTERPRETIVE STREAM'));recordSymbols(box,f.id);box.append(heading,el('p','','This stream groups related institutions or rival powers across selected Legends stories. Its width shows an editorial interpretation of influence, not measured territory. Jedi traditions and political institutions can overlap.'));
+      const f=D.legends[mode].factions.find(f=>f.id===record.id);heading=el('h2','',f.name);box.append(el('div','record-date','LEGENDS · INTERPRETIVE STREAM'));recordSymbols(box,f.id);box.append(heading);appendSynopsis(box,f);box.append(el('p','hint','This stream groups related institutions or rival powers across selected Legends stories. Its width shows an editorial interpretation of influence, not measured territory. Jedi traditions and political institutions can overlap.'));
       const keyEntry=insignia.key.find(entry=>entry[1]===f.id);if(keyEntry)box.append(el('p','hint',keyEntry[3]+'. Symbols identify traditions and selected institutions; they do not imply that every group in the band used one emblem.'));
       box.append(el('p','',D.legends[mode].intro),sourceLink('legendsPolicy'));
     }
