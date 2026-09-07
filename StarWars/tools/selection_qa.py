@@ -44,6 +44,8 @@ with sync_playwright() as p:
     assert page.locator('#screen-map .screen-story.active').count()==1
     assert page.locator('#screen-map .screen-story.dim, #screen-map .screen-cluster.dim').count()>=1
     assert page.locator('#map .screen-highlight').count()==1
+    assert page.locator('#map .selection-saber').count()==1
+    assert page.locator('#map .selection-saber-core').count()==1
     page.screenshot(path=str(out/'desktop-screen.png'))
 
     page.locator('#close-inspector').click()
@@ -54,6 +56,7 @@ with sync_playwright() as p:
         page.wait_for_timeout(120)
         assert page.locator('#screen-map .screen-cluster.active').count()==1
         assert page.locator('#map .screen-highlight').count()==1
+        assert page.locator('#map .selection-saber').count()==1
         page.screenshot(path=str(out/'desktop-screen-group.png'))
         page.locator('#close-inspector').click()
 
@@ -65,6 +68,7 @@ with sync_playwright() as p:
     page.wait_for_timeout(120)
     assert page.locator('#screen-map .lifeline.active').count()==1
     assert page.locator('#screen-map .lifeline.dim').count()>=1
+    assert page.locator('#map .selection-saber').count()==1
     lf=page.locator('#screen-map .lifeline.active .life-stroke').evaluate("e=>getComputedStyle(e).filter")
     assert 'drop-shadow' in lf, lf
     page.screenshot(path=str(out/'desktop-lifeline.png'))
