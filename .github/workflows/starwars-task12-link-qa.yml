@@ -1,0 +1,80 @@
+name: Star Wars Task 12 link QA
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-task12-link-qa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit cited external URLs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' > /tmp/urls.txt
+          from pathlib import Path
+          import re
+          files=[
+            'StarWars/data.js','StarWars/expanded-data.js','StarWars/lifelines.js','StarWars/index.html',
+            'StarWars/insignia-credits.json','StarWars/title-art-credits.json','StarWars/README.md'
+          ]
+          urls=set()
+          for name in files:
+              text=Path(name).read_text(errors='ignore')
+              for u in re.findall(r'https://[^\s\"\'<>\\)]+',text):
+                  urls.add(u.rstrip('.,;:]}'))
+          for u in sorted(urls): print(u)
+          PY
+          echo "Checking $(wc -l < /tmp/urls.txt) unique external URLs"
+          : > /tmp/link-report.txt
+          : > /tmp/broken.txt
+          while IFS= read -r url; do
+            code=$(curl -A 'Mozilla/5.0 Histomaps launch QA' -L -sS -o /dev/null --connect-timeout 8 --max-time 20 --retry 1 --retry-delay 1 -w '%{http_code}' "$url" || true)
+            case "$code" in
+              2??|3??) status=OK ;;
+              401|403|405|429) status=RESTRICTED ;;
+              404|410) status=BROKEN; echo "$code $url" >> /tmp/broken.txt ;;
+              000) status=UNREACHABLE ;;
+              *) status=WARN ;;
+            esac
+            printf '%-11s %s %s\n' "$status" "$code" "$url" | tee -a /tmp/link-report.txt
+          done < /tmp/urls.txt
+          echo '--- link QA summary ---'
+          awk '{n[$1]++} END{for(k in n) print k,n[k]}' /tmp/link-report.txt | sort
+          if [[ -s /tmp/broken.txt ]]; then
+            echo 'Confirmed 404/410 URLs:'
+            cat /tmp/broken.txt
+            exit 1
+          fi
+      - name: Audit live canonical route and launch assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://histomaps.org/starwars'
+          check() {
+            local path="$1" expected="$2"
+            code=$(curl -L -sS -o /tmp/body -D /tmp/headers -w '%{http_code}' "$base/$path")
+            type=$(awk 'BEGIN{IGNORECASE=1} /^content-type:/ {gsub("\r",""); print $2}' /tmp/headers | tail -1)
+            echo "$path -> $code $type"
+            [[ "$code" == 200 && "$type" == "$expected"* ]]
+          }
+          check '' 'text/html'
+          check 'data.js?v=qa-20260907' 'text/javascript'
+          check 'expanded-data.js?v=qa-20260907' 'text/javascript'
+          check 'lifelines.js?v=qa-20260907' 'text/javascript'
+          check 'app.js?v=qa-20260907' 'text/javascript'
+          check 'downloads/Star-Wars-Histomap-Poster.png' 'image/png'
+          check 'downloads/Star-Wars-Histomap-Reddit-Launch.png' 'image/png'
+          check 'assets/star-wars-histomap-social-card.png' 'image/png'
+          check 'assets/star-wars-histomap-poster-preview.webp' 'image/webp'
+          html=$(curl -L -sS "$base/")
+          grep -Fq 'Report it on GitHub' <<<"$html"
+          grep -Fq 'data.js?v=qa-20260907' <<<"$html"
+          grep -Fq 'app.js?v=qa-20260907' <<<"$html"
+          echo 'Live HTML includes correction route and fresh cache-busted scripts.'
