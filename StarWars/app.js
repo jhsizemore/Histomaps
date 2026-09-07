@@ -410,7 +410,7 @@
     const pane=$('screen-map'),W=screenWidth;pane.replaceChildren();
     screenGroups=makeScreenGroups();
     pane.append(svg('text',{x:12,y:30,class:'column-title'},'STORY TIME'));
-    pane.append(svg('text',{x:12,y:49,class:'screen-meta'},'◇ Film · ┃ Series · • true anchor'));
+    pane.append(svg('text',{x:12,y:49,class:'screen-meta'},W<190?'◇ Film · ┃ TV · • date':'◇ Film · ┃ Series · • true anchor'));
     const cardX=W<190?40:58,cardW=Math.max(70,W-cardX-8),occupied=[];
     const entries=screenGroups.map(m=>{
       const start=yearY(m.start)*zoom,end=yearY(m.end)*zoom,mid=(start+end)/2,color=mediaColors[m.kind],grouped=m.items.length>1;

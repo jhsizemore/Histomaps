@@ -71,6 +71,14 @@
       .inspector{width:min(360px,72vw)}
     }
   </style>
+
+  <style id="mobile-final-refinements">
+    @media(max-width:700px){
+      body.life-mode .map-footer{justify-content:center}
+      body.life-mode .map-footer>span:first-child,body.life-mode .map-footer .creator-credit{display:none}
+      body.life-mode #layer-caption{display:block!important;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+    }
+  </style>
 </head>
 <body>
   <header class="masthead">
