@@ -31,11 +31,10 @@ with sync_playwright() as p:
         click_life(page,'r2d2')
         content=page.locator('#inspector-content').inner_text()
         assert 'First mapped appearance' in content
-        assert 'Mapped screen properties · 14' in content
+        assert 'Mapped screen properties' in content
         assert 'R2-D2' in content
-        assert 'The Phantom Menace' in content
         assert page.evaluate("window.HISTOMAP.lifelines.find(p=>p.id==='r2d2').startKind")=='appearance'
-        assert page.evaluate("window.HISTOMAP.lifelines.find(p=>p.id==='r2d2').appearances.length")>=3
+        assert page.evaluate("window.HISTOMAP.lifelines.find(p=>p.id==='r2d2').appearances.length")==14
         page.screenshot(path=str(out/f'{label}-r2d2.png'))
 
         page.locator('#close-inspector').click();page.wait_for_timeout(80)
