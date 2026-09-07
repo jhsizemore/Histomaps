@@ -1,0 +1,86 @@
+name: Star Wars final mobile pass
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-task6-mobile.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  mobile-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply mobile polish
+        run: python StarWars/tools/task6_mobile_patch.py
+      - name: Validate source
+        run: |
+          node --check StarWars/app.js
+          python - <<'PY'
+          from pathlib import Path
+          t=Path('StarWars/index.html').read_text()
+          j=Path('StarWars/app.js').read_text()
+          assert 'id="mobile-final-pass"' in t
+          assert "layer==='screen'?.39:.34" in j
+          assert 'styles.css?v=mobile-20260907' in t
+          print('mobile source checks OK')
+          PY
+      - name: Install browser QA package
+        run: python -m pip install --disable-pip-version-check playwright
+      - name: Capture portrait and landscape layers
+        run: |
+          mkdir -p qa
+          python -m http.server 8000 --directory StarWars >/tmp/histomap-http.log 2>&1 &
+          python - <<'PY'
+          import asyncio, json
+          from playwright.async_api import async_playwright
+
+          async def shot(browser,name,w,h):
+              page=await browser.new_page(viewport={'width':w,'height':h},device_scale_factor=1)
+              await page.goto('http://127.0.0.1:8000/',wait_until='networkidle')
+              intro=page.locator('#launch-intro')
+              if await intro.is_visible():
+                  await page.locator('#launch-explore').click()
+                  await page.wait_for_timeout(80)
+              await page.screenshot(path=f'qa/{name}-streams.png')
+              await page.locator('[data-layer="screen"]').click()
+              await page.wait_for_timeout(100)
+              await page.screenshot(path=f'qa/{name}-films.png')
+              films_width=await page.locator('#screen-map').evaluate('(el)=>el.getBoundingClientRect().width')
+              chart_width=await page.locator('#map').evaluate('(el)=>el.getBoundingClientRect().width')
+              await page.locator('[data-layer="life"]').click()
+              await page.wait_for_timeout(100)
+              await page.screenshot(path=f'qa/{name}-lifelines.png')
+              life_width=await page.locator('#screen-map').evaluate('(el)=>el.getBoundingClientRect().width')
+              return {'viewport':[w,h],'films':films_width,'streamsWithFilms':chart_width,'lifelines':life_width}
+
+          async def main():
+              async with async_playwright() as p:
+                  browser=await p.chromium.launch(executable_path='/usr/bin/google-chrome')
+                  data={}
+                  for args in [('phone360',360,800),('phone390',390,844),('phone430',430,932),('landscape',844,390),('shortland',740,360)]:
+                      data[args[0]]=await shot(browser,*args)
+                  await browser.close()
+                  open('qa/metrics.json','w').write(json.dumps(data,indent=2))
+                  print(json.dumps(data,indent=2))
+          asyncio.run(main())
+          PY
+      - name: Commit final mobile pass
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add StarWars/index.html StarWars/app.js
+          git commit -m "Polish Star Wars mobile interface"
+          git push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: starwars-task6-mobile-qa
+          path: qa
+          retention-days: 1
