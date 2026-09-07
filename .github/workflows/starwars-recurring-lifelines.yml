@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/starwars-recurring-lifelines.yml'
+      - 'StarWars/tools/expand_lifelines_qa.py'
 
 permissions:
   contents: write
