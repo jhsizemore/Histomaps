@@ -2,6 +2,8 @@
 
 Canonical public route: `https://histomaps.org/starwars/`. The retained `StarWars/` directory is an internal deployment source; Cloudflare Pages redirects legacy/case-variant public routes and proxies the lowercase route to these static assets.
 
+**Launch release:** `v1.0.0` · 7 September 2026. The immutable launch snapshot is identified by the dedicated `release/starwars-v1.0.0` ref. See [`CHANGELOG.md`](CHANGELOG.md), [`VERSION`](VERSION), and [`release.json`](release.json) for the release record.
+
 `index.html`, `styles.css`, and `app.js` provide the interactive map. `data.js` contains the core canon model; `expanded-data.js` contains synchronized screen-story spans and the separately labeled ancient and future Legends sections. `lifelines.js` contains 16 canon character lifelines, source links, uncertainty flags, and character groups. `insignia.js` embeds the 14 sourced faction symbols used in the streams, faction records, and Guide; `insignia-credits.json` retains the original asset attributions. The browser app itself requires no package installation or runtime build step.
 
 The responsive map fits its viewport and uses on-demand navigation and record drawers. Streams, Films & TV, and Lifelines select a companion track; Focus reduces interface chrome. Numbered event markers retain the full event records and three detail levels.
@@ -41,4 +43,4 @@ The canonical Star Wars page includes OpenGraph and summary-large-image metadata
 
 `.github/workflows/starwars-generated-assets.yml` is the permanent build and verification pipeline for the complete launch set. It runs the website↔poster data audit, validates the interactive JavaScript, renders the 5,200 × 18,220 poster, renders the Reddit launch image, social card, and lightweight web preview, and verifies file dimensions, formats, size constraints, and canonical URL metadata.
 
-Changes to timeline data, lifelines, insignia, title art, the starfield, poster inputs, or either renderer trigger the workflow. Every run retains all four generated outputs as short-lived QA artifacts for visual inspection. Pull requests never write generated binaries back to the branch. Pushes to `main` commit generated assets only when the rendered files actually differ. The workflow can also be run manually with `workflow_dispatch`.
+Changes to the app shell (`index.html`, `app.js`), timeline data, lifelines, insignia, title art, the starfield, poster inputs, either renderer, or the workflow itself trigger the pipeline. Every run retains all four generated outputs as short-lived QA artifacts for visual inspection. Pull requests never write generated binaries back to the branch. Pushes to `main` commit generated assets only when the rendered files actually differ, rebasing safely if `main` advances during rendering. The workflow can also be run manually with `workflow_dispatch`.

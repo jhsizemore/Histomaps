@@ -1,0 +1,28 @@
+{
+  "project": "Star Wars Histomap",
+  "version": "1.0.0",
+  "release_date": "2026-09-07",
+  "status": "launch",
+  "canonical_url": "https://histomaps.org/starwars/",
+  "release_ref": "release/starwars-v1.0.0",
+  "scope": {
+    "canon_start": "500 BBY",
+    "canon_end": "35 ABY",
+    "events": 30,
+    "screen_properties": 28,
+    "lifelines": 16,
+    "factions": 13,
+    "title_art_assets": 36,
+    "insignia_assets": 14
+  },
+  "artifacts": {
+    "poster": "downloads/Star-Wars-Histomap-Poster.png",
+    "reddit_launch": "downloads/Star-Wars-Histomap-Reddit-Launch.png",
+    "social_card": "assets/star-wars-histomap-social-card.png",
+    "poster_preview": "assets/star-wars-histomap-poster-preview.webp"
+  },
+  "pipeline": ".github/workflows/starwars-generated-assets.yml",
+  "changelog": "StarWars/CHANGELOG.md",
+  "unofficial_fan_project": true,
+  "creator": "J. Hunter Sizemore / Kliawota Disaen"
+}
