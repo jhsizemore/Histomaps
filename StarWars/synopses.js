@@ -56,8 +56,26 @@
   };
   D.screen.forEach(m=>{m.synopsis=screen[m.id]||lead(m.note,'This screen story is placed here according to its principal canon story window.');});
 
+  const lives={
+    anakin:'Anakin Skywalker rises from an enslaved child on Tatooine to a celebrated Jedi Knight and Clone Wars general before fear and manipulation drive him to the dark side. As Darth Vader he becomes one of the Empire’s chief enforcers, then ultimately turns against Emperor Palpatine to save Luke.',
+    padme:'Padmé Amidala serves Naboo first as queen and later as senator, becoming a prominent advocate for diplomacy and constitutional government during the Republic’s decline. Her secret marriage to Anakin Skywalker ties her personal story to the political collapse that creates the Empire and to the birth of Luke and Leia.',
+    'luke-life':'Luke Skywalker grows from a farm boy on Tatooine into a Rebel hero and Jedi who helps defeat the Empire and redeem Darth Vader. Decades later, the failure of his attempted Jedi revival drives him into exile before he returns to protect the Resistance and inspire the galaxy.',
+    leia:'Leia Organa is an Alderaanian princess, senator, Rebel leader, and later general whose political life spans the struggle against both the Empire and the First Order. A child of Anakin Skywalker raised by Bail and Breha Organa, she combines diplomacy, military leadership, and a latent connection to the Force.',
+    ben:'Ben Solo, the son of Leia Organa and Han Solo, trains with Luke Skywalker before falling under Snoke’s influence and becoming Kylo Ren. As leader of the Knights of Ren and later Supreme Leader of the First Order, he is eventually drawn back to the light through his bonds with his family and Rey.',
+    'rey-life':'Rey begins as a scavenger on Jakku and is drawn into the Resistance while discovering an extraordinary connection to the Force. She confronts her connection to Palpatine, helps defeat the Sith Eternal, and ultimately claims the Skywalker name as an expression of chosen family and identity.',
+    yoda:'Yoda is one of the Jedi Order’s longest-serving and most influential Masters, teaching generations of Jedi and leading the Order during the Clone Wars. After the fall of the Republic he lives in exile on Dagobah, where he later trains Luke Skywalker and helps carry the Jedi tradition into a new era.',
+    'qui-gon':'Qui-Gon Jinn is an independent-minded Jedi Master whose trust in the Living Force often puts him at odds with the Jedi Council. His discovery of Anakin Skywalker and belief that the boy is the Chosen One profoundly shape the fate of the Jedi, the Sith, and the Republic.',
+    kenobi:'Obi-Wan Kenobi serves as a Jedi Knight and Master through the Clone Wars, training Anakin Skywalker and fighting at the center of the Republic’s final crises. After Anakin’s fall and the Jedi purge, he protects Luke from afar on Tatooine before re-entering the struggle against the Empire.',
+    ahsoka:'Ahsoka Tano begins as Anakin Skywalker’s Padawan during the Clone Wars but leaves the Jedi Order after losing faith in its institutions. She survives the purge, aids the early Rebellion, and later continues an independent Force tradition while confronting the legacies of Anakin, Thrawn, and the fallen Order.',
+    grogu:'Grogu is a Force-sensitive child who survived the destruction of the Jedi Order and spent decades hidden before meeting the Mandalorian Din Djarin. Their bond becomes a found-family relationship, and Grogu ultimately chooses life with Din while continuing to develop both Mandalorian and Force-related skills.',
+    han:'Han Solo begins as a Corellian smuggler and reluctant mercenary whose partnership with Chewbacca brings him into the Rebel cause. He becomes a general and central figure in the defeat of the Empire, later returning to a more itinerant life before the First Order crisis draws him back to his family and old allies.',
+    chewie:'Chewbacca is a Wookiee warrior, mechanic, and pilot whose long life spans the final centuries of the Republic through the wars against the First Order. Closely bonded with Han Solo and the wider Rebel family, he serves aboard the Millennium Falcon through several generations of galactic conflict.',
+    lando:'Lando Calrissian is a gambler, entrepreneur, and former owner of the Millennium Falcon who becomes administrator of Cloud City before joining the Rebel Alliance. His talent for improvisation and leadership culminates in commanding the fighter assault on the second Death Star and later rallying allies against the Sith Eternal.',
+    finn:'Finn is raised from childhood as a First Order stormtrooper but rejects the regime during his first combat deployment and escapes with Poe Dameron. His friendship with Rey and growing commitment to the Resistance transform him into a leader who helps inspire other former stormtroopers to rebel.',
+    poe:'Poe Dameron is a gifted pilot and Resistance officer raised in a family shaped by the Rebel victory over the Empire. His arc moves from daring individual action toward broader command responsibility as he helps lead the Resistance through the war with the First Order.'
+  };
   D.lifelines.forEach(p=>{
-    p.synopsis=lead(p.note,`The atlas follows ${p.name} as one physical life across the political changes surrounding them.`);
+    p.synopsis=lives[p.id]||lead(p.note,`The atlas follows ${p.name} as one physical life across the political changes surrounding them.`);
   });
 
   Object.values(D.legends).forEach(L=>{
