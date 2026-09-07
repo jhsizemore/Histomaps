@@ -150,4 +150,8 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add "${paths[@]}"
           git commit -m 'Regenerate Star Wars launch assets'
+          # Unrelated commits can land while a large poster is rendering. Rebase the
+          # generated-only commit so a harmless concurrent change cannot reject it.
+          git fetch origin main
+          git rebase origin/main
           git push
