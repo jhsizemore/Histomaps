@@ -50,7 +50,7 @@
     ['nien','Nien Nunb','Nien Nunb',['ep6','ep7','ep8','ep9'],['rebellion-heroes','resistance'],'Nien_Nunb','Sullustan pilot who helps destroy the second Death Star and later returns to fly for the Resistance.'],
     ['bb8','BB-8','BB-8',['resistance-tv','ep7','ep8','ep9'],['droids','resistance'],'BB-8','Resistance astromech whose mission carrying the map to Luke Skywalker pulls him into the center of the sequel-era conflict.'],
     ['hux','Armitage Hux','Hux',['resistance-tv','ep7','ep8','ep9'],['first-order'],'Armitage_Hux','First Order general whose rivalry with Kylo Ren and eventual betrayal expose fractures within the regime’s leadership.'],
-    ['maz','Maz Kanata','Maz',['resistance-tv','ep7','ep8','ep9'],['resistance','underworld'],'Maz_Kanata','Ancient pirate and castle keeper whose connections to smugglers, rebels, and Jedi artifacts bridge several generations of galactic conflict.'],
+    ['maz','Maz Kanata','Maz',['ep7','ep8','ep9'],['resistance','underworld'],'Maz_Kanata','Ancient pirate and castle keeper whose connections to smugglers, rebels, and Jedi artifacts bridge several generations of galactic conflict.'],
     ['owen','Owen Lars','Owen',['ep2','ep3','obi-wan','ep4'],['skywalker'],'Owen_Lars','Tatooine moisture farmer who raises Luke Skywalker and tries to keep him insulated from the dangers surrounding his family history.'],
     ['beru','Beru Whitesun Lars','Beru',['ep2','ep3','obi-wan','ep4'],['skywalker'],'Beru_Whitesun_Lars','Luke Skywalker’s aunt and adoptive mother, whose quiet life on Tatooine masks a deliberate commitment to protecting him.'],
 
@@ -76,7 +76,7 @@
     ['grandinq','Grand Inquisitor','Grand Inquisitor',['obi-wan','rebels-tv','tales-empire'],['dark-side','empire'],'The_Grand_Inquisitor','Former Jedi Temple Guard who becomes the Empire’s senior Inquisitor and hunts surviving Jedi and Force-sensitive fugitives.'],
     ['dengar','Dengar','Dengar',['clone-tv','ep5','ep6'],['underworld'],'Dengar','Corellian bounty hunter whose career stretches from the Clone Wars into the criminal networks surrounding the Galactic Civil War.'],
     ['bibfortuna','Bib Fortuna','Bib Fortuna',['ep1','ep6','mando-tv'],['underworld'],'Bib_Fortuna','Twi’lek majordomo who serves Jabba the Hutt and later occupies his former palace before Boba Fett’s takeover.'],
-    ['depa','Depa Billaba','Depa Billaba',['ep1','clone-tv','bad-batch'],['jedi-council'],'Depa_Billaba','Jedi Council member and master of Caleb Dume whose final stand during Order 66 shapes the future Kanan Jarrus.'],
+    ['depa','Depa Billaba','Depa Billaba',['ep1','ep2','bad-batch'],['jedi-council'],'Depa_Billaba','Jedi Council member and master of Caleb Dume whose final stand during Order 66 shapes the future Kanan Jarrus.'],
     ['evenpiell','Even Piell','Even Piell',['ep1','ep2','clone-tv'],['jedi-council'],'Even_Piell','Lannik Jedi Master and Council member whose Clone Wars service culminates in a dangerous Citadel rescue mission.'],
     ['eethkoth','Eeth Koth','Eeth Koth',['ep1','ep2','clone-tv'],['jedi-council'],'Eeth_Koth','Zabrak Jedi Master who serves on the Council and survives a high-profile capture during the Clone Wars.'],
     ['bossk','Bossk','Bossk',['clone-tv','ep5','ep6'],['underworld'],'Bossk','Trandoshan bounty hunter whose long career repeatedly intersects with other hunters and the criminal underworld.'],
@@ -87,8 +87,8 @@
     ['oppo','Oppo Rancisis','Oppo Rancisis',['ep1','ep2','clone-tv'],['jedi-council'],'Oppo_Rancisis','Thisspiasian Jedi Master and long-serving Council member active during the final decades of the Republic.'],
     ['lamasu','Lama Su','Lama Su',['ep2','clone-tv','bad-batch'],['republic'],'Lama_Su','Kaminoan prime minister who oversees the Republic’s clone army and later confronts the Empire’s changing plans for Kamino.'],
     ['taunwe','Taun We','Taun We',['ep2','clone-tv','bad-batch'],['republic'],'Taun_We','Kaminoan aide involved in the creation and administration of the clone army from its discovery through the early Empire.'],
-    ['passel','Passel Argente','Passel Argente',['ep2','clone-tv','ep3'],['separatists'],'Passel_Argente','Corporate Alliance magistrate and Separatist Council member who helps finance and organize the Confederacy.'],
-    ['ponudo','Po Nudo','Po Nudo',['ep2','clone-tv','ep3'],['separatists'],'Po_Nudo','Aqualish senator and Separatist Council member whose allegiance places him among the Confederacy’s political leadership.'],
+    ['passel','Passel Argente','Passel Argente',['ep1','ep2','ep3'],['separatists'],'Passel_Argente','Corporate Alliance magistrate and Separatist Council member who helps finance and organize the Confederacy.'],
+    ['ponudo','Po Nudo','Po Nudo',['ep1','ep2','ep3'],['separatists'],'Po_Nudo','Aqualish senator and Separatist Council member whose allegiance places him among the Confederacy’s political leadership.'],
     ['onaconda','Onaconda Farr','Onaconda Farr',['ep1','ep2','clone-tv'],['republic'],'Onaconda_Farr','Rodian senator whose career illustrates the pressures and compromises facing the Republic during the Clone Wars.'],
 
     ['bokatan','Bo-Katan Kryze','Bo-Katan',['clone-tv','rebels-tv','mando-tv','mando-film'],['mandalorians','new-republic'],'Bo-Katan_Kryze','Mandalorian warrior and leader whose long struggle over Mandalore stretches from the Clone Wars into the New Republic era.'],
@@ -98,16 +98,16 @@
     ['wolffe','Wolffe','Wolffe',['clone-tv','bad-batch','rebels-tv'],['clones','rebellion-heroes'],'Wolffe','Clone commander who serves Plo Koon before surviving into the Imperial era and eventually aiding the Rebellion.'],
     ['cham','Cham Syndulla','Cham Syndulla',['clone-tv','bad-batch','rebels-tv'],['republic','rebellion-leaders'],'Cham_Syndulla','Twi’lek resistance leader whose struggle for Ryloth continues from the Clone Wars into opposition to the Empire.'],
     ['gobi','Gobi Glie','Gobi Glie',['clone-tv','bad-batch','rebels-tv'],['rebellion-heroes'],'Gobi_Glie','Twi’lek freedom fighter and ally of Cham Syndulla whose resistance activity spans Republic, Imperial, and Rebel eras.'],
-    ['hera','Hera Syndulla','Hera',['bad-batch','rebels-tv','rogue-one','ahsoka-tv'],['rebellion-leaders','new-republic'],'Hera_Syndulla','Pilot and Rebel leader who grows from a child on occupied Ryloth into one of the Alliance’s most important field commanders.'],
+    ['hera','Hera Syndulla','Hera',['bad-batch','rebels-tv','ahsoka-tv'],['rebellion-leaders','new-republic'],'Hera_Syndulla','Pilot and Rebel leader who grows from a child on occupied Ryloth into one of the Alliance’s most important field commanders.'],
     ['chopper','C1-10P “Chopper”','Chopper',['bad-batch','rebels-tv','rogue-one','ahsoka-tv'],['droids','rebellion-heroes','new-republic'],'C1-10P','Astromech droid whose abrasive personality hides decades of service to Hera Syndulla, the Rebellion, and the New Republic.'],
     ['fennec','Fennec Shand','Fennec',['bad-batch','mando-tv','boba-tv'],['underworld','new-republic'],'Fennec_Shand','Elite assassin and mercenary who survives a near-fatal encounter with Din Djarin and becomes Boba Fett’s closest lieutenant.'],
     ['cadbane','Cad Bane','Cad Bane',['clone-tv','bad-batch','boba-tv'],['underworld'],'Cad_Bane','Duros bounty hunter whose reputation survives from the Clone Wars into the criminal struggles of the New Republic era.'],
     ['din','Din Djarin','Din Djarin',['mando-tv','boba-tv','mando-film'],['mandalorians','new-republic'],'Din_Djarin','Mandalorian bounty hunter whose protection of Grogu draws him into wider conflicts over Mandalore and the New Republic frontier.'],
     ['carson','Carson Teva','Carson Teva',['mando-tv','boba-tv','ahsoka-tv'],['new-republic'],'Carson_Teva','New Republic ranger whose patrol work repeatedly exposes threats that the young government is slow to recognize.'],
-    ['zeb','Garazeb Orrelios','Zeb',['rebels-tv','mando-tv','ahsoka-tv'],['rebellion-heroes','new-republic'],'Garazeb_Orrelios','Lasat warrior who becomes a core member of the Ghost crew and survives into the New Republic period.'],
-    ['huyang','Huyang','Huyang',['clone-tv','tales-jedi','ahsoka-tv'],['jedi-allies','new-republic','droids'],'Huyang','Ancient droid professor who has instructed generations of Jedi and later accompanies Ahsoka Tano beyond the fall of the Order.'],
+    ['zeb','Garazeb Orrelios','Zeb',['rebels-tv','mando-tv','mando-film'],['rebellion-heroes','new-republic'],'Garazeb_Orrelios','Lasat warrior who becomes a core member of the Ghost crew and survives into the New Republic period.'],
+    ['huyang','Huyang','Huyang',['young-jedi','clone-tv','ahsoka-tv'],['jedi-allies','new-republic','droids'],'Huyang','Ancient droid professor who has instructed generations of Jedi and later accompanies Ahsoka Tano beyond the fall of the Order.',{start:-232,end:9,note:'Huyang’s Young Jedi Adventures appearance is dated to 232 BBY.'}],
     ['morgan','Morgan Elsbeth','Morgan Elsbeth',['mando-tv','ahsoka-tv','tales-empire'],['empire','new-republic'],'Morgan_Elsbeth','Nightsister survivor and Imperial-aligned industrialist whose search for Grand Admiral Thrawn drives key New Republic-era events.'],
-    ['thrawn','Mitth’raw’nuruodo “Thrawn”','Thrawn',['rebels-tv','mando-tv','ahsoka-tv'],['empire','new-republic'],'Mitthrawnuruodo','Chiss Imperial grand admiral whose strategic brilliance makes him a major threat first to the Rebellion and later the New Republic.'],
+    ['thrawn','Mitth’raw’nuruodo “Thrawn”','Thrawn',['rebels-tv','tales-empire','ahsoka-tv'],['empire','new-republic'],'Mitthrawnuruodo','Chiss Imperial grand admiral whose strategic brilliance makes him a major threat first to the Rebellion and later the New Republic.',{start:-9,end:9,note:'His Tales of the Empire appearance falls between 9 BBY and 2 BBY; the line therefore starts at the earliest edge of that documented window.'}],
     ['yularen','Wullf Yularen','Yularen',['clone-tv','andor-tv','rebels-tv','ep4'],['republic','empire'],'Wullf_Yularen','Republic admiral turned Imperial Security Bureau colonel whose career traces institutional continuity between the two regimes.'],
     ['dodonna','Jan Dodonna','Dodonna',['rebels-tv','rogue-one','ep4'],['rebellion-leaders'],'Jan_Dodonna','Veteran commander who becomes one of the Rebel Alliance’s senior military leaders and directs the assault on the first Death Star.'],
 
@@ -117,14 +117,14 @@
   ];
 
   const existing=new Set(D.lifelines.map(p=>p.id));
-  rows.forEach(([id,name,short,appearances,groups,wiki,lead])=>{
+  rows.forEach(([id,name,short,appearances,groups,wiki,lead,range])=>{
     if(existing.has(id))throw new Error(`Duplicate lifeline id: ${id}`);
     if(appearances.length<3)throw new Error(`${name} has fewer than three mapped properties`);
     const media=appearances.map(key=>{
       if(!screen[key])throw new Error(`${name}: unknown screen property ${key}`);
       return screen[key];
     });
-    const start=Math.min(...media.map(m=>m.start)),end=Math.max(...media.map(m=>m.end));
+    const start=range?.start??Math.min(...media.map(m=>m.start)),end=range?.end??Math.max(...media.map(m=>m.end));
     const first=media.reduce((a,b)=>a.start<=b.start?a:b),last=media.reduce((a,b)=>a.end>=b.end?a:b);
     const url='https://starwars.fandom.com/wiki/'+encodeURIComponent(wiki).replace(/%20/g,'_');
     D.sources['life-'+id]=[name+' · canon reference (Wookieepedia)',url];
@@ -132,7 +132,7 @@
       id,name,short,start,end,startKind:'appearance',endKind:'known',startApprox:true,endApprox:true,
       color:palette[groups[0]]||'#a9bcc4',groups,appearances,sources:['life-'+id],
       synopsis:`${lead} On this atlas, the character recurs across ${appearances.length} mapped screen properties, from ${first.name} through ${last.name}.`,
-      note:'This expanded track begins at the first dated screen appearance included in this atlas, not at the character’s birth. Its open endpoint marks the last dated mapped screen appearance, not an asserted death or final canonical appearance.'
+      note:'This expanded track begins at the first dated screen appearance included in this atlas, not at the character’s birth. Its open endpoint marks the last dated mapped screen appearance, not an asserted death or final canonical appearance.'+(range?.note?' '+range.note:'')
     });
     existing.add(id);
   });
