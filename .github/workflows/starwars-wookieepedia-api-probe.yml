@@ -1,0 +1,59 @@
+name: Star Wars Wookieepedia API probe
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-wookieepedia-api-probe.yml'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Wookieepedia MediaWiki API
+        run: |
+          python - <<'PY'
+          import json, urllib.parse, urllib.request
+          from pathlib import Path
+
+          base='https://starwars.fandom.com/api.php'
+          ua={'User-Agent':'Histomaps-StarWars-API-Probe/1.0 (https://histomaps.org/starwars/)'}
+          tests={
+            'siteinfo':{'action':'query','meta':'siteinfo','siprop':'general','format':'json','formatversion':'2','origin':'*'},
+            'search':{'action':'query','list':'search','srsearch':'Luke Skywalker','srlimit':'3','format':'json','formatversion':'2','origin':'*'},
+            'parse_text':{'action':'parse','page':'Luke Skywalker','prop':'text|displaytitle','format':'json','formatversion':'2','origin':'*'},
+            'parse_wikitext':{'action':'parse','page':'Luke Skywalker','prop':'wikitext|displaytitle','format':'json','formatversion':'2','origin':'*'},
+            'revisions':{'action':'query','prop':'revisions','rvprop':'content','rvslots':'main','titles':'Luke Skywalker','format':'json','formatversion':'2','origin':'*'},
+            'extracts':{'action':'query','prop':'extracts','exintro':'1','explaintext':'1','titles':'Luke Skywalker','format':'json','formatversion':'2','origin':'*'},
+          }
+          out={}
+          for name,params in tests.items():
+            url=base+'?'+urllib.parse.urlencode(params)
+            try:
+              req=urllib.request.Request(url,headers=ua)
+              with urllib.request.urlopen(req,timeout=30) as r:
+                raw=r.read().decode('utf-8')
+                data=json.loads(raw)
+                record={'ok':True,'status':r.status,'cors':r.headers.get('Access-Control-Allow-Origin'),'bytes':len(raw),'keys':list(data.keys()),'warnings':data.get('warnings'),'error':data.get('error')}
+                if name=='siteinfo': record['generator']=data.get('query',{}).get('general',{}).get('generator')
+                if name=='search': record['hits']=[{'title':x.get('title'),'pageid':x.get('pageid')} for x in data.get('query',{}).get('search',[])]
+                if name.startswith('parse_'):
+                  parse=data.get('parse',{});record['title']=parse.get('title');
+                  payload=parse.get('text') if name=='parse_text' else parse.get('wikitext')
+                  if isinstance(payload,dict): payload=payload.get('*','')
+                  record['payload_chars']=len(payload or '');record['payload_preview']=(payload or '')[:180]
+                if name=='revisions':
+                  pages=data.get('query',{}).get('pages',[]);record['title']=pages[0].get('title') if pages else None
+                  rev=(pages[0].get('revisions') or [{}])[0] if pages else {}
+                  content=((rev.get('slots') or {}).get('main') or {}).get('content','')
+                  record['payload_chars']=len(content);record['payload_preview']=content[:180]
+                out[name]=record
+            except Exception as e:
+              out[name]={'ok':False,'error':repr(e)}
+          Path('/tmp').joinpath('wookieepedia-api-core-probe.json').write_text(json.dumps(out,indent=2,ensure_ascii=False))
+          print(json.dumps(out,indent=2,ensure_ascii=False))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wookieepedia-api-core-probe
+          path: /tmp/wookieepedia-api-core-probe.json
+          retention-days: 3
