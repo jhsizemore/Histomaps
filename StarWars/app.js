@@ -237,20 +237,52 @@
   function renderMini(){if(mode!=='canon'){renderLegendMini();return;}const m=$('mini-svg');m.replaceChildren();D.factions.slice(0,11).forEach((f,i)=>addStream(m,f,politicalPath(i),false));['jedi','sith'].forEach(id=>addStream(m,factions[id],forcePath(id,1,1),false));}
   function applySelection(){
     map.querySelector('.selected-year')?.remove();map.querySelector('.screen-highlight')?.remove();
-    const activeFaction=selected?.type==='faction'?selected.id:null;
-    map.querySelectorAll('.stream').forEach(p=>{p.classList.toggle('dim',!!activeFaction&&p.dataset.faction!==activeFaction);p.classList.toggle('selected',p.dataset.faction===activeFaction);p.setAttribute('aria-pressed',String(p.dataset.faction===activeFaction));});
-    const symbolFaction=selected?.type==='legend-faction'?selected.id:activeFaction;
-    map.querySelectorAll('.faction-insignia').forEach(p=>p.classList.toggle('dim',!!symbolFaction&&p.dataset.faction!==symbolFaction));
-    map.querySelectorAll('.event').forEach(p=>p.classList.toggle('active',['event','legend'].includes(selected?.type)&&p.dataset.event===selected.id));
-    $('screen-map').querySelectorAll('[data-screen]').forEach(p=>p.classList.toggle('active',selected?.type==='screen'&&p.dataset.screen===selected.id));
-    $('screen-map').querySelectorAll('[data-life]').forEach(p=>{p.classList.toggle('active',selected?.type==='life'&&p.dataset.life===selected.id);p.classList.toggle('dim',selected?.type==='life'&&p.dataset.life!==selected.id);});
+    const directFaction=selected?.type==='faction'?selected.id:null;
+    const selectedEvent=selected?.type==='event'?D.events.find(v=>v.id===selected.id):null;
+    const contextualFaction=directFaction||selectedEvent?.faction||null;
+    map.querySelectorAll('.stream').forEach(p=>{
+      const active=!!contextualFaction&&p.dataset.faction===contextualFaction;
+      p.classList.toggle('dim',!!directFaction&&!active);
+      p.classList.toggle('selected',active);
+      p.setAttribute('aria-pressed',String(!!directFaction&&p.dataset.faction===directFaction));
+    });
+    const legendFaction=selected?.type==='legend-faction'?selected.id:null;
+    const symbolFaction=legendFaction||contextualFaction,dimSymbols=!!directFaction||!!legendFaction;
+    map.querySelectorAll('.faction-insignia').forEach(p=>{
+      const active=!!symbolFaction&&p.dataset.faction===symbolFaction;
+      p.classList.toggle('selected',active);
+      p.classList.toggle('dim',dimSymbols&&!active);
+    });
+    map.querySelectorAll('.legend-stream').forEach(p=>{
+      const active=!!legendFaction&&p.dataset.faction===legendFaction;
+      p.classList.toggle('selected',active);
+      p.classList.toggle('dim',!!legendFaction&&!active);
+    });
+    const eventFocus=['event','legend'].includes(selected?.type);
+    map.querySelectorAll('.event').forEach(p=>{
+      const active=eventFocus&&p.dataset.event===selected.id;
+      p.classList.toggle('active',active);
+      p.classList.toggle('dim',eventFocus&&!active);
+    });
+    const screenFocus=['screen','screen-group'].includes(selected?.type);
+    $('screen-map').querySelectorAll('[data-screen],[data-screen-group]').forEach(p=>{
+      const active=selected?.type==='screen'?p.dataset.screen===selected.id:selected?.type==='screen-group'?p.dataset.screenGroup===selected.id:false;
+      p.classList.toggle('active',active);
+      p.classList.toggle('dim',screenFocus&&!active);
+    });
+    const lifeFocus=selected?.type==='life';
+    $('screen-map').querySelectorAll('[data-life]').forEach(p=>{
+      const active=lifeFocus&&p.dataset.life===selected.id;
+      p.classList.toggle('active',active);
+      p.classList.toggle('dim',lifeFocus&&!active);
+    });
     if(mode!=='canon')return;
     if(selected?.type==='event'){
       const e=D.events.find(v=>v.id===selected.id),y=eventY(e)*zoom;
       map.append(svg('line',{x1:mapX(84),x2:chartWidth-34,y1:y,y2:y,class:'selected-year'}));
     }
-    const span=selected?.type==='screen'?D.screen.find(m=>m.id===selected.id):selected?.type==='life'?D.lifelines.find(m=>m.id===selected.id):null;
-    if(span){const y=yearY(span.start)*zoom,h=Math.max(2,(yearY(span.end)-yearY(span.start))*zoom);map.append(svg('rect',{x:mapX(84),y,width:chartWidth-mapX(84)-34,height:h,fill:span.color||'#e3c17c','fill-opacity':.10,class:'screen-highlight','pointer-events':'none'}));}
+    const span=selected?.type==='screen'?D.screen.find(m=>m.id===selected.id):selected?.type==='screen-group'?screenGroups.find(m=>m.id===selected.id):selected?.type==='life'?D.lifelines.find(m=>m.id===selected.id):null;
+    if(span){const y=yearY(span.start)*zoom,h=Math.max(2,(yearY(span.end)-yearY(span.start))*zoom);map.append(svg('rect',{x:mapX(84),y,width:chartWidth-mapX(84)-34,height:h,fill:span.color||'#e3c17c','fill-opacity':.075,class:'screen-highlight','pointer-events':'none'}));}
   }
   function overview(){
     if(mode!=='canon'){legendOverview();return;}
@@ -433,7 +465,7 @@
     entries.forEach((entry,index)=>{
       const {m,start,end,mid,color,grouped,lane,metrics}=entry,top=centers[index]-metrics.cardH/2;
       const x=laneCount===1?(railLeft+railRight)/2:railLeft+lane*(railRight-railLeft)/(laneCount-1);
-      const g=svg('g',{class:grouped?'screen-cluster':'screen-story',tabindex:0,role:'button','aria-label':`${m.name}, ${screenDate(m)}${grouped?`, ${m.items.length} titles, expand`:''}`});if(!grouped)g.dataset.screen=m.id;
+      const g=svg('g',{class:grouped?'screen-cluster':'screen-story',tabindex:0,role:'button','aria-label':`${m.name}, ${screenDate(m)}${grouped?`, ${m.items.length} titles, expand`:''}`});if(grouped)g.dataset.screenGroup=m.id;else g.dataset.screen=m.id;
       g.append(svg('title',{},`${m.name} · ${screenDate(m)}`));
       if(start!==end){
         g.append(svg('line',{x1:x,x2:x,y1:start,y2:end,stroke:color,'stroke-width':3,'stroke-dasharray':m.discontinuous?'3 5':m.approx?'6 4':'none',class:'screen-rail'}));
@@ -519,7 +551,7 @@
     map.append(svg('text',{x:12,y:32,class:'era-title'},'LEGENDS · NON-CANON'));
     textLines(map,L.range,12,59,50,'minor-label',18);
     L.factions.forEach((f,i)=>{
-      const g=svg('g',{tabindex:0,role:'button',class:'legend-stream','aria-label':`${f.name}, Legends`});
+      const g=svg('g',{tabindex:0,role:'button',class:'legend-stream','aria-label':`${f.name}, Legends`});g.dataset.faction=f.id;
       g.append(svg('path',{d:legendGeometry(i,mapX,zoom),fill:f.color,stroke:'#142025','stroke-width':1.5}));
       g.append(svg('path',{d:legendGeometry(i,mapX,zoom),fill:'url(#legends-hatch)','pointer-events':'none'}));
       let at=L.knots[Math.floor(L.knots.length/2)];
