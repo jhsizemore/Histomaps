@@ -1,0 +1,99 @@
+name: Star Wars final widescreen pass
+
+on:
+  push:
+    paths:
+      - '.github/workflows/starwars-task7-widescreen.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  widescreen-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply widescreen polish
+        run: python StarWars/tools/task7_widescreen_patch.py
+      - name: Validate source
+        run: |
+          node --check StarWars/app.js
+          python - <<'PY'
+          from pathlib import Path
+          j=Path('StarWars/app.js').read_text()
+          c=Path('StarWars/styles.css').read_text()
+          h=Path('StarWars/index.html').read_text()
+          assert "else if(width<1400)" in j
+          assert "layer==='screen'?.23:.18" in j
+          assert 'renderCompanionGuides' in j
+          assert 'Final desktop / widescreen pass' in c
+          assert 'styles.css?v=desktop-20260907' in h
+          print('widescreen source checks OK')
+          PY
+      - name: Install browser QA package
+        run: python -m pip install --disable-pip-version-check playwright
+      - name: Capture desktop and ultrawide layers
+        run: |
+          mkdir -p qa
+          python -m http.server 8000 --directory StarWars >/tmp/histomap-http.log 2>&1 &
+          python - <<'PY'
+          import asyncio,json
+          from playwright.async_api import async_playwright
+
+          async def dismiss(page):
+              if await page.locator('#launch-intro').is_visible():
+                  await page.locator('#launch-explore').click(); await page.wait_for_timeout(80)
+
+          async def capture(browser,name,w,h):
+              page=await browser.new_page(viewport={'width':w,'height':h},device_scale_factor=1)
+              await page.goto('http://127.0.0.1:8000/',wait_until='networkidle')
+              await dismiss(page)
+              await page.locator('[data-layer="screen"]').click(); await page.wait_for_timeout(100)
+              film=await page.locator('#screen-map').evaluate('(el)=>el.getBoundingClientRect().width')
+              chart=await page.locator('#map').evaluate('(el)=>el.getBoundingClientRect().width')
+              guides=await page.locator('#screen-map .companion-era-guide').count()
+              overflow=await page.evaluate('document.documentElement.scrollWidth > document.documentElement.clientWidth')
+              await page.screenshot(path=f'qa/{name}-films.png')
+              await page.locator('[data-layer="life"]').click(); await page.wait_for_timeout(100)
+              life=await page.locator('#screen-map').evaluate('(el)=>el.getBoundingClientRect().width')
+              await page.screenshot(path=f'qa/{name}-lifelines.png')
+              await page.locator('[data-layer="none"]').click(); await page.wait_for_timeout(80)
+              await page.screenshot(path=f'qa/{name}-streams.png')
+              assert not overflow,(name,'horizontal overflow')
+              assert guides >= 5,(name,guides)
+              if w>=1400:
+                  assert film>=340,(name,film)
+                  assert life>=280,(name,life)
+                  assert film>life,(name,film,life)
+                  assert chart>w*.60,(name,chart)
+              await page.close()
+              return {'viewport':[w,h],'films':film,'lifelines':life,'streamsWithFilms':chart,'guides':guides}
+
+          async def main():
+              async with async_playwright() as p:
+                  browser=await p.chromium.launch(executable_path='/usr/bin/google-chrome')
+                  data={}
+                  for args in [('laptop',1366,768),('desktop',1920,1080),('qhd',2560,1440),('ultrawide',3440,1440)]:
+                      data[args[0]]=await capture(browser,*args)
+                  await browser.close()
+                  open('qa/metrics.json','w').write(json.dumps(data,indent=2))
+                  print(json.dumps(data,indent=2))
+          asyncio.run(main())
+          PY
+      - name: Commit final widescreen pass
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add StarWars/index.html StarWars/styles.css StarWars/app.js
+          git commit -m "Polish Star Wars desktop and widescreen interface"
+          git push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: starwars-task7-widescreen-qa
+          path: qa
+          retention-days: 1
