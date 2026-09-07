@@ -2,7 +2,7 @@
 
 Canonical public route: `https://histomaps.org/starwars/`. The retained `StarWars/` directory is an internal deployment source; Cloudflare Pages redirects legacy/case-variant public routes and proxies the lowercase route to these static assets.
 
-**Launch release:** `v1.0.0` · 7 September 2026. The immutable launch snapshot is identified by the dedicated `release/starwars-v1.0.0` ref. See [`CHANGELOG.md`](CHANGELOG.md), [`VERSION`](VERSION), and [`release.json`](release.json) for the release record.
+**Launch release:** `v1.0.0` · 7 September 2026. The launch snapshot is identified by the dedicated `release/starwars-v1.0.0` ref. See [`CHANGELOG.md`](CHANGELOG.md), [`VERSION`](VERSION), and [`release.json`](release.json) for the release record.
 
 `index.html`, `styles.css`, and `app.js` provide the interactive map. `data.js` contains the core canon model; `expanded-data.js` contains synchronized screen-story spans and the separately labeled ancient and future Legends sections. `lifelines.js` contains 16 canon character lifelines, source links, uncertainty flags, and character groups. `insignia.js` embeds the 14 sourced faction symbols used in the streams, faction records, and Guide; `insignia-credits.json` retains the original asset attributions. The browser app itself requires no package installation or runtime build step.
 
