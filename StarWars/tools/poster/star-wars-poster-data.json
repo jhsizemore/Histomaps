@@ -454,6 +454,14 @@
     "mandoFilmTiming": [
       "The Mandalorian and Grogu chronology · Wookieepedia",
       "https://starwars.fandom.com/wiki/Star_Wars%3A_The_Mandalorian_and_Grogu"
+    ],
+    "yavinDating": [
+      "BBY/ABY dating convention · Wookieepedia",
+      "https://starwars.fandom.com/wiki/%27ABY-BBY%27_dating_system"
+    ],
+    "andorFinaleTiming": [
+      "Andor Season 2 finale · BBY 1 · StarWars.com",
+      "https://www.starwars.com/news/andor-season-2-finale-episodes-10-11-12"
     ]
   },
   "factions": [
@@ -1623,10 +1631,10 @@
     },
     {
       "id": "scarif",
-      "year": 0,
+      "year": -1,
       "y": 2045,
       "title": "The sacrifice at Scarif",
-      "date": "0 BBY · before Yavin",
+      "date": "1 BBY · immediately before Yavin",
       "level": 2,
       "faction": "rebels",
       "text": "Rogue One secures and transmits the Death Star plans at the cost of the team’s lives.",
@@ -1636,15 +1644,16 @@
       ],
       "sources": [
         "mothma",
-        "deathstar"
+        "deathstar",
+        "yavinDating"
       ]
     },
     {
       "id": "alderaan",
-      "year": 0,
+      "year": -1,
       "y": 2087,
       "title": "Alderaan destroyed",
-      "date": "0 BBY · before Yavin",
+      "date": "1 BBY · before Yavin",
       "level": 3,
       "faction": "empire",
       "text": "The Death Star destroys Alderaan in a demonstration of Imperial terror.",
@@ -1653,7 +1662,8 @@
         "IV · A New Hope"
       ],
       "sources": [
-        "deathstar"
+        "deathstar",
+        "yavinDating"
       ]
     },
     {
@@ -1664,12 +1674,13 @@
       "level": 1,
       "faction": "rebels",
       "text": "Luke Skywalker destroys the first Death Star, saving the rebel base and demonstrating that the Empire can be defeated.",
-      "effect": "The rebellion gains a defining victory. This battle is the reference point for BBY and ABY dates.",
+      "effect": "The rebellion gains a defining victory. This battle is the zero reference point between BBY and ABY; there is no full 0 BBY year in the current convention used here.",
       "media": [
         "IV · A New Hope"
       ],
       "sources": [
-        "deathstar"
+        "deathstar",
+        "yavinDating"
       ]
     },
     {
@@ -2011,9 +2022,10 @@
       "name": "Andor · seasons 1–2",
       "kind": "series",
       "start": -5,
-      "end": 0,
-      "note": "Main story across the two seasons. Season 2 advances in year-separated arcs and ends immediately before Rogue One. Childhood flashbacks sit outside this span.",
+      "end": -1,
+      "note": "Main story across the two seasons. Season 2 advances in year-separated arcs and its final arc is explicitly BBY 1, ending on the brink of Rogue One. Childhood flashbacks sit outside this span.",
       "sources": [
+        "andorFinaleTiming",
         "viewing",
         "tvDates"
       ]
@@ -2023,8 +2035,8 @@
       "name": "Rebels",
       "kind": "animation",
       "start": -5,
-      "end": 0,
-      "note": "The main rebellion narrative runs alongside Andor. Later epilogue scenes are not included in this continuous span.",
+      "end": -1,
+      "note": "The main rebellion narrative runs from 5 BBY through the Liberation of Lothal in 1 BBY. The later New Republic epilogue is not included in this continuous span.",
       "sources": [
         "viewing",
         "tvDates"
@@ -2034,22 +2046,24 @@
       "id": "rogue-one",
       "name": "Rogue One",
       "kind": "film",
-      "start": 0,
-      "end": 0,
-      "note": "Main mission, immediately before A New Hope. The childhood opening is earlier.",
+      "start": -1,
+      "end": -1,
+      "note": "Main mission in 1 BBY, immediately before A New Hope and the Battle of Yavin. The childhood opening is earlier.",
       "sources": [
-        "dates"
+        "dates",
+        "yavinDating"
       ]
     },
     {
       "id": "ep4",
       "name": "IV · A New Hope",
       "kind": "film",
-      "start": 0,
+      "start": -1,
       "end": 0,
-      "note": "Contains the Battle of Yavin, the BBY/ABY reference point.",
+      "note": "Current reference chronology places the pre-Yavin events in 1 BBY; the Battle of Yavin itself is the zero point, with the immediate aftermath in 0 ABY.",
       "sources": [
-        "dates"
+        "dates",
+        "yavinDating"
       ]
     },
     {
@@ -2944,7 +2958,7 @@
       "name": "Obi-Wan Kenobi",
       "short": "Obi-Wan",
       "start": -57,
-      "end": 0,
+      "end": -1,
       "endKind": "death",
       "color": "#9cbacf",
       "groups": [
@@ -2952,7 +2966,7 @@
       ],
       "wiki": "Obi-Wan_Kenobi",
       "official": "obi-wan-kenobi",
-      "note": "Mentor to Anakin and Luke. This map uses the familiar Yavin-zero convention for A New Hope. Some newer reference chronologies label its pre-Yavin events 1 BBY. His physical life ends aboard the Death Star.",
+      "note": "Mentor to Anakin and Luke. Current reference chronology places his death aboard the Death Star before the Battle of Yavin in 1 BBY; the battle itself is the zero point.",
       "sources": [
         "bio-kenobi",
         "life-kenobi"

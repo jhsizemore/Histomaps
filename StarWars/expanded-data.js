@@ -19,7 +19,9 @@ Object.assign(window.HISTOMAP.sources,{
   mandoFilm:['The Mandalorian and Grogu · Lucasfilm','https://www.starwars.com/films/star-wars-the-mandalorian-and-grogu'],
   youngJediTiming:['Young Jedi Adventures Season 3 chronology · Wookieepedia','https://starwars.fandom.com/wiki/Young_Jedi_Adventures_Season_Three'],
   maulTiming:['Maul – Shadow Lord timeline context · StarWars.com','https://www.starwars.com/news/star-wars-maul-shadow-lord-first-trailer-poster-art'],
-  mandoFilmTiming:['The Mandalorian and Grogu chronology · Wookieepedia','https://starwars.fandom.com/wiki/Star_Wars%3A_The_Mandalorian_and_Grogu']
+  mandoFilmTiming:['The Mandalorian and Grogu chronology · Wookieepedia','https://starwars.fandom.com/wiki/Star_Wars%3A_The_Mandalorian_and_Grogu'],
+  yavinDating:['BBY/ABY dating convention · Wookieepedia','https://starwars.fandom.com/wiki/%27ABY-BBY%27_dating_system'],
+  andorFinaleTiming:['Andor Season 2 finale · BBY 1 · StarWars.com','https://www.starwars.com/news/andor-season-2-finale-episodes-10-11-12']
 });
 window.HISTOMAP.screen=[
   {id:'young-jedi',name:'Young Jedi Adventures',kind:'animation',start:-233,end:-222,approx:true,discontinuous:true,note:'The series begins around 233 BBY. Season 3 continues between 232 and 230 BBY, then its final epilogue jumps several more years to between 227 and about 222 BBY. This is a discontinuous envelope, not eleven years of continuous action.',sources:['youngJediTiming','tvDates','viewing']},
@@ -33,10 +35,10 @@ window.HISTOMAP.screen=[
   {id:'maul-tv',name:'Maul – Shadow Lord',kind:'animation',start:-17,end:-17,approx:true,note:'Official 2026 material places the series a few short years after Order 66, without giving an exact year. It is shown near 17 BBY as a conservative schematic anchor; the marker is approximate, not a claimed precise date.',sources:['maulShow','maulTiming','tvDates']},
   {id:'solo-film',name:'Solo',kind:'film',start:-13,end:-10,note:'Includes the Corellia opening and the three-year jump to the principal adventure. The bracket includes the intervening gap.',discontinuous:true,sources:['dates']},
   {id:'obi-wan',name:'Obi-Wan Kenobi',kind:'series',start:-9,end:-9,note:'Main story, excluding the prequel-era opening and flashbacks.',sources:['tvDates']},
-  {id:'andor-tv',name:'Andor · seasons 1–2',kind:'series',start:-5,end:0,note:'Main story across the two seasons. Season 2 advances in year-separated arcs and ends immediately before Rogue One. Childhood flashbacks sit outside this span.',sources:['viewing','tvDates']},
-  {id:'rebels-tv',name:'Rebels',kind:'animation',start:-5,end:0,note:'The main rebellion narrative runs alongside Andor. Later epilogue scenes are not included in this continuous span.',sources:['viewing','tvDates']},
-  {id:'rogue-one',name:'Rogue One',kind:'film',start:0,end:0,note:'Main mission, immediately before A New Hope. The childhood opening is earlier.',sources:['dates']},
-  {id:'ep4',name:'IV · A New Hope',kind:'film',start:0,end:0,note:'Contains the Battle of Yavin, the BBY/ABY reference point.',sources:['dates']},
+  {id:'andor-tv',name:'Andor · seasons 1–2',kind:'series',start:-5,end:-1,note:'Main story across the two seasons. Season 2 advances in year-separated arcs and its final arc is explicitly BBY 1, ending on the brink of Rogue One. Childhood flashbacks sit outside this span.',sources:['andorFinaleTiming','viewing','tvDates']},
+  {id:'rebels-tv',name:'Rebels',kind:'animation',start:-5,end:-1,note:'The main rebellion narrative runs from 5 BBY through the Liberation of Lothal in 1 BBY. The later New Republic epilogue is not included in this continuous span.',sources:['viewing','tvDates']},
+  {id:'rogue-one',name:'Rogue One',kind:'film',start:-1,end:-1,note:'Main mission in 1 BBY, immediately before A New Hope and the Battle of Yavin. The childhood opening is earlier.',sources:['dates','yavinDating']},
+  {id:'ep4',name:'IV · A New Hope',kind:'film',start:-1,end:0,note:'Current reference chronology places the pre-Yavin events in 1 BBY; the Battle of Yavin itself is the zero point, with the immediate aftermath in 0 ABY.',sources:['dates','yavinDating']},
   {id:'ep5',name:'V · The Empire Strikes Back',kind:'film',start:3,end:3,sources:['dates']},
   {id:'ep6',name:'VI · Return of the Jedi',kind:'film',start:4,end:4,sources:['dates']},
   {id:'mando-tv',name:'The Mandalorian',kind:'series',start:9,end:9,approx:true,note:'Begins around 9 ABY. Later-season elapsed time is not securely fixed here. This marks the shared New Republic story period, not an assertion that all three seasons last one year.',sources:['tvDates','viewing']},
