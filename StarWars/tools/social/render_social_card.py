@@ -10,7 +10,6 @@ POSTER = DOWNLOADS / 'Star-Wars-Histomap-Poster.png'
 TITLE_ART = ROOT / 'title-art' / 'main.webp'
 TYPE = ROOT / 'tools' / 'poster' / 'star-wars-type'
 SOCIAL_OUT = ASSETS / 'star-wars-histomap-social-card.png'
-REDDIT_OUT = DOWNLOADS / 'Star-Wars-Histomap-Reddit-Launch.png'
 WEB_PREVIEW_OUT = ASSETS / 'star-wars-histomap-poster-preview.webp'
 
 GOLD = '#dfc17f'
@@ -30,12 +29,6 @@ def fit_cover(im, size):
     left = (resized.width - tw) // 2
     top = (resized.height - th) // 2
     return resized.crop((left, top, left + tw, top + th))
-
-
-def fit_contain(im, size):
-    tw, th = size
-    scale = min(tw / im.width, th / im.height)
-    return im.resize((round(im.width * scale), round(im.height * scale)), Image.Resampling.LANCZOS)
 
 
 def starfield(size, darken=0.42):
@@ -92,56 +85,6 @@ def render_social_card(poster):
     print(f'Wrote {SOCIAL_OUT} ({w}x{h})')
 
 
-def render_reddit_launch(poster):
-    w, h = 2400, 3000
-    canvas = starfield((w, h), 0.54).convert('RGBA')
-    wash = Image.new('RGBA', (w, h), (2, 5, 7, 148))
-    canvas = Image.alpha_composite(canvas, wash)
-    d = ImageDraw.Draw(canvas)
-
-    d.rectangle((2, 2, w - 3, h - 3), outline=(223, 193, 127, 128), width=4)
-    d.text((100, 82), 'H / HISTOMAPS', font=font('NewsCycle-Bold.ttf', 42), fill=GOLD)
-    d.text((2300, 92), 'UNOFFICIAL FAN ATLAS · STORY SPOILERS', font=font('NewsCycle-Bold.ttf', 28), fill=MUTED, anchor='ra')
-
-    logo = title_logo((520, 220))
-    canvas.alpha_composite(logo, (100, 160))
-    d.text((670, 230), 'histomap', font=font('starjedi.ttf', 102), fill=GOLD)
-    d.text((100, 430), 'THE HISTORY OF THE STAR WARS GALAXY', font=font('PathwayGothicOne-Regular.ttf', 93), fill=INK)
-    d.text((100, 520), 'POWER · STORIES · LIVES · ONE TIMELINE', font=font('NewsCycle-Bold.ttf', 38), fill=MUTED)
-    d.rounded_rectangle((100, 592, 2300, 658), radius=5, fill=(14, 29, 34, 225), outline=(87, 105, 107, 220), width=2)
-    d.text((130, 605), 'CANON 500 BBY—35 ABY   ·   FILMS & TV   ·   CHARACTER LIFELINES   ·   LEGENDS KEPT SEPARATE', font=font('NewsCycle-Bold.ttf', 27), fill='#c6d0cf')
-
-    # Three magnified real-poster windows chosen to survive Reddit's feed compression.
-    # Each crop is visually QA'd against the full poster so its label and era agree.
-    strips = [
-        ('FALL OF THE JEDI → REIGN OF EMPIRE', (90, 3500, 5110, 5500)),
-        ('AGE OF REBELLION', (90, 5600, 5110, 7600)),
-        ('NEW REPUBLIC → FIRST ORDER', (90, 7300, 5110, 9300)),
-    ]
-    y = 735
-    strip_w, strip_h = 2200, 575
-    for label, box in strips:
-        crop = poster.crop(box)
-        crop = fit_cover(crop, (strip_w, strip_h))
-        crop = crop.filter(ImageFilter.UnsharpMask(radius=1.0, percent=120, threshold=2))
-        canvas.paste(crop, (100, y))
-        shade = Image.new('RGBA', (strip_w, 62), (0, 0, 0, 172))
-        canvas.alpha_composite(shade, (100, y))
-        d.text((128, y + 12), label, font=font('NewsCycle-Bold.ttf', 30), fill=INK)
-        d.rectangle((100, y, 2300, y + strip_h), outline=(223, 193, 127, 126), width=2)
-        y += strip_h + 55
-
-    d.line((100, 2675, 2300, 2675), fill=GOLD, width=3)
-    d.text((100, 2710), 'FULL 5,200 × 18,220 POSTER + INTERACTIVE MAP', font=font('NewsCycle-Bold.ttf', 35), fill=MUTED)
-    d.text((100, 2760), 'histomaps.org/starwars', font=font('PathwayGothicOne-Regular.ttf', 72), fill=GOLD)
-    d.text((2300, 2784), 'J. HUNTER SIZEMORE', font=font('NewsCycle-Regular.ttf', 27), fill=MUTED, anchor='ra')
-    d.text((100, 2870), 'Use this image for the native Reddit post; link the complete vertical poster and interactive atlas in the post body or first comment.', font=font('NewsCycle-Regular.ttf', 27), fill='#aebbbb')
-
-    REDDIT_OUT.parent.mkdir(parents=True, exist_ok=True)
-    canvas.convert('RGB').save(REDDIT_OUT, 'PNG', optimize=True)
-    print(f'Wrote {REDDIT_OUT} ({w}x{h})')
-
-
 def render_web_preview(poster):
     target_w = 900
     target_h = round(poster.height * target_w / poster.width)
@@ -155,7 +98,8 @@ def render_web_preview(poster):
 def main():
     poster = Image.open(POSTER).convert('RGB')
     render_social_card(poster)
-    render_reddit_launch(poster)
+    from render_reddit_canon import render as render_reddit_canon
+    render_reddit_canon()
     render_web_preview(poster)
 
 
