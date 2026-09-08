@@ -33,10 +33,16 @@ function buildWindows(hours) {
   return windows;
 }
 
+const PUBLIC_PAGES = new Set([
+  "/", "/world", "/starwars", "/about", "/journal",
+  "/journal/a-histomap-is-an-argument",
+  "/journal/every-map-chooses-what-deserves-space",
+]);
+
 function looksLikePage(path) {
-  if (!path || path.startsWith("/cdn-cgi/") || path.startsWith("/api/") || path.startsWith("/dashboard")) return false;
-  if (path.split("/").some(part => part.startsWith(".")) || /\.(?:php|sql|bak)(?:[./]|$)/i.test(path)) return false;
-  return !/\.(?:avif|bmp|css|csv|gif|ico|jpe?g|js|json|map|mp3|mp4|pdf|png|svg|txt|webm|webp|woff2?|xml)$/i.test(path);
+  if (!path) return false;
+  const normalized = path.toLowerCase().replace(/\/index\.html$/, "/").replace(/\/+$/, "") || "/";
+  return PUBLIC_PAGES.has(normalized);
 }
 
 function add(map, key, value) {
@@ -217,7 +223,7 @@ export async function onRequestGet({ request, env }) {
       referrers: top(referrers, 8),
       countries: top(countries, 8),
       devices: top(devices, 6),
-      note: "Visits use Cloudflare's edge visit metric. Page rankings use requests to likely HTML routes and exclude common static asset extensions. These are edge metrics, not unique people; automated traffic may be included." + (referrersAvailable ? "" : " Referrer and direct-traffic data are unavailable on the current Cloudflare plan."),
+      note: "Visits use Cloudflare's edge visit metric. Page rankings show requests to published Histomaps pages and exclude unrelated scan paths. These are edge metrics, not unique people; automated traffic may be included." + (referrersAvailable ? "" : " Referrer and direct-traffic data are unavailable on the current Cloudflare plan."),
     });
   } catch (error) {
     return json({

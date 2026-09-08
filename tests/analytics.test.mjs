@@ -121,7 +121,7 @@ test('plan-restricted referrers do not prevent other analytics from loading', as
     }
     return Response.json({ data: { viewer: { zones: [{
       series: [{ dimensions: { datetimeHour: '2026-09-08T00:00:00Z' }, sum: { visits: 2 } }],
-      paths: [{ dimensions: { clientRequestPath: '/.env' }, count: 500 }, { dimensions: { clientRequestPath: '/info.php' }, count: 300 }],
+      paths: [{ dimensions: { clientRequestPath: '/.env' }, count: 500 }, { dimensions: { clientRequestPath: '/info.php' }, count: 300 }, { dimensions: { clientRequestPath: '/wordpress/' }, count: 500 }, { dimensions: { clientRequestPath: '/blog/' }, count: 500 }],
     }] } } });
   });
   const response = await onRequestGet({ request: request(env.DASHBOARD_PASSWORD, '7d'), env });
