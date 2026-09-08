@@ -35,6 +35,7 @@ function buildWindows(hours) {
 
 function looksLikePage(path) {
   if (!path || path.startsWith("/cdn-cgi/") || path.startsWith("/api/") || path.startsWith("/dashboard")) return false;
+  if (path.split("/").some(part => part.startsWith(".")) || /\.(?:php|sql|bak)(?:[./]|$)/i.test(path)) return false;
   return !/\.(?:avif|bmp|css|csv|gif|ico|jpe?g|js|json|map|mp3|mp4|pdf|png|svg|txt|webm|webp|woff2?|xml)$/i.test(path);
 }
 
@@ -101,7 +102,8 @@ query HistomapsAnalytics($zoneTag: string, $filter: filter) {
   }
 }`;
 
-async function queryWindow(env, host, window) {
+async function queryWindow(env, host, window, includeReferrers = true) {
+  const query = includeReferrers ? QUERY : QUERY.replace(/      referrers: httpRequestsAdaptiveGroups\([\s\S]*?dimensions \{ clientRefererHost \}\n      \}\n/, "");
   const response = await fetch(GRAPHQL_ENDPOINT, {
     method: "POST",
     headers: {
@@ -110,7 +112,7 @@ async function queryWindow(env, host, window) {
       accept: "application/json",
     },
     body: JSON.stringify({
-      query: QUERY,
+      query,
       variables: {
         zoneTag: env.CLOUDFLARE_ZONE_ID,
         filter: {
@@ -124,6 +126,9 @@ async function queryWindow(env, host, window) {
   });
 
   const payload = await response.json().catch(() => null);
+  if (includeReferrers && payload?.errors?.some(error => error.extensions?.code === "authz" && /clientrefererhost/i.test(error.message))) {
+    return queryWindow(env, host, window, false);
+  }
   if (!response.ok || !payload || payload.errors?.length) {
     const detail = payload?.errors?.map((error) => error.message).filter(Boolean).join("; ") || `Cloudflare returned HTTP ${response.status}`;
     throw new Error(detail);
@@ -131,7 +136,7 @@ async function queryWindow(env, host, window) {
 
   const zone = payload?.data?.viewer?.zones?.[0];
   if (!zone) throw new Error("Cloudflare returned no analytics zone data. Check CLOUDFLARE_ZONE_ID and token access.");
-  return zone;
+  return { ...zone, referrersAvailable: includeReferrers };
 }
 
 export async function onRequestGet({ request, env }) {
@@ -163,9 +168,11 @@ export async function onRequestGet({ request, env }) {
   const countries = new Map();
   const devices = new Map();
 
+  let referrersAvailable = true;
   try {
     for (const window of windows) {
-      const zone = await queryWindow(env, host, window);
+      const zone = await queryWindow(env, host, window, referrersAvailable);
+      referrersAvailable = zone.referrersAvailable;
 
       for (const row of zone.series || []) {
         const hour = row?.dimensions?.datetimeHour;
@@ -202,14 +209,15 @@ export async function onRequestGet({ request, env }) {
       host,
       range: requestedRange === "24h" ? "24h" : "7d",
       visits,
-      directShare: visits > 0 ? Math.round((referrers.get("Direct") || 0) / visits * 100) : 0,
+      referrersAvailable,
+      directShare: !referrersAvailable ? null : visits > 0 ? Math.round((referrers.get("Direct") || 0) / visits * 100) : 0,
       worldOpens,
       series: seriesRows,
       pages: top(pages, 10),
       referrers: top(referrers, 8),
       countries: top(countries, 8),
       devices: top(devices, 6),
-      note: "Visits use Cloudflare's edge visit metric. Page rankings use requests to likely HTML routes and exclude common static asset extensions.",
+      note: "Visits use Cloudflare's edge visit metric. Page rankings use requests to likely HTML routes and exclude common static asset extensions. These are edge metrics, not unique people; automated traffic may be included." + (referrersAvailable ? "" : " Referrer and direct-traffic data are unavailable on the current Cloudflare plan."),
     });
   } catch (error) {
     return json({

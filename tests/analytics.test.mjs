@@ -111,3 +111,26 @@ test('a failed refresh remains visible after successful dashboard login', async 
   assert.equal(element('dashboard').hidden, false);
   assert.match(html, /id="dashboard-error" role="alert"/);
 });
+
+test('plan-restricted referrers do not prevent other analytics from loading', async t => {
+  let calls = 0;
+  t.mock.method(globalThis, 'fetch', async (_url, options) => {
+    calls++;
+    if (JSON.parse(options.body).query.includes('clientRefererHost')) {
+      return Response.json({ errors: [{ message: "zone does not have access to field clientrefererhost", extensions: { code: 'authz' } }] });
+    }
+    return Response.json({ data: { viewer: { zones: [{
+      series: [{ dimensions: { datetimeHour: '2026-09-08T00:00:00Z' }, sum: { visits: 2 } }],
+      paths: [{ dimensions: { clientRequestPath: '/.env' }, count: 500 }, { dimensions: { clientRequestPath: '/info.php' }, count: 300 }],
+    }] } } });
+  });
+  const response = await onRequestGet({ request: request(env.DASHBOARD_PASSWORD, '7d'), env });
+  const data = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(data.visits, 14);
+  assert.equal(data.referrersAvailable, false);
+  assert.equal(data.directShare, null);
+  assert.deepEqual(data.pages, []);
+  assert.equal(calls, 8);
+  assert.match(data.note, /unavailable/);
+});
