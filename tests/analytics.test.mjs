@@ -134,3 +134,82 @@ test('plan-restricted referrers do not prevent other analytics from loading', as
   assert.equal(calls, 8);
   assert.match(data.note, /unavailable/);
 });
+
+test('current and saved connection exclusions survive the referrer fallback', async t => {
+  const filters = [];
+  t.mock.method(globalThis, 'fetch', async (_url, options) => {
+    const body = JSON.parse(options.body);
+    filters.push(body.variables.filter);
+    return body.query.includes('clientRefererHost')
+      ? Response.json({ errors: [{ message: 'No access to clientrefererhost', extensions: { code: 'authz' } }] })
+      : Response.json({ data: { viewer: { zones: [{}] } } });
+  });
+  const req = request();
+  req.headers.set('cf-connecting-ip', '2001:db8::1');
+  req.headers.set('x-excluded-ips', JSON.stringify(['192.0.2.1', '2001:db8::1']));
+  const response = await onRequestGet({ request: req, env });
+  assert.equal(response.status, 200);
+  assert.equal(filters.length, 2);
+  for (const filter of filters) assert.deepEqual(filter.clientIP_notin, ['2001:db8::1', '192.0.2.1']);
+  assert.deepEqual((await response.json()).exclusions, { enabled: true, currentIP: '2001:db8::1', count: 2 });
+});
+
+test('disabling exclusions restores the unfiltered query and omits the current IP', async t => {
+  t.mock.method(globalThis, 'fetch', async (_url, options) => {
+    assert.equal(JSON.parse(options.body).variables.filter.clientIP_notin, undefined);
+    return Response.json({ data: { viewer: { zones: [{}] } } });
+  });
+  const req = new Request('https://histomaps.org/api/analytics?range=24h&excludeOwn=0', { headers: {
+    'x-dashboard-password': env.DASHBOARD_PASSWORD, 'cf-connecting-ip': '192.0.2.1', 'x-excluded-ips': '["192.0.2.2"]',
+  } });
+  const data = await (await onRequestGet({ request: req, env })).json();
+  assert.deepEqual(data.exclusions, { enabled: false, currentIP: null, count: 0 });
+});
+
+test('malformed exclusion lists are rejected before making upstream requests', async t => {
+  t.mock.method(globalThis, 'fetch', async () => assert.fail('Unexpected query'));
+  for (const value of ['not json', '{}', '["999.1.1.1"]', '["192.0.2.0/24"]', JSON.stringify(Array(21).fill('192.0.2.1'))]) {
+    const req = request(); req.headers.set('x-excluded-ips', value);
+    assert.equal((await onRequestGet({ request: req, env })).status, 400);
+  }
+});
+
+test('dashboard remembers new connections, expires old ones and can show all traffic', async () => {
+  const html = await readFile(new URL('../dashboard/index.html', import.meta.url), 'utf8');
+  const elements = new Map(), storage = new Map(), requests = [];
+  storage.set('histomaps-excluded-connections', JSON.stringify([
+    { ip: '192.0.2.10', seenAt: Date.now() - 8 * 86400000 },
+    { ip: '192.0.2.11', seenAt: Date.now() - 86400000 },
+  ]));
+  const element = id => {
+    if (!elements.has(id)) elements.set(id, {
+      hidden: id === 'dashboard', checked: id === 'exclude-own', value: '', textContent: '', innerHTML: '',
+      classList: { toggle() {} }, listeners: {},
+      addEventListener(event, listener) { this.listeners[event] = listener; }, focus() {},
+    });
+    return elements.get(id);
+  };
+  vm.runInNewContext(html.match(/<script>([\s\S]*?)<\/script>/)[1], {
+    document: { documentElement: {}, getElementById: element, querySelectorAll: () => [] }, Intl, Date, Map,
+    localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) },
+    fetch: async (url, options) => {
+      requests.push({ url, options });
+      return Response.json({ visits: 1, series: [], generatedAt: new Date().toISOString(), exclusions: {
+        enabled: !url.includes('excludeOwn=0'), currentIP: url.includes('excludeOwn=0') ? null : '192.0.2.12', count: 2,
+      } });
+    },
+  });
+  element('password').value = 'test-password';
+  element('login-form').listeners.submit({ preventDefault() {} });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.match(requests[0].url, /excludeOwn=1/);
+  assert.deepEqual(JSON.parse(requests[0].options.headers['x-excluded-ips']), ['192.0.2.11']);
+  assert.deepEqual(JSON.parse(storage.get('histomaps-excluded-connections')).map(x => x.ip), ['192.0.2.11', '192.0.2.12']);
+  element('exclude-own').checked = false;
+  element('exclude-own').listeners.change();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.match(requests[1].url, /excludeOwn=0/);
+  assert.equal(requests[1].options.headers['x-excluded-ips'], '[]');
+  assert.equal(storage.get('histomaps-exclude-own'), '0');
+  assert.match(element('exclusion-status').textContent, /Showing all traffic/);
+});

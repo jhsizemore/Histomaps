@@ -20,6 +20,16 @@ function safeEqual(a, b) {
   return diff === 0;
 }
 
+function normalizeIP(value) {
+  if (typeof value !== "string" || value.length > 45) return null;
+  if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(value)) {
+    const parts = value.split(".");
+    return parts.every(part => Number(part) <= 255 && String(Number(part)) === part) ? value : null;
+  }
+  if (!/^[0-9a-f:]+$/i.test(value) || !value.includes(":")) return null;
+  try { return new URL(`http://[${value}]/`).hostname.slice(1, -1); } catch { return null; }
+}
+
 function buildWindows(hours) {
   const end = new Date();
   const start = new Date(end.getTime() - hours * 60 * 60 * 1000);
@@ -108,7 +118,7 @@ query HistomapsAnalytics($zoneTag: string, $filter: filter) {
   }
 }`;
 
-async function queryWindow(env, host, window, includeReferrers = true) {
+async function queryWindow(env, host, window, includeReferrers = true, excludedIPs = []) {
   const query = includeReferrers ? QUERY : QUERY.replace(/      referrers: httpRequestsAdaptiveGroups\([\s\S]*?dimensions \{ clientRefererHost \}\n      \}\n/, "");
   const response = await fetch(GRAPHQL_ENDPOINT, {
     method: "POST",
@@ -126,6 +136,7 @@ async function queryWindow(env, host, window, includeReferrers = true) {
           datetime_lt: window.end,
           clientRequestHTTPHost: host,
           requestSource: "eyeball",
+          ...(excludedIPs.length ? { clientIP_notin: excludedIPs } : {}),
         },
       },
     }),
@@ -133,7 +144,7 @@ async function queryWindow(env, host, window, includeReferrers = true) {
 
   const payload = await response.json().catch(() => null);
   if (includeReferrers && payload?.errors?.some(error => error.extensions?.code === "authz" && /clientrefererhost/i.test(error.message))) {
-    return queryWindow(env, host, window, false);
+    return queryWindow(env, host, window, false, excludedIPs);
   }
   if (!response.ok || !payload || payload.errors?.length) {
     const detail = payload?.errors?.map((error) => error.message).filter(Boolean).join("; ") || `Cloudflare returned HTTP ${response.status}`;
@@ -163,6 +174,18 @@ export async function onRequestGet({ request, env }) {
   }
 
   const url = new URL(request.url);
+  const excludeOwn = url.searchParams.get("excludeOwn") !== "0";
+  const currentIP = normalizeIP(request.headers.get("cf-connecting-ip"));
+  let savedIPs = [];
+  if (excludeOwn) {
+    try {
+      const raw = request.headers.get("x-excluded-ips") || "[]";
+      if (raw.length > 2048) throw new Error();
+      savedIPs = JSON.parse(raw);
+      if (!Array.isArray(savedIPs) || savedIPs.length > 20 || savedIPs.some(ip => !normalizeIP(ip))) throw new Error();
+    } catch { return json({ error: "Invalid saved connection exclusions." }, 400); }
+  }
+  const excludedIPs = excludeOwn ? [...new Set([currentIP, ...savedIPs.map(normalizeIP)].filter(Boolean))].slice(0, 20) : [];
   const requestedRange = url.searchParams.get("range") || "7d";
   const hours = requestedRange === "24h" ? 24 : MAX_DAYS * 24;
   const host = env.HISTOMAPS_ANALYTICS_HOST || DEFAULT_HOST;
@@ -177,7 +200,7 @@ export async function onRequestGet({ request, env }) {
   let referrersAvailable = true;
   try {
     for (const window of windows) {
-      const zone = await queryWindow(env, host, window, referrersAvailable);
+      const zone = await queryWindow(env, host, window, referrersAvailable, excludedIPs);
       referrersAvailable = zone.referrersAvailable;
 
       for (const row of zone.series || []) {
@@ -212,6 +235,7 @@ export async function onRequestGet({ request, env }) {
 
     return json({
       generatedAt: new Date().toISOString(),
+      exclusions: { enabled: excludeOwn, currentIP: excludeOwn ? currentIP : null, count: excludedIPs.length },
       host,
       range: requestedRange === "24h" ? "24h" : "7d",
       visits,
