@@ -24,6 +24,7 @@ on:
       - 'StarWars/tools/poster/title-art/**'
       - 'StarWars/tools/poster/star-wars-type/**'
       - 'StarWars/tools/social/render_social_card.py'
+      - 'StarWars/tools/social/render_reddit_canon.py'
       - '.github/workflows/starwars-generated-assets.yml'
   pull_request:
     paths:
@@ -47,6 +48,7 @@ on:
       - 'StarWars/tools/poster/title-art/**'
       - 'StarWars/tools/poster/star-wars-type/**'
       - 'StarWars/tools/social/render_social_card.py'
+      - 'StarWars/tools/social/render_reddit_canon.py'
       - '.github/workflows/starwars-generated-assets.yml'
   workflow_dispatch:
 
@@ -109,7 +111,7 @@ jobs:
           assert 'https://histomaps.org/starwars/' in poster.info.get('Description','')
 
           reddit=Image.open(reddit_path)
-          assert reddit.size==(2400,3000), reddit.size
+          assert reddit.size==(3840,11200), reddit.size
           assert reddit.format=='PNG', reddit.format
           assert reddit_path.stat().st_size < 20 * 1024 * 1024, reddit_path.stat().st_size
 
