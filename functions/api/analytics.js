@@ -20,12 +20,6 @@ function safeEqual(a, b) {
   return diff === 0;
 }
 
-function startOfHour(date) {
-  const d = new Date(date);
-  d.setUTCMinutes(0, 0, 0);
-  return d;
-}
-
 function buildWindows(hours) {
   const end = new Date();
   const start = new Date(end.getTime() - hours * 60 * 60 * 1000);
@@ -184,13 +178,13 @@ export async function onRequestGet({ request, env }) {
       for (const row of zone.referrers || []) {
         const raw = (row?.dimensions?.clientRefererHost || "").trim().toLowerCase();
         if (raw === host || raw === `www.${host}`) continue;
-        add(referrers, raw || "Direct", row?.sum?.visits || row?.count);
+        add(referrers, raw || "Direct", row?.sum?.visits ?? 0);
       }
       for (const row of zone.countries || []) {
-        add(countries, row?.dimensions?.clientCountryName || "Unknown", row?.sum?.visits || row?.count);
+        add(countries, row?.dimensions?.clientCountryName || "Unknown", row?.sum?.visits ?? 0);
       }
       for (const row of zone.devices || []) {
-        add(devices, row?.dimensions?.clientDeviceType || "Unknown", row?.sum?.visits || row?.count);
+        add(devices, row?.dimensions?.clientDeviceType || "Unknown", row?.sum?.visits ?? 0);
       }
     }
 
@@ -208,6 +202,7 @@ export async function onRequestGet({ request, env }) {
       host,
       range: requestedRange === "24h" ? "24h" : "7d",
       visits,
+      directShare: visits > 0 ? Math.round((referrers.get("Direct") || 0) / visits * 100) : 0,
       worldOpens,
       series: seriesRows,
       pages: top(pages, 10),
