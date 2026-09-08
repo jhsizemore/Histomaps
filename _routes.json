@@ -1,5 +1,24 @@
 {
   "version": 1,
-  "include": ["/api/*", "/world", "/world/*", "/mobile-preview", "/mobile-preview/*"],
-  "exclude": []
+  "include": [
+    "/api/*",
+    "/world",
+    "/world/*",
+    "/mobile-preview",
+    "/mobile-preview/*",
+    "/",
+    "/about",
+    "/about/*",
+    "/journal",
+    "/journal/*",
+    "/starwars",
+    "/starwars/*",
+    "/StarWars/*"
+  ],
+  "exclude": [
+    "/starwars/title-art/*",
+    "/starwars/assets/*",
+    "/StarWars/title-art/*",
+    "/StarWars/assets/*"
+  ]
 }

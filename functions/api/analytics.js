@@ -68,9 +68,13 @@ function top(map, limit = 8) {
 }
 
 const QUERY = `
-query HistomapsAnalytics($zoneTag: string, $filter: filter) {
+query HistomapsAnalytics($zoneTag: string, $filter: filter, $attributionFilter: filter) {
   viewer {
     zones(filter: { zoneTag: $zoneTag }) {
+      arrivals: httpRequestsAdaptiveGroups(limit: 1000, orderBy: [count_DESC], filter: $attributionFilter) {
+        count
+        dimensions { clientRequestPath }
+      }
       series: httpRequestsAdaptiveGroups(
         limit: 2000
         orderBy: [datetimeHour_ASC]
@@ -131,6 +135,12 @@ async function queryWindow(env, host, window, includeReferrers = true, excludedI
       query,
       variables: {
         zoneTag: env.CLOUDFLARE_ZONE_ID,
+        attributionFilter: {
+          datetime_geq: window.start, datetime_lt: window.end,
+          clientRequestHTTPHost: host, requestSource: "eyeball",
+          clientRequestPath_like: "/api/attribution/%", edgeResponseStatus: 204,
+          ...(excludedIPs.length ? { clientIP_notin: excludedIPs } : {}),
+        },
         filter: {
           datetime_geq: window.start,
           datetime_lt: window.end,
@@ -196,6 +206,8 @@ export async function onRequestGet({ request, env }) {
   const referrers = new Map();
   const countries = new Map();
   const devices = new Map();
+  const arrivalSources = new Map(), arrivalCampaigns = new Map(), arrivalPosts = new Map(), arrivalReferrers = new Map(), arrivalLandings = new Map();
+  let trackedArrivals = 0, directArrivals = 0;
 
   let referrersAvailable = true;
   try {
@@ -203,6 +215,21 @@ export async function onRequestGet({ request, env }) {
       const zone = await queryWindow(env, host, window, referrersAvailable, excludedIPs);
       referrersAvailable = zone.referrersAvailable;
 
+      for (const row of zone.arrivals || []) {
+        const path = row?.dimensions?.clientRequestPath || "";
+        if (!path.startsWith("/api/attribution/")) continue;
+        const fields = path.slice("/api/attribution/".length).split("/");
+        if (fields.length !== 6 || fields.some(x => !/^[a-z0-9._-]{1,80}$/.test(x))) continue;
+        const [source, medium, campaign, content, referrer, landing] = fields;
+        const count = Number(row.count || 0);
+        trackedArrivals += count;
+        if (source === "direct") directArrivals += count;
+        add(arrivalSources, source === "direct" ? "Direct / unknown" : source, count);
+        add(arrivalReferrers, referrer === "-" ? "Direct / hidden" : referrer, count);
+        add(arrivalLandings, landing, count);
+        if (campaign !== "-") add(arrivalCampaigns, `${source} · ${campaign}` + (medium !== "-" ? ` (${medium})` : ""), count);
+        if (content !== "-") add(arrivalPosts, `${source} · ${campaign === "-" ? "untagged" : campaign} · ${content}`, count);
+      }
       for (const row of zone.series || []) {
         const hour = row?.dimensions?.datetimeHour;
         add(series, hour, row?.sum?.visits);
@@ -242,6 +269,13 @@ export async function onRequestGet({ request, env }) {
       referrersAvailable,
       directShare: !referrersAvailable ? null : visits > 0 ? Math.round((referrers.get("Direct") || 0) / visits * 100) : 0,
       worldOpens,
+      attribution: {
+        arrivals: trackedArrivals,
+        directShare: trackedArrivals ? Math.round(directArrivals / trackedArrivals * 100) : null,
+        sources: top(arrivalSources, 12), campaigns: top(arrivalCampaigns, 12),
+        posts: top(arrivalPosts, 12), referrers: top(arrivalReferrers, 12), landings: top(arrivalLandings, 8),
+        note: "Tracked arrivals start when tracking is deployed. Repeat navigation is suppressed within a 30-minute tab session. These browser-reported counts differ from edge visits and may be sampled, blocked or missing a referrer. Connection exclusions apply. Top 1,000 tracking paths per daily query are included.",
+      },
       series: seriesRows,
       pages: top(pages, 10),
       referrers: top(referrers, 8),
