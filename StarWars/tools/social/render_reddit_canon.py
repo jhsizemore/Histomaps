@@ -65,9 +65,9 @@ def render():
     # edition is for: the Canon power map and every Canon screen-property lockup.
     poster = Image.open(POSTER).convert('RGB')
 
-    w, h = 3840, 11200
+    w, h = 3840, 10940
     header_h = 410
-    source_y0, source_y1 = 620, 10660
+    source_y0, source_y1 = 620, 10400
     content_h = source_y1 - source_y0
     bottom_y = header_h + content_h
 
