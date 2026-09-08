@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 from PIL import Image, ImageDraw, ImageFont, PngImagePlugin
 
 Image.MAX_IMAGE_PIXELS = None
@@ -9,12 +10,14 @@ DOWNLOADS = ROOT / 'downloads'
 POSTER = DOWNLOADS / 'Star-Wars-Histomap-Poster.png'
 TITLE_ART = ROOT / 'title-art'
 TYPE = ROOT / 'tools' / 'poster' / 'star-wars-type'
+POSTER_DATA = ROOT / 'tools' / 'poster' / 'star-wars-poster-data.json'
 OUT = DOWNLOADS / 'Star-Wars-Histomap-Reddit-Launch.png'
 
 GOLD = '#dfc17f'
 INK = '#f2eee2'
 MUTED = '#a8b8b8'
-BG = '#020507'
+BG = '#000000'
+PANEL = '#050c10'
 URL = 'https://histomaps.org/starwars/'
 
 
@@ -31,7 +34,7 @@ def fit_cover(im, size):
     return resized.crop((left, top, left + tw, top + th))
 
 
-def starfield(size, darken=0.56):
+def starfield(size, darken=0.58):
     base = fit_cover(Image.open(ASSETS / 'starfield.webp').convert('RGB'), size)
     return Image.blend(base, Image.new('RGB', size, BG), darken).convert('RGBA')
 
@@ -59,15 +62,26 @@ def draw_discontinuous_marker(draw, box, dots, caption):
     draw.text((x0, y0 + 60), caption, font=font('NewsCycle-Bold.ttf', 25), fill=MUTED)
 
 
-def render():
-    # Native-resolution crops from the 5,200 px master. Removing the Turning
-    # Points and lifelines columns spends Reddit pixels on the two things this
-    # edition is for: the Canon power map and every Canon screen-property lockup.
-    poster = Image.open(POSTER).convert('RGB')
+def interp(points, t):
+    if t <= points[0][0]:
+        return points[0][1]
+    for (a, ya), (b, yb) in zip(points, points[1:]):
+        if t <= b:
+            return ya + (yb - ya) * (t - a) / (b - a)
+    return points[-1][1]
 
-    w, h = 3840, 10940
+
+def render():
+    # Everything below the masthead is copied at native pixel resolution from
+    # the 5,200 px master poster. No chart artwork is enlarged or resampled.
+    poster = Image.open(POSTER).convert('RGB')
+    data = json.loads(POSTER_DATA.read_text())
+
+    w, h = 3840, 10590
     header_h = 410
-    source_y0, source_y1 = 620, 10400
+    # Start below the master poster's explanatory reading-notes strip so the
+    # Reddit edition spends its pixels on the actual chart.
+    source_y0, source_y1 = 970, 10400
     content_h = source_y1 - source_y0
     bottom_y = header_h + content_h
 
@@ -76,23 +90,25 @@ def render():
     canvas = Image.alpha_composite(canvas, shade)
     d = ImageDraw.Draw(canvas)
 
-    # Compact header: no decorative dead zone before the chart starts.
-    d.rectangle((2, 2, w - 3, h - 3), outline=(223, 193, 127, 122), width=4)
-    d.text((54, 30), 'H / HISTOMAPS', font=font('NewsCycle-Bold.ttf', 34), fill=GOLD)
-    d.text((w - 54, 36), 'UNOFFICIAL FAN ATLAS · STORY SPOILERS', font=font('NewsCycle-Bold.ttf', 25), fill=MUTED, anchor='ra')
+    # Thumbnail-scale masthead: intentionally terse and high contrast.
+    d.rectangle((0, 0, w, header_h), fill=(0, 0, 0, 255))
+    d.line((24, 12, w - 24, 12), fill=GOLD, width=4)
+    d.line((24, 390, w - 24, 390), fill=GOLD, width=3)
 
-    main_logo = lockup('main.webp', (390, 150))
-    canvas.alpha_composite(main_logo, (54, 92))
-    d.text((485, 121), 'histomap', font=font('starjedi.ttf', 86), fill=GOLD)
-    d.text((1330, 110), 'CANON SCREEN TIMELINE', font=font('PathwayGothicOne-Regular.ttf', 86), fill=INK)
-    d.text((1334, 204), 'GALACTIC POWERS + EVERY CANON SCREEN PROPERTY ON THE SAME BBY / ABY SCALE', font=font('NewsCycle-Bold.ttf', 30), fill=MUTED)
-    d.line((54, 304, w - 54, 304), fill=(223, 193, 127, 170), width=2)
-    d.text((54, 326), 'MOVIES SHOWN LARGE  ·  SERIES / ANIMATION SMALLER  ·  DASHED / BROKEN MARKERS = APPROXIMATE OR DISCONTINUOUS', font=font('NewsCycle-Bold.ttf', 26), fill='#c9d2d0')
+    main_logo = lockup('main.webp', (390, 180))
+    canvas.alpha_composite(main_logo, (58, 62))
+    d.text((510, 52), 'HISTOMAP', font=font('NewsCycle-Bold.ttf', 126), fill=GOLD)
+    d.text((516, 190), 'CANON TIMELINE', font=font('NewsCycle-Bold.ttf', 70), fill=INK)
+    d.text((518, 280), 'THE GALAXY AT A GLANCE', font=font('NewsCycle-Bold.ttf', 30), fill=MUTED)
+
+    d.text((w - 70, 66), '500 BBY  →  35 ABY', font=font('NewsCycle-Bold.ttf', 64), fill=GOLD, anchor='ra')
+    d.text((w - 70, 164), 'GALACTIC POWERS', font=font('NewsCycle-Bold.ttf', 34), fill=INK, anchor='ra')
+    d.text((w - 70, 214), 'FILMS  ·  SERIES  ·  ANIMATION  ·  GAMES', font=font('NewsCycle-Bold.ttf', 28), fill=MUTED, anchor='ra')
+    d.text((w - 70, 278), 'histomaps.org/starwars', font=font('NewsCycle-Bold.ttf', 30), fill=GOLD, anchor='ra')
 
     # Left: year axis + Force tracks + Canon galactic-power streams.
     map_crop = poster.crop((160, source_y0, 2605, source_y1)).convert('RGBA')
-    # Right: the original aligned property-marker/lockup column. This retains
-    # the exact vertical positions from the master instead of redrawing them.
+    # Right: aligned property-marker / title-lockup column from the master.
     media_crop = poster.crop((3150, source_y0, 4370, source_y1)).convert('RGBA')
 
     map_x = 50
@@ -101,13 +117,56 @@ def render():
     canvas.alpha_composite(map_crop, (map_x, content_y))
     canvas.alpha_composite(media_crop, (media_x, content_y))
 
-    # The narrow gap replaces two whole poster columns and makes the alignment
-    # between political history and screen chronology immediately legible.
+    # Tight central divider; no unused poster columns.
     d.line((2534, content_y, 2534, bottom_y), fill=(223, 193, 127, 112), width=2)
     d.line((2555, content_y, 2555, bottom_y), fill=(87, 105, 107, 100), width=1)
 
+    # Replace the screen-only column heading because this edition also includes games.
+    d.rectangle((2720, 414, 3800, 566), fill=(2, 5, 7, 255))
+    d.text((2745, 435), 'CANON PROPERTIES', font=font('NewsCycle-Bold.ttf', 37), fill=GOLD)
+    d.text((2747, 491), 'FILMS · SERIES · ANIMATION · GAMES', font=font('NewsCycle-Bold.ttf', 22), fill=MUTED)
+
+    # Enlarge the year labels modestly. The positions use the exact master
+    # timeline mapping, but the typography is rendered directly at final size.
+    anchors = data['anchors']
+    q = 4500 / 3460
+
+    def reddit_y(t):
+        logical_y = 560 + interp(anchors, t) * q
+        poster_y = 2 * logical_y
+        return round(header_h + poster_y - source_y0)
+
+    d.rectangle((0, content_y, 143, bottom_y), fill=(0, 0, 0, 255))
+    ticks = [-500, -382, -232, -230, -228, -132, -100, -32, -24, -22, -20, -19, -18, -10, -9, -5, -2, 0, 3, 4, 5, 9, 28, 34, 35]
+    last_y = -9999
+    for t in ticks:
+        y = reddit_y(t)
+        if y - last_y < 94:
+            continue
+        last_y = y
+        number = str(abs(t))
+        era = 'YAVIN' if t == 0 else ('BBY' if t < 0 else 'ABY')
+        color = GOLD if t == 0 else INK
+        subcolor = GOLD if t == 0 else MUTED
+        d.text((112, y - 34), number, font=font('PathwayGothicOne-Regular.ttf', 58), fill=color, anchor='ra')
+        d.text((112, y + 27), era, font=font('NewsCycle-Bold.ttf', 24), fill=subcolor, anchor='ra')
+        d.line((118, y, 139, y), fill=GOLD if t == 0 else (84, 102, 106), width=2)
+
+    # Zero Company: canon game, set in the twilight of the Clone Wars.
+    # This title was not part of the original screen-only lockup column, so it
+    # is added as a crisp vector/text lockup with the same aligned marker grammar.
+    zy = reddit_y(-20)
+    card_x0, card_x1 = 2870, 3605
+    card_y0, card_y1 = zy - 122, zy + 118
+    d.rounded_rectangle((card_x0, card_y0, card_x1, card_y1), radius=10, fill=PANEL, outline=(60, 78, 83), width=2)
+    d.line((2680, zy, card_x0 - 18, zy), fill=GOLD, width=3)
+    d.ellipse((2668, zy - 12, 2692, zy + 12), fill=GOLD, outline=INK, width=2)
+    d.text((card_x0 + 28, card_y0 + 22), 'STAR WARS', font=font('NewsCycle-Bold.ttf', 27), fill=INK)
+    d.text((card_x0 + 28, card_y0 + 58), 'ZERO COMPANY', font=font('NewsCycle-Bold.ttf', 57), fill=INK)
+    d.text((card_x0 + 30, card_y0 + 133), 'c. 20 BBY', font=font('NewsCycle-Bold.ttf', 28), fill=GOLD)
+    d.text((card_x1 - 28, card_y0 + 133), 'GAME', font=font('NewsCycle-Bold.ttf', 27), fill=MUTED, anchor='ra')
+
     # Two Canon properties deliberately have no honest single continuous span.
-    # Keep their lockups and show broken markers rather than inventing a range.
     d.rectangle((30, bottom_y, w - 30, h - 30), fill=(2, 5, 7, 206), outline=(223, 193, 127, 120), width=2)
     d.text((70, bottom_y + 34), 'CANON STORIES WITHOUT ONE CONTINUOUS SPAN', font=font('PathwayGothicOne-Regular.ttf', 50), fill=INK)
     d.text((w - 70, bottom_y + 48), 'LOCKUPS RETAINED · FALSE CONTINUOUS RANGES AVOIDED', font=font('NewsCycle-Bold.ttf', 24), fill=MUTED, anchor='ra')
@@ -134,7 +193,7 @@ def render():
 
     meta = PngImagePlugin.PngInfo()
     meta.add_text('Website', URL)
-    meta.add_text('Description', 'High-resolution Canon-focused Star Wars Histomap Reddit edition. ' + URL)
+    meta.add_text('Description', 'Crisp high-resolution Canon-focused Star Wars Histomap Reddit edition with Zero Company, enlarged years, and thumbnail-scale masthead. ' + URL)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     canvas.convert('RGB').save(OUT, 'PNG', optimize=True, pnginfo=meta)
     print(f'Wrote {OUT} ({w}x{h})')
