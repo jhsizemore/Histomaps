@@ -25,6 +25,7 @@ on:
       - 'StarWars/tools/poster/star-wars-type/**'
       - 'StarWars/tools/social/render_social_card.py'
       - 'StarWars/tools/social/render_reddit_canon.py'
+      - 'StarWars/tools/social/polish_reddit_svg.py'
       - '.github/workflows/starwars-generated-assets.yml'
   pull_request:
     paths:
@@ -49,6 +50,7 @@ on:
       - 'StarWars/tools/poster/star-wars-type/**'
       - 'StarWars/tools/social/render_social_card.py'
       - 'StarWars/tools/social/render_reddit_canon.py'
+      - 'StarWars/tools/social/polish_reddit_svg.py'
       - '.github/workflows/starwars-generated-assets.yml'
   workflow_dispatch:
 
@@ -83,7 +85,7 @@ jobs:
           node --check StarWars/recurring-lifelines.js
           node --check StarWars/synopses.js
           node StarWars/tools/poster/audit-data-sync.js
-          python -m py_compile StarWars/tools/social/render_reddit_canon.py
+          python -m py_compile StarWars/tools/social/render_reddit_canon.py StarWars/tools/social/render_social_card.py StarWars/tools/social/polish_reddit_svg.py
 
       - name: Install image renderer
         run: python -m pip install --disable-pip-version-check pillow
@@ -119,6 +121,10 @@ jobs:
           assert 'viewBox="0 0 1280 3840"' in svg
           assert 'width="3840"' in svg and 'height="11520"' in svg
           assert '<path' in svg and '<text' in svg, 'Expected vector chart geometry/text'
+          assert 'font-family:StarJedi' in svg and '>histomap</text>' in svg, 'Histomap masthead must use Star Jedi'
+          assert 'class="prop-kind"' not in svg, 'Individual property media-type labels should be removed'
+          assert 'id="bottom-stories-polished"' in svg, 'Expected four-property Tales bottom bar'
+          assert 'data:image/svg+xml;base64,' in svg, 'Expected embedded official Zero Company SVG lockup'
           assert reddit_svg_path.stat().st_size < 16 * 1024 * 1024, reddit_svg_path.stat().st_size
 
           renderer=Path('StarWars/tools/social/render_reddit_canon.py').read_text(encoding='utf-8')
