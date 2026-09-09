@@ -75,12 +75,15 @@ jobs:
         with:
           python-version: '3.12'
 
+      - uses: browser-actions/setup-chrome@v1
+
       - name: Validate interactive source and website-poster data sync
         run: |
           node --check StarWars/app.js
           node --check StarWars/recurring-lifelines.js
           node --check StarWars/synopses.js
           node StarWars/tools/poster/audit-data-sync.js
+          python -m py_compile StarWars/tools/social/render_reddit_canon.py
 
       - name: Install image renderer
         run: python -m pip install --disable-pip-version-check pillow
@@ -99,10 +102,11 @@ jobs:
           Image.MAX_IMAGE_PIXELS=None
 
           poster_path=Path('StarWars/downloads/Star-Wars-Histomap-Poster.png')
+          reddit_svg_path=Path('StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.svg')
           reddit_path=Path('StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.png')
           social_path=Path('StarWars/assets/star-wars-histomap-social-card.png')
           preview_path=Path('StarWars/assets/star-wars-histomap-poster-preview.webp')
-          for path in (poster_path, reddit_path, social_path, preview_path):
+          for path in (poster_path, reddit_svg_path, reddit_path, social_path, preview_path):
               assert path.is_file(), path
 
           poster=Image.open(poster_path)
@@ -110,10 +114,22 @@ jobs:
           assert poster.info.get('Website')=='https://histomaps.org/starwars/'
           assert 'https://histomaps.org/starwars/' in poster.info.get('Description','')
 
+          svg=reddit_svg_path.read_text(encoding='utf-8')
+          assert svg.lstrip().startswith('<svg'), 'Reddit source is not SVG'
+          assert 'viewBox="0 0 1280 3840"' in svg
+          assert 'width="3840"' in svg and 'height="11520"' in svg
+          assert '<path' in svg and '<text' in svg, 'Expected vector chart geometry/text'
+          assert reddit_svg_path.stat().st_size < 16 * 1024 * 1024, reddit_svg_path.stat().st_size
+
+          renderer=Path('StarWars/tools/social/render_reddit_canon.py').read_text(encoding='utf-8')
+          assert 'Star-Wars-Histomap-Poster.png' not in renderer, 'Reddit renderer must not crop the raster poster'
+
           reddit=Image.open(reddit_path)
-          assert reddit.size==(3840,10590), reddit.size
+          assert reddit.size==(3840,11520), reddit.size
           assert reddit.format=='PNG', reddit.format
           assert reddit_path.stat().st_size < 20 * 1024 * 1024, reddit_path.stat().st_size
+          assert reddit.info.get('Website')=='https://histomaps.org/starwars/'
+          assert 'Vector-source' in reddit.info.get('Description','')
 
           social=Image.open(social_path)
           assert social.size==(1200,630), social.size
@@ -124,6 +140,7 @@ jobs:
           assert preview.format=='WEBP', preview.format
 
           print('poster', poster.size, poster_path.stat().st_size)
+          print('reddit svg', reddit_svg_path.stat().st_size)
           print('reddit', reddit.size, reddit_path.stat().st_size)
           print('social', social.size, social_path.stat().st_size)
           print('web preview', preview.size, preview_path.stat().st_size)
@@ -136,6 +153,7 @@ jobs:
           name: starwars-generated-assets-${{ github.sha }}
           path: |
             StarWars/downloads/Star-Wars-Histomap-Poster.png
+            StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.svg
             StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.png
             StarWars/assets/star-wars-histomap-social-card.png
             StarWars/assets/star-wars-histomap-poster-preview.webp
@@ -146,11 +164,12 @@ jobs:
         run: |
           paths=(
             StarWars/downloads/Star-Wars-Histomap-Poster.png
+            StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.svg
             StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.png
             StarWars/assets/star-wars-histomap-social-card.png
             StarWars/assets/star-wars-histomap-poster-preview.webp
           )
-          if git diff --quiet -- "${paths[@]}" && git ls-files --error-unmatch StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.png StarWars/assets/star-wars-histomap-poster-preview.webp >/dev/null 2>&1; then
+          if git diff --quiet -- "${paths[@]}" && git ls-files --error-unmatch StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.svg StarWars/downloads/Star-Wars-Histomap-Reddit-Launch.png StarWars/assets/star-wars-histomap-poster-preview.webp >/dev/null 2>&1; then
             echo 'Generated assets already match source.'
             exit 0
           fi
