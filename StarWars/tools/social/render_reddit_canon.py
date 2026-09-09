@@ -245,7 +245,7 @@ text{{font-family:News,Arial,sans-serif;dominant-baseline:alphabetic}}
     A('<line x1="851" y1="290" x2="1256" y2="290" stroke="#40565b" stroke-width="1"/>')
 
     chart_top, chart_bottom = 300, 3448
-    data_top, data_bottom = 110, 3370
+    data_top, data_bottom = 110, data['height']
     axis_x = 60
     stream_x0, stream_x1 = 122, 812
     stream_w = stream_x1 - stream_x0
@@ -257,10 +257,10 @@ text{{font-family:News,Arial,sans-serif;dominant-baseline:alphabetic}}
         return map_base(interp(data['anchors'], year))
 
     # Year guides deliberately stay faint inside the map; the right property lane has its own anchors.
-    ticks = [-500, -400, -300, -200, -100, -32, -20, -10, 0, 10, 20, 30, 35]
+    ticks = [-500, -400, -300, -200, -100, -32, -20, -10, 0, 10, 20, 30, 40]
     last = -9999
     for t in ticks:
-        y = y_year(t)
+        y = chart_bottom - 7 if t == 40 else y_year(t)
         if y - last < 45:
             continue
         last = y
@@ -460,7 +460,11 @@ text{{font-family:News,Arial,sans-serif;dominant-baseline:alphabetic}}
     media = [dict(item) for item in data['screen']]
     # Zero Company is a current canon game with a fixed Clone Wars-era schematic anchor in this static edition.
     media.append({'id': 'zero-company', 'name': 'Zero Company', 'kind': 'game', 'start': -20, 'end': -20, 'approx': True})
-    media.sort(key=lambda item: ((y_year(item['start']) + y_year(item['end'])) / 2, item['name']))
+    same_year_order = {'mando-tv': 0, 'boba-tv': 1, 'ahsoka-tv': 2, 'skeleton-tv': 3}
+    media.sort(key=lambda item: (
+        (y_year(item['start']) + y_year(item['end'])) / 2,
+        same_year_order.get(item['id'], 20), item['name']
+    ))
 
     lane_x = 894
     leader_end = 948
@@ -479,12 +483,22 @@ text{{font-family:News,Arial,sans-serif;dominant-baseline:alphabetic}}
         natural = label_w * meta['height'] / meta['width']
         return max(28, min(max_h, natural))
 
-    heights = []
-    targets = []
-    for item in media:
-        heights.append(logo_box(item) + 31)
-        targets.append((y_year(item['start']) + y_year(item['end'])) / 2)
-    centers = positions(targets, heights, chart_top + 20, chart_bottom - 12, gap=4.5)
+    heights = [logo_box(item) + 31 for item in media]
+    # Pack the labels across the full panel height, while every leader still terminates
+    # on its immutable true-date anchor. This preserves the approved no-dead-space UI
+    # without pretending that collision-shifted titles occurred at different dates.
+    usable_top, usable_bottom = chart_top + 14, chart_bottom - 13
+    total_h = sum(heights)
+    if len(heights) > 1:
+        gap = max(4.5, (usable_bottom - usable_top - total_h) / (len(heights) - 1))
+    else:
+        gap = 0
+    used_h = total_h + gap * max(0, len(heights) - 1)
+    cursor = usable_top + max(0, (usable_bottom - usable_top - used_h) / 2)
+    centers = []
+    for h in heights:
+        centers.append(cursor + h / 2)
+        cursor += h + gap
 
     # A single clean vertical rail; each leader has one immutable temporal anchor.
     A(f'<line x1="{lane_x}" y1="{chart_top}" x2="{lane_x}" y2="{chart_bottom}" stroke="#6e8387" stroke-width="1" opacity=".55"/>')
