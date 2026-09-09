@@ -1,4 +1,6 @@
 from pathlib import Path
+import json
+import tempfile
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 Image.MAX_IMAGE_PIXELS = None
@@ -7,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 ASSETS = ROOT / 'assets'
 DOWNLOADS = ROOT / 'downloads'
 POSTER = DOWNLOADS / 'Star-Wars-Histomap-Poster.png'
+POSTER_DATA = ROOT / 'tools' / 'poster' / 'star-wars-poster-data.json'
 TITLE_ART = ROOT / 'title-art' / 'main.webp'
 TYPE = ROOT / 'tools' / 'poster' / 'star-wars-type'
 SOCIAL_OUT = ASSETS / 'star-wars-histomap-social-card.png'
@@ -95,11 +98,36 @@ def render_web_preview(poster):
     print(f'Wrote {WEB_PREVIEW_OUT} ({target_w}x{target_h})')
 
 
+def render_reddit_svg():
+    # Tales of the Jedi and Tales of the Empire are discontinuous anthology properties.
+    # Remove them from the continuous property lane before layout so the remaining
+    # cards repack cleanly; the polished SVG pass places all Tales titles in the bottom bar.
+    import render_reddit_canon as reddit
+
+    data = json.loads(POSTER_DATA.read_text(encoding='utf-8'))
+    data['screen'] = [
+        item for item in data['screen']
+        if item['id'] not in {'tales-jedi', 'tales-empire'}
+    ]
+    with tempfile.NamedTemporaryFile('w', suffix='.json', encoding='utf-8', delete=False) as tmp:
+        json.dump(data, tmp, ensure_ascii=False)
+        temp_path = Path(tmp.name)
+    original = reddit.POSTER_DATA
+    try:
+        reddit.POSTER_DATA = temp_path
+        reddit.render()
+    finally:
+        reddit.POSTER_DATA = original
+        temp_path.unlink(missing_ok=True)
+
+    from polish_reddit_svg import polish
+    polish()
+
+
 def main():
     poster = Image.open(POSTER).convert('RGB')
     render_social_card(poster)
-    from render_reddit_canon import render as render_reddit_canon
-    render_reddit_canon()
+    render_reddit_svg()
     render_web_preview(poster)
 
 
